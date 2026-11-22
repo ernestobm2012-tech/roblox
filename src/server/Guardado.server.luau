@@ -5,7 +5,8 @@
 	  - 🪙 Monedas
 	  - 🏆 Victorias
 	  - 🛒 Las mejoras de la tienda (salto, correr, brillo) y los 🎁 cofres que has abierto
-	  - 🎨 Los colores y estelas que has comprado (y el que llevas puesto), y tus 🐾 mascotas
+	  - 🎨 Los colores y estelas que has comprado (y el que llevas puesto), tus 🐾 mascotas y su nivel
+	  - 🏅 Tus logros y los contadores para conseguirlos · 🏠 Los muebles de tu casita
 	  - 📅 El progreso de tus misiones del día
 	  - 🗼 El nivel en el que vas
 	  - ⏱️ Tu mejor tiempo (récord)
@@ -35,7 +36,7 @@ local AJUSTES = {
 }
 
 -- Los atributos del jugador que empiezan así se guardan (los ponen la tienda y los cofres)
-local PREFIJOS = { "Compra_", "Cofre_", "Mejora_", "Estilo_", "Equipo_", "Mision_" }
+local PREFIJOS = { "Compra_", "Cofre_", "Mejora_", "Estilo_", "Equipo_", "Mision_", "Logro_", "Casa_", "Mascota_", "Estad_" }
 
 -- Qué valores se pueden guardar: sí/no, números y textos cortitos (el color o la estela que llevas)
 local function valorValido(valor)

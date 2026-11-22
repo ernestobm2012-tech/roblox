@@ -253,6 +253,7 @@ local function correrCarrera()
 		for jugador in participantes do
 			sumarMonedas(jugador, if jugador == ganador then AJUSTES.premioGanador else AJUSTES.premioParticipacion)
 		end
+		ganador:SetAttribute("Estad_carrerasGanadas", (ganador:GetAttribute("Estad_carrerasGanadas") or 0) + 1) -- para los logros
 		task.spawn(comprobarRecord, ganador, tiempoGanador)
 	else
 		ponerTexto("🏁 Nadie ha llegado. ¡Otra vez!")

@@ -25,11 +25,12 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | `src/client/Estilo.client.luau` | Botón "🎨 Estilo" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Carrera.client.luau` | Botón "🏁 Carrera" y el cartel de arriba | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Progreso.client.luau` | Barra de progreso "Nivel X de 500" | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
-| `src/server/Mascotas.server.luau` | Mascotas que te siguen, se compran con ~30 monedas y te hacen correr más rápido 🐾 | `ServerScriptService` → **Script** |
-| `src/server/Misiones.server.luau` | 3 misiones nuevas cada día con premio de monedas 📅 | `ServerScriptService` → **Script** |
+| `src/server/Mascotas.server.luau` | Mascotas que te siguen, se compran con ~30 monedas, te hacen correr más rápido y **suben de nivel** mientras juegas 🐾 | `ServerScriptService` → **Script** |
 | `src/client/Mascotas.client.luau` | Botón "🐾 Mascotas" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
-| `src/client/Misiones.client.luau` | Botón "📅 Misiones" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
-| `src/client/Tormenta.client.luau` | La lluvia, el cielo oscuro y los rayos de las tormentas ⛈️ | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/server/Logros.server.luau` | Insignias por logros (primer cofre, nivel 100, 10 carreras ganadas...) con premio de monedas 🏅 | `ServerScriptService` → **Script** |
+| `src/server/Casas.server.luau` | El barrio de casitas privadas con muebles y estantería de trofeos 🏠 | `ServerScriptService` → **Script** |
+| `src/client/Logros.client.luau` | Botón "🏅 Logros" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/client/Casa.client.luau` | Botón "🏠 Mi casa": ir a casa, salir y comprar muebles | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Jetpack.client.luau` | El jetpack: botón de comprar, botón de volar y barra de combustible | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Mejoras.client.luau` | Panelito con el nivel de tus mejoras y lo que cuesta la siguiente | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/GirarMonedas.client.luau` | Hace girar las monedas que tienes cerca | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
@@ -106,28 +107,49 @@ Pulsa el botón **🏁 Carrera** (a la izquierda) para apuntarte. Cuando hay **2
 - Cuando alguien llega a la meta con **su mejor tiempo**, sale un mensaje a todos: *"¡Fulano ha batido su récord de tiempo!"*
 - Si además es el mejor tiempo de **todos los jugadores de todos los tiempos**, sale un mensaje extra: *"🌟 ¡RÉCORD DEL MUNDO!"*. (Para esto hace falta el guardado activado.)
 
-## 🐾 Mascotas
+## 🐾 Mascotas (¡suben de nivel!)
 
-El botón **🐾 Mascotas** (a la izquierda) abre la lista. Cada mascota **te sigue a todas partes** y **te hace correr más rápido**. Se compran con monedas, una sola vez, y puedes tener todas pero solo una puesta a la vez (o ninguna: **Quitar**). Se guardan.
+El botón **🐾 Mascotas** (a la izquierda) abre la lista. Cada mascota **te sigue a todas partes** y **te hace correr más rápido**. Se compran con monedas, una sola vez, y puedes tener todas pero solo una puesta a la vez (o ninguna: **Quitar**).
 
-| Mascota | Precio | Velocidad extra |
+| Mascota | Precio | Velocidad extra (nivel 1) |
 |---|---|---|
 | 🐶 Perrito · 🐱 Gatito · 🐥 Pollito | 30 🪙 | +2 |
 | 🐰 Conejito | 40 🪙 | +3 |
 | 🐲 Dragoncito | 60 🪙 | +5 |
 | 🤖 Robot | 80 🪙 | +6 |
 
-La velocidad de la mascota se **suma** a la de la mejora "Correr" de la tienda. Precios y velocidades se cambian en `Mascotas.server.luau`.
+⭐ **La mascota que llevas puesta sube de nivel mientras juegas** (hasta el nivel 30). Gana experiencia (XP) por:
+- cada rato que juegas con ella (1 XP cada 10 segundos),
+- cada moneda que recoges (1 XP),
+- cada nivel nuevo del parkour (5 XP).
 
-## 📅 Misiones del día
+Cada nivel que sube: **corres un poquito más** (+0,15), la mascota se hace **un poco más grande** y sale un aviso. Cada mascota guarda **su propio nivel** (se guarda). En la ventana ves su nivel y lo que le falta para el siguiente. Se cambia lo rápido que sube, el máximo, etc. en `Mascotas.server.luau` (tabla `AJUSTES`). La velocidad de la mascota se **suma** a la de "Correr" de la tienda.
 
-El botón **📅 Misiones** enseña tus **3 misiones de hoy**, lo que llevas de cada una y el premio. Al cumplir una te dan monedas al momento, y si cumples las 3 hay **premio extra (30 🪙)**. Salen misiones nuevas cada día a medianoche (hora UTC).
-- Ejemplos: 🪙 *Recoge 50 monedas* · 🗼 *Llega al nivel 30* (se adapta a tu nivel) · 🎁 *Abre un cofre* · 🛒 *Compra una mejora* · 🏁 *Corre una carrera*.
-- El progreso se guarda (necesita el guardado activado para recordarlo de un día a otro).
+## 🏅 Logros (insignias)
 
-## ⛈️ Tormentas
+El botón **🏅 Logros** enseña las 12 insignias: las que ya tienes y las que te faltan. Al conseguir una ganas **monedas de premio**:
 
-En los **niveles 50, 100, 150, 200, 250, 300, 350, 400, 450 y 500** hay tormenta: **llueve**, el cielo se oscurece y de vez en cuando cae un **rayo** con destello y un temblor de trueno. Se ve en el cartel del checkpoint ("⛈️ Tormenta"). Es **solo un adorno**: no hace daño ni cambia los saltos. Los niveles con tormenta se cambian en `Niveles.server.luau` (`nivelesConTormenta`).
+| Insignia | Cómo se consigue | Premio |
+|---|---|---|
+| 🎁 Primer cofre | Abrir tu primer cofre sorpresa | 10 🪙 |
+| 🗝️ Cazatesoros | Abrir 10 cofres | 50 🪙 |
+| 🥉 🥈 🥇 💎 Nivel 10 / 50 / 100 / 250 | Llegar a ese nivel | 10 / 30 / 60 / 150 🪙 |
+| 🏆 ¡Campeón! | Llegar a la meta del nivel 500 | 300 🪙 |
+| 🏁 Primera victoria | Ganar una carrera | 25 🪙 |
+| 🏎️ Piloto | Ganar 10 carreras | 100 🪙 |
+| 💰 Millonario | Recoger 1000 monedas | 50 🪙 |
+| 🐾 Amigo fiel | Conseguir tu primera mascota | 15 🪙 |
+| ⭐ Gran entrenador | Subir una mascota al nivel 10 | 80 🪙 |
+
+Se guardan, y además salen como **trofeos dorados** en la estantería de tu casa.
+
+## 🏠 Tu casita (en el barrio, fuera del parkour)
+
+A los dos lados de la zona de salida (en la hierba, **fuera del parkour**) hay un **barrio de 12 casitas**. Cada jugador que entra se queda con una y en el tejado pone **"🏠 Casa de <tu nombre>"**.
+- Es **privada**: la puerta está cerrada para todos menos para ti. Pulsa **E** en la puerta, o usa el botón **🏠 Mi casa**, y apareces dentro. (Desde dentro, pulsa **E** en la alfombrilla verde de la puerta, o el botón, para **salir**: vuelves a tu nivel.)
+- Dentro puedes comprar con monedas **camas y muebles** (cama, sofá, mesa, silla, lámpara, planta, librería, tele, nevera, alfombra, cuadros). Se colocan **solos** en su sitio y se guardan. No caben más muebles de cada tipo que huecos hay (por ejemplo, 3 camas).
+- En la pared de la puerta hay una **estantería con 12 trofeos**, uno por cada logro: dorado si lo tienes, gris con candado si no.
+- Si hay más de 12 jugadores a la vez, los últimos se quedan sin casa. Se puede cambiar el número de casas en `Casas.server.luau`.
 
 ## 🎨 Estilo: colores y estelas
 

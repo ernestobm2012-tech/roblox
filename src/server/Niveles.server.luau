@@ -1222,7 +1222,7 @@ task.spawn(function()
 			local humanoide = personaje and personaje:FindFirstChildOfClass("Humanoid")
 			local raiz = personaje and personaje:FindFirstChild("HumanoidRootPart")
 			local punto = checkpoints[nivel]
-			if humanoide and raiz and punto and humanoide.Health > 0 and not teletransportando[jugador] and raiz.Position.Y < punto.Position.Y - 150 then
+			if humanoide and raiz and punto and humanoide.Health > 0 and not teletransportando[jugador] and not jugador:GetAttribute("EnCasa") and raiz.Position.Y < punto.Position.Y - 150 then
 				humanoide.Health = 0
 			end
 
