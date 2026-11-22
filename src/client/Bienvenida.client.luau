@@ -26,7 +26,7 @@ mensaje.BackgroundTransparency = 0.2
 mensaje.TextColor3 = Color3.fromRGB(255, 255, 255)
 mensaje.TextScaled = true
 mensaje.Font = Enum.Font.FredokaOne
-mensaje.Text = "¡Hola, " .. jugador.DisplayName .. "! Llega a la 🏆 sin tocar la lava"
+mensaje.Text = "¡Hola, " .. jugador.DisplayName .. "! 500 niveles te esperan 🏆 ¡Cuidado con la lava!"
 mensaje.Parent = pantalla
 
 -- Esquinas redondeadas

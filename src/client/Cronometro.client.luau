@@ -2,6 +2,7 @@
 	⏱️ CRONÓMETRO (parte de la pantalla)
 	Dibuja el reloj arriba, en el centro de la pantalla:
 	  - Esperando: te dice que salgas de la salida para empezar.
+	  - Sin reloj: sigues en un nivel guardado (el tiempo se mide desde el nivel 1).
 	  - Corriendo: los segundos van subiendo.
 	  - En la meta: se para y te enseña tu tiempo (y si es récord).
 
@@ -72,6 +73,10 @@ RunService.RenderStepped:Connect(function()
 		else
 			nota.Text = textoRecord
 		end
+	elseif estado == "sinreloj" then
+		tiempo.Text = "⏱️ --"
+		tiempo.TextColor3 = Color3.fromRGB(255, 255, 255)
+		nota.Text = "Vuelve a la salida para medir tu tiempo"
 	else
 		tiempo.Text = "⏱️ 0.00"
 		tiempo.TextColor3 = Color3.fromRGB(255, 255, 255)

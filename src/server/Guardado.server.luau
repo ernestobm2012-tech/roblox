@@ -5,6 +5,7 @@
 	  - 🪙 Monedas
 	  - 🏆 Victorias
 	  - 🛒 Lo que has comprado en la tienda
+	  - 🗼 El nivel en el que vas
 	  - ⏱️ Tu mejor tiempo (récord)
 
 	Se guarda solo: cada minuto, cuando sales del juego y cuando se cierra el juego.
@@ -86,6 +87,9 @@ local function cargarJugador(jugador)
 		for id in datos.compras or {} do
 			jugador:SetAttribute("Compra_" .. id, true) -- la tienda lo ve y se lo pone
 		end
+		if type(datos.nivel) == "number" and datos.nivel > (jugador:GetAttribute("Nivel") or 1) then
+			jugador:SetAttribute("Nivel", datos.nivel) -- el script Niveles te lleva a tu checkpoint
+		end
 		if type(datos.mejorTiempo) == "number" and datos.mejorTiempo > 0 then
 			jugador:SetAttribute("MejorTiempo", datos.mejorTiempo)
 		end
@@ -116,6 +120,7 @@ local function recogerDatos(jugador)
 	return {
 		monedas = monedas and monedas.Value or 0,
 		victorias = victorias and victorias.Value or 0,
+		nivel = jugador:GetAttribute("Nivel") or 1,
 		mejorTiempo = jugador:GetAttribute("MejorTiempo") or 0,
 		compras = compras,
 	}

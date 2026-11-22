@@ -2,7 +2,7 @@
 	🚀 CATAPULTA
 	Construye una catapulta al lado de la salida.
 	Cuando te subes a la plataforma verde, el brazo se mueve y... ¡te lanza por los aires
-	hasta el sitio que elijas en AJUSTES (al principio, la META)!
+	hasta el sitio que elijas en AJUSTES (al principio, el checkpoint del nivel 5)!
 
 	📋 DÓNDE VA: en Roblox Studio, dentro de ServerScriptService, como "Script".
 ]]
@@ -12,8 +12,9 @@ local TweenService = game:GetService("TweenService")
 
 -- ⚙️ AJUSTES: ¡cambia estos valores y mira qué pasa!
 local AJUSTES = {
-	-- A dónde te lanza. Puede ser "Meta" o una plataforma, por ejemplo "Plataforma6"
-	destino = "Meta",
+	-- A dónde te lanza. Puede ser el checkpoint de un nivel ("Checkpoint_5", "Checkpoint_20"...)
+	-- o la "Meta". ¡Cuanto más lejos, más alto vuela!
+	destino = "Checkpoint_5",
 	-- Cuánto tarda el vuelo. Más segundos = vuelo más alto y más lento
 	segundosDeVuelo = 2.5,
 	-- Si no encuentra el destino, te lanza hacia arriba con esta fuerza
@@ -26,7 +27,7 @@ local AJUSTES = {
 
 -- Esperamos a que exista la carpeta del mundo (la crea el script MiMundo)
 local carpetaMundo = workspace:WaitForChild("MiMundo", 10)
-local parteDestino = carpetaMundo and carpetaMundo:WaitForChild(AJUSTES.destino, 10)
+local parteDestino = carpetaMundo and carpetaMundo:WaitForChild(AJUSTES.destino, 30)
 
 local carpeta = Instance.new("Folder")
 carpeta.Name = "Catapulta"

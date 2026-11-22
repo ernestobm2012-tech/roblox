@@ -8,10 +8,12 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 
 | Archivo | Qué hace | Dónde va en Roblox Studio |
 |---|---|---|
-| `src/server/MiMundo.server.luau` | Construye el mundo: parkour de colores, lava, meta con trofeo, monedas y marcador | `ServerScriptService` → **Script** |
-| `src/server/Catapulta.server.luau` | Catapulta junto a la salida: te lanza por los aires hasta la meta | `ServerScriptService` → **Script** |
+| `src/server/MiMundo.server.luau` | La base: suelo, punto de salida, monedas y marcador (Monedas, Victorias) | `ServerScriptService` → **Script** |
+| `src/server/Niveles.server.luau` | Los **500 niveles**, cada uno más difícil, con checkpoint, lava y farola. Al final, la meta 🏆 | `ServerScriptService` → **Script** |
+| `src/server/Noche.server.luau` | Se hace de noche poco a poco y se encienden las farolas 🌙 | `ServerScriptService` → **Script** |
+| `src/server/Catapulta.server.luau` | Catapulta junto a la salida: te lanza por los aires hasta el checkpoint del nivel 5 | `ServerScriptService` → **Script** |
 | `src/server/Tienda.server.luau` | Tienda con 3 puestos (botas veloces, súper salto, brillos) que se compran con las monedas | `ServerScriptService` → **Script** |
-| `src/server/Guardado.server.luau` | Guarda monedas, victorias, compras y récord para la próxima vez (⚠️ necesita publicar el mundo, ver abajo) | `ServerScriptService` → **Script** |
+| `src/server/Guardado.server.luau` | Guarda monedas, victorias, compras, nivel y récord para la próxima vez (⚠️ necesita publicar el mundo, ver abajo) | `ServerScriptService` → **Script** |
 | `src/server/Cronometro.server.luau` | Mide el tiempo hasta la meta y pone la columna "Mejor tiempo" en el marcador | `ServerScriptService` → **Script** |
 | `src/client/Cronometro.client.luau` | Dibuja el reloj en la pantalla | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Bienvenida.client.luau` | Enseña un mensaje de bienvenida en la pantalla | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
@@ -47,6 +49,16 @@ Resumen:
 Antes hay que instalar Roblox Studio y Git, y bajar el proyecto una vez con
 `git clone https://github.com/ernestobm2012-tech/roblox.git` (todo explicado en la guía).
 
+## 🗼 Los 500 niveles
+
+- Cada nivel empieza en un **checkpoint** (plataforma blanca con el número). Si te caes o tocas la lava, vuelves al último que alcanzaste.
+- Cada nivel es un poco más difícil: plataformas más pequeñas y más separadas, más saltos por nivel y zigzag.
+  Desde el nivel 60 hay plataformas **naranjas que se caen** al pisarlas, y desde el 150 plataformas **azules que se mueven**.
+- Llegar a un nivel nuevo da 🪙 monedas. Tu nivel sale en el marcador (columna **Nivel**) y se guarda.
+- Al llegar a la meta 🏆 (nivel 500) ganas y vuelves a empezar.
+- Al darle a Play, el juego tarda unos segundos en construir los 500 niveles (en **Salida** pondrá `🗼 ¡500 niveles construidos!`).
+- ¿Va lento? En `Niveles.server.luau` (tabla `AJUSTES`) puedes bajar `numeroDeNiveles` o subir `farolaCadaNiveles`.
+
 ## 💾 Para que se guarden las monedas (una sola vez, un adulto)
 
 Roblox solo guarda datos de un mundo que está **publicado**. En Roblox Studio:
@@ -61,9 +73,8 @@ Si no lo haces, el juego funciona igual pero **no guarda nada**, y en Salida ver
 
 ## 💡 Ideas para pedirle a Claude
 
-- "Haz que la lava se mueva de un lado a otro"
+- "Haz que los niveles de la 100 en adelante tengan plataformas que giran"
 - "Pon plataformas que desaparecen cuando las pisas"
 - "Construye un castillo con torres al lado del parkour"
-- "Añade checkpoints para no volver al principio"
-- "Haz que sea de noche y que haya farolas"
+- "Que de noche salgan estrellas fugaces"
 - "Pon un trampolín que te lance muy alto"

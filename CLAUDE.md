@@ -26,10 +26,17 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
 - **No inventes IDs de assets** (sonidos, mallas, imágenes `rbxassetid://`). Si hacen falta, pide al
   usuario que busque uno en la Toolbox/Creator Store y lo pegue.
 - Los scripts se hablan entre sí **solo con atributos del jugador** (`jugador:SetAttribute`), nunca con
-  `require`: `Compra_<id>` (tienda), `MejorTiempo`, `CronoEstado`/`CronoInicio`/`CronoFinal`/`CronoRecord`
-  (cronómetro). `Guardado` guarda todo `Compra_*` y `MejorTiempo`, y el marcador `leaderstats`
+  `require`: `Compra_<id>` (tienda), `Nivel`, `MejorTiempo`, `CronoEstado`/`CronoInicio`/`CronoFinal`/`CronoRecord`
+  (cronómetro). `Guardado` guarda todo `Compra_*`, `Nivel` y `MejorTiempo`, y el marcador `leaderstats`
   (Monedas, Victorias) que crea `MiMundo`. Si añades algo que deba guardarse, usa un atributo
   `Compra_<id>` o añádelo en `recogerDatos`/`cargarJugador` de `Guardado`.
+- Mundo: `workspace.MiMundo` (lo crea `MiMundo`) contiene `Checkpoint_<n>` y `Meta` directamente (otros scripts
+  los buscan por nombre, p. ej. la catapulta y el cronómetro) y la subcarpeta `Niveles` con plataformas,
+  lava y farolas. `Niveles` construye el mundo en segundo plano (`task.wait()` por lotes): quien necesite
+  una pieza debe usar `WaitForChild` con tiempo largo. Nivel actual del jugador = atributo `Nivel`.
+  Las luces de las farolas llevan la etiqueta `FarolaLuz` (CollectionService); `Noche` las enciende/apaga.
+  Con miles de piezas: nada de bucles por frame sobre todas ellas (las plataformas móviles solo se
+  actualizan si hay un jugador cerca) y `CastShadow = false`.
 - `DataStore` solo funciona con el mundo publicado y con "acceso de Studio a servicios de API" activado.
   Nunca guardes si la lectura falló (se borrarían los datos). Si cambias `nombreDelGuardado`, todos empiezan de cero.
 - Nada de `HttpService` a webs externas ni de `require` de módulos de terceros por ID.

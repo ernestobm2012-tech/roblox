@@ -1,9 +1,12 @@
 --[[
 	⏱️ CRONÓMETRO (parte del servidor)
 	Mide cuánto tardas en llegar a la META.
-	  - El tiempo EMPIEZA cuando sales de la zona de salida.
-	  - Se PARA cuando tocas la META. Si es tu mejor tiempo, ¡es un récord nuevo!
-	  - Si vuelves a la salida (o caes en la lava y reapareces), se reinicia.
+	  - El tiempo EMPIEZA cuando sales de la zona de salida (empezando desde el nivel 1).
+	  - Se PARA cuando tocas la META (¡al final de los 500 niveles!). Si es tu mejor tiempo,
+	    ¡es un récord nuevo!
+	  - Si te caes, el reloj sigue corriendo (vuelves a tu checkpoint). Solo se reinicia si vuelves
+	    a la salida.
+	  - Si entras a jugar y sigues en un nivel guardado, no hay reloj hasta que vuelvas a la salida.
 	  - En el marcador de arriba a la derecha sale la columna "Mejor tiempo" de cada
 	    jugador, para ver quién llega antes.
 
@@ -23,7 +26,7 @@ local AJUSTES = {
 
 -- Esperamos a que MiMundo haya construido la meta
 local carpetaMundo = workspace:WaitForChild("MiMundo", 15)
-local meta = carpetaMundo and carpetaMundo:WaitForChild("Meta", 15)
+local meta = carpetaMundo and carpetaMundo:WaitForChild("Meta", 90)
 if not meta then
 	warn("⏱️ No encuentro la Meta. ¿Está el script MiMundo?")
 	return
@@ -31,7 +34,7 @@ end
 local salida = workspace:FindFirstChildWhichIsA("SpawnLocation", true)
 local posicionSalida = salida and salida.Position or Vector3.zero
 
--- Estados de cada jugador: "esperando" (en la salida), "corriendo" o "terminado"
+-- Estados de cada jugador: "esperando" (en la salida), "corriendo", "terminado" o "sinreloj"
 local estado = {}
 
 local function ponerEstado(jugador, nuevo)
@@ -122,9 +125,14 @@ task.spawn(function()
 						ponerEstado(jugador, "esperando")
 					end
 				elseif actual == "esperando" then
-					-- Acabas de salir: ¡YA!
-					jugador:SetAttribute("CronoInicio", workspace:GetServerTimeNow())
-					ponerEstado(jugador, "corriendo")
+					if (jugador:GetAttribute("Nivel") or 1) <= 1 then
+						-- Acabas de salir desde el principio: ¡YA!
+						jugador:SetAttribute("CronoInicio", workspace:GetServerTimeNow())
+						ponerEstado(jugador, "corriendo")
+					else
+						-- Has aparecido en un nivel guardado: no se puede medir el tiempo desde el principio
+						ponerEstado(jugador, "sinreloj")
+					end
 				end
 			end
 		end
