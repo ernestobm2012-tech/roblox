@@ -262,6 +262,7 @@ local function correrCarrera()
 	-- Cada uno vuelve a su nivel de siempre
 	for jugador in participantes do
 		jugador:SetAttribute("EnCarrera", nil)
+		jugador:SetAttribute("Estad_carreras", (jugador:GetAttribute("Estad_carreras") or 0) + 1) -- para las misiones
 		jugador:SetAttribute("SaltarANivel", jugador:GetAttribute("Nivel") or 1)
 	end
 	participantes = {}

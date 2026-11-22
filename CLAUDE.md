@@ -26,8 +26,8 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
 - **No inventes IDs de assets** (sonidos, mallas, imágenes `rbxassetid://`). Si hacen falta, pide al
   usuario que busque uno en la Toolbox/Creator Store y lo pegue.
 - Los scripts se hablan entre sí **solo con atributos del jugador** (`jugador:SetAttribute`), nunca con
-  `require`: `Mejora_<id>` y `Precio_<id>` (tienda de mejoras por niveles), `Cofre_<nivel>` (cofres abiertos), `Estilo_*` y `Equipo_*` (estilo), `Pase_<clave>` (pases de Robux), `Nivel` (el más alto alcanzado), `SaltarANivel`, `CreditosSalto`, `MejorTiempo`, `CronoEstado`/`CronoInicio`/`CronoFinal`/`CronoRecord`
-  (cronómetro). `Guardado` guarda todo lo que empiece por `Compra_`, `Cofre_` o `Mejora_` (lista `PREFIJOS`, valores sí/no, números o textos de hasta 40 letras), `Nivel` y `MejorTiempo`, y el marcador `leaderstats`
+  `require`: `Mejora_<id>` y `Precio_<id>` (tienda de mejoras por niveles), `Cofre_<nivel>` (cofres abiertos), `Estilo_*` y `Equipo_*` (estilo y mascotas), `Mision_*` (misiones), `Pase_<clave>` (pases de Robux), `Nivel` (el más alto alcanzado), `SaltarANivel`, `CreditosSalto`, `MejorTiempo`, `CronoEstado`/`CronoInicio`/`CronoFinal`/`CronoRecord`
+  (cronómetro). `Guardado` guarda todo lo que empiece por `Compra_`, `Cofre_` o `Mejora_` (lista `PREFIJOS`, que incluye `Mision_`, valores sí/no, números o textos de hasta 40 letras), `Nivel` y `MejorTiempo`, y el marcador `leaderstats`
   (Monedas, Victorias) que crea `MiMundo`. Si añades algo que deba guardarse, usa un atributo
   `Compra_<id>` o añádelo en `recogerDatos`/`cargarJugador` de `Guardado`.
 - Mundo: `workspace.MiMundo` (lo crea `MiMundo`) contiene `Checkpoint_<n>` y `Meta` directamente (otros scripts
@@ -55,6 +55,17 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
 - Estilo (`Estilo`): atributos `Estilo_<tipo>_<id>` (comprado) y `Equipo_color` / `Equipo_estela` (puesto, texto); el catálogo
   se publica en `ReplicatedStorage.CatalogoEstilo` y el cliente pide cosas con el RemoteEvent `EstiloAccion`.
 - Récords: `Cronometro` y `Carrera` usan el DataStore `MiMundoRecords_v1` (claves `recordMeta` y `recordCarrera`).
+- Mascotas (`Mascotas`): modelos de partes ancladas que siguen al dueño con `PivotTo` en Heartbeat (pocas, nada de física).
+  Compradas = `Estilo_mascota_<id>`, puesta = `Equipo_mascota`; suman velocidad con el atributo `BonusMascota`, que `Tienda`
+  suma a `WalkSpeed` (la ÚNICA que toca `WalkSpeed`). RemoteEvent `MascotaAccion`, catálogo `ReplicatedStorage.CatalogoMascotas`.
+- Misiones (`Misiones`): estado en atributos `Mision_<n>_tipo/objetivo/premio/progreso/hecha`, `Mision_dia`, `Mision_bonus`
+  (se guardan). Los demás scripts cuentan eventos sumando 1 a `Estad_monedas`, `Estad_cofres`, `Estad_mejoras`,
+  `Estad_carreras`. `Guardado` pone `DatosCargados` cuando termina de cargar. Para una misión nueva: añádela a `MISIONES`,
+  a `CONTADORES` si usa un contador, y al texto del cliente.
+- Tormentas: `Niveles` calcula en qué nivel está cada jugador (`NivelActual`) y pone el atributo `Clima` = "tormenta" en los
+  niveles de `nivelesConTormenta`; la lluvia y los rayos los dibuja SOLO el cliente (`Tormenta`).
+- Botones de la pantalla: columna a la izquierda desde `UDim2.new(0, 12, 0.3, 0)`, cada uno 54 px más abajo (checkpoint 0,
+  estilo 54, carrera 108, jetpack 162, mascotas 216, misiones 270). El panel de mejoras va a la derecha.
 - **Dinero (Robux):** hoy hay DOS cosas de pago: el salto a checkpoint (producto de desarrollador, `SaltoCheckpoint`) y el
   Jetpack (pase de juego, `PasesRobux`). Los ids se dejan en 0 hasta que el adulto los pase. el usuario es un niño. Nunca inventes IDs de productos ni precios (el precio se pone en la web
   de Roblox y la pantalla lo lee del producto). No añadas compras con Robux ni cambies cuánto o cuándo se cobra sin que

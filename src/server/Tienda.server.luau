@@ -8,6 +8,7 @@
 	Se compra con las 🪙 Monedas. Acércate a un puesto y mantén pulsada la tecla E
 	(o toca el botón en el móvil). Cada compra sube la mejora UN nivel y el siguiente
 	cuesta un poquito más.
+	(Tu velocidad también suma lo que te da tu mascota: script Mascotas.)
 	Tus mejoras se quedan aunque caigas en la lava (y, con el script Guardado, también
 	para la próxima vez que juegues). En la pantalla (script Mejoras) ves tus niveles.
 
@@ -48,8 +49,8 @@ local MEJORAS = {
 		precioBase = 2,
 		cadaNiveles = 20,
 		color = Color3.fromRGB(255, 170, 40),
-		aplicar = function(humanoide, _raiz, _personaje, nivel)
-			humanoide.WalkSpeed = AJUSTES.velocidadNormal + nivel * AJUSTES.velocidadPorNivel
+		aplicar = function()
+			-- La velocidad se calcula más abajo (en aplicarMejoras), porque también suma tu mascota
 		end,
 	},
 	{
@@ -219,6 +220,15 @@ local function aplicarMejoras(jugador, personaje)
 			mejora.aplicar(humanoide, raiz, personaje, nivel)
 		end
 	end
+
+	-- Tu velocidad: la normal + tus niveles de "Correr" + lo que te da tu mascota
+	local nivelCorrer = jugador:GetAttribute("Mejora_velocidad") or 0
+	local bonusMascota = jugador:GetAttribute("BonusMascota") or 0
+	if nivelCorrer > 0 or bonusMascota > 0 then
+		humanoide.WalkSpeed = AJUSTES.velocidadNormal + nivelCorrer * AJUSTES.velocidadPorNivel + bonusMascota
+	else
+		humanoide.WalkSpeed = AJUSTES.velocidadNormal
+	end
 end
 
 local function prepararJugador(jugador)
@@ -227,7 +237,7 @@ local function prepararJugador(jugador)
 	end)
 	-- Cuando cambia una mejora (la has comprado ahora o se ha cargado de un guardado)
 	jugador.AttributeChanged:Connect(function(nombre)
-		if string.sub(nombre, 1, 7) == "Mejora_" then
+		if string.sub(nombre, 1, 7) == "Mejora_" or nombre == "BonusMascota" then
 			actualizarPrecios(jugador)
 			if jugador.Character then
 				task.spawn(aplicarMejoras, jugador, jugador.Character)
@@ -274,6 +284,7 @@ local function comprar(jugador, mejora)
 	-- ¡Compra hecha!
 	monedas.Value -= precio
 	jugador:SetAttribute(atributo, nivel + 1) -- esto también activa el efecto
+	jugador:SetAttribute("Estad_mejoras", (jugador:GetAttribute("Estad_mejoras") or 0) + 1) -- para las misiones
 	local siguiente = precioSiguiente(mejora, nivel + 1)
 	local textoSiguiente = if siguiente > 0 then "Siguiente: " .. siguiente .. " 🪙" else "¡Máximo!"
 	avisar(jugador, mejora.nombre .. " nivel " .. (nivel + 1) .. " 🎉 " .. textoSiguiente, Color3.fromRGB(40, 160, 80))

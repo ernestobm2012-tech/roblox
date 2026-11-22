@@ -16,7 +16,7 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | `src/server/Tienda.server.luau` | Tienda con 3 mejoras que se compran **una tras otra** con monedas: 🦘 salto y 👟 correr (hasta el nivel 600) y ✨ brillo en la espalda (hasta el 100) | `ServerScriptService` → **Script** |
 | `src/server/Clasificacion.server.luau` | Tablero con los 10 mejores jugadores por nivel 🏆 (necesita el guardado activado) | `ServerScriptService` → **Script** |
 | `src/server/PasesRobux.server.luau` | Cosas que se compran con Robux: el 🚀 Jetpack. ⚠️ Falta poner el ID del pase (ver abajo) | `ServerScriptService` → **Script** |
-| `src/server/Guardado.server.luau` | Guarda monedas, victorias, mejoras de la tienda, cofres abiertos, nivel y récord para la próxima vez (⚠️ necesita publicar el mundo, ver abajo) | `ServerScriptService` → **Script** |
+| `src/server/Guardado.server.luau` | Guarda monedas, victorias, mejoras de la tienda, cofres, estilo, mascotas, misiones, nivel y récord para la próxima vez (⚠️ necesita publicar el mundo, ver abajo) | `ServerScriptService` → **Script** |
 | `src/server/Cronometro.server.luau` | Mide el tiempo hasta la meta y pone la columna "Mejor tiempo" en el marcador | `ServerScriptService` → **Script** |
 | `src/client/Cronometro.client.luau` | Dibuja el reloj en la pantalla | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/SaltoCheckpoint.client.luau` | El botón "🚀 Saltar a checkpoint" y su ventanita | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
@@ -25,6 +25,11 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | `src/client/Estilo.client.luau` | Botón "🎨 Estilo" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Carrera.client.luau` | Botón "🏁 Carrera" y el cartel de arriba | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Progreso.client.luau` | Barra de progreso "Nivel X de 500" | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/server/Mascotas.server.luau` | Mascotas que te siguen, se compran con ~30 monedas y te hacen correr más rápido 🐾 | `ServerScriptService` → **Script** |
+| `src/server/Misiones.server.luau` | 3 misiones nuevas cada día con premio de monedas 📅 | `ServerScriptService` → **Script** |
+| `src/client/Mascotas.client.luau` | Botón "🐾 Mascotas" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/client/Misiones.client.luau` | Botón "📅 Misiones" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/client/Tormenta.client.luau` | La lluvia, el cielo oscuro y los rayos de las tormentas ⛈️ | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Jetpack.client.luau` | El jetpack: botón de comprar, botón de volar y barra de combustible | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Mejoras.client.luau` | Panelito con el nivel de tus mejoras y lo que cuesta la siguiente | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/GirarMonedas.client.luau` | Hace girar las monedas que tienes cerca | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
@@ -100,6 +105,29 @@ Pulsa el botón **🏁 Carrera** (a la izquierda) para apuntarte. Cuando hay **2
 
 - Cuando alguien llega a la meta con **su mejor tiempo**, sale un mensaje a todos: *"¡Fulano ha batido su récord de tiempo!"*
 - Si además es el mejor tiempo de **todos los jugadores de todos los tiempos**, sale un mensaje extra: *"🌟 ¡RÉCORD DEL MUNDO!"*. (Para esto hace falta el guardado activado.)
+
+## 🐾 Mascotas
+
+El botón **🐾 Mascotas** (a la izquierda) abre la lista. Cada mascota **te sigue a todas partes** y **te hace correr más rápido**. Se compran con monedas, una sola vez, y puedes tener todas pero solo una puesta a la vez (o ninguna: **Quitar**). Se guardan.
+
+| Mascota | Precio | Velocidad extra |
+|---|---|---|
+| 🐶 Perrito · 🐱 Gatito · 🐥 Pollito | 30 🪙 | +2 |
+| 🐰 Conejito | 40 🪙 | +3 |
+| 🐲 Dragoncito | 60 🪙 | +5 |
+| 🤖 Robot | 80 🪙 | +6 |
+
+La velocidad de la mascota se **suma** a la de la mejora "Correr" de la tienda. Precios y velocidades se cambian en `Mascotas.server.luau`.
+
+## 📅 Misiones del día
+
+El botón **📅 Misiones** enseña tus **3 misiones de hoy**, lo que llevas de cada una y el premio. Al cumplir una te dan monedas al momento, y si cumples las 3 hay **premio extra (30 🪙)**. Salen misiones nuevas cada día a medianoche (hora UTC).
+- Ejemplos: 🪙 *Recoge 50 monedas* · 🗼 *Llega al nivel 30* (se adapta a tu nivel) · 🎁 *Abre un cofre* · 🛒 *Compra una mejora* · 🏁 *Corre una carrera*.
+- El progreso se guarda (necesita el guardado activado para recordarlo de un día a otro).
+
+## ⛈️ Tormentas
+
+En los **niveles 50, 100, 150, 200, 250, 300, 350, 400, 450 y 500** hay tormenta: **llueve**, el cielo se oscurece y de vez en cuando cae un **rayo** con destello y un temblor de trueno. Se ve en el cartel del checkpoint ("⛈️ Tormenta"). Es **solo un adorno**: no hace daño ni cambia los saltos. Los niveles con tormenta se cambian en `Niveles.server.luau` (`nivelesConTormenta`).
 
 ## 🎨 Estilo: colores y estelas
 

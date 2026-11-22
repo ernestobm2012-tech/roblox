@@ -20,6 +20,8 @@
 	      · charcos de lava desde el 20 ................................... ¡queman!
 	      · cuadrados que se deslizan desde el 80 ......................... ¡te matan!
 	      · BARRAS DE LAVA que giran desde el 250 ......................... ¡te matan!
+	  - En los niveles 50, 100, 150... hay TORMENTA ⛈️: llueve y caen rayos de adorno (se ve en el cartel
+	    del checkpoint). La lluvia y los rayos los dibuja el script Tormenta en tu pantalla.
 	  - Hay LAVA debajo de todos los saltos, y PAREDES a los lados para no salirse de la pista.
 	  - Monedas 🪙 por todas partes (más grandes en los checkpoints) y un COFRE SORPRESA 🎁
 	    en los niveles 50, 100, 150...
@@ -91,6 +93,9 @@ local AJUSTES = {
 	cofreCadaNiveles = 50, -- un cofre sorpresa cada tantos niveles
 	cofreBase = 30, cofreExtra = 10, -- monedas del cofre = base + extra por cada 50 niveles (y un poco al azar)
 
+	-- Niveles con TORMENTA (lluvia y rayos de adorno, no hacen daño)
+	nivelesConTormenta = { 50, 100, 150, 200, 250, 300, 350, 400, 450, 500 },
+
 	farolaCadaNiveles = 1, -- una farola cada tantos checkpoints (sube el número si va lento)
 	nivelesPorLote = 10, -- cuántos niveles construye de golpe antes de "respirar"
 }
@@ -106,6 +111,11 @@ local LAVA_GRUPO = 4 -- cada cuántas plataformas hay un trozo de lava cerca
 
 local N = math.max(AJUSTES.numeroDeNiveles, 1)
 workspace:SetAttribute("TotalNiveles", N) -- para la barra de progreso de la pantalla
+
+local TORMENTAS = {} -- TORMENTAS[nivel] = true si ese nivel tiene tormenta
+for _, nivelConTormenta in AJUSTES.nivelesConTormenta do
+	TORMENTAS[nivelConTormenta] = true
+end
 
 -- Reaparecer más rápido tras caerse
 pcall(function()
@@ -323,6 +333,7 @@ local function crearMoneda(nombre, posicion, valor)
 		activa = false
 		moneda.Transparency = 1 -- la moneda "desaparece"
 		sumarMonedas(jugador, valor)
+		jugador:SetAttribute("Estad_monedas", (jugador:GetAttribute("Estad_monedas") or 0) + 1) -- para las misiones
 		task.delay(AJUSTES.segundosParaQueVuelvaLaMoneda, function()
 			moneda.Transparency = 0
 			activa = true
@@ -362,6 +373,7 @@ local function ponerCofre(nivel, x, y, z)
 		local monedas = math.floor((AJUSTES.cofreBase + nivel / AJUSTES.cofreCadaNiveles * AJUSTES.cofreExtra) * Random.new():NextNumber(0.8, 1.5))
 		jugador:SetAttribute(atributo, true)
 		sumarMonedas(jugador, monedas)
+		jugador:SetAttribute("Estad_cofres", (jugador:GetAttribute("Estad_cofres") or 0) + 1) -- para las misiones
 		chispas:Emit(40)
 		avisar(jugador, "🎁 ¡Cofre sorpresa! +" .. monedas .. " monedas", Color3.fromRGB(200, 150, 0))
 	end)
@@ -400,6 +412,24 @@ local function actualizarMarcador(jugador)
 	if valor then
 		valor.Value = nivelMaximo[jugador] or 1
 	end
+end
+
+-- ¿En qué nivel está algo que se encuentra en esta z? (los checkpoints van de menor a mayor z)
+local function nivelEnPosicion(z)
+	local total = #checkpoints
+	if total == 0 then
+		return nil
+	end
+	local bajo, alto = 1, total
+	while bajo < alto do
+		local medio = (bajo + alto + 1) // 2
+		if checkpoints[medio].Position.Z - 7 <= z then
+			bajo = medio
+		else
+			alto = medio - 1
+		end
+	end
+	return bajo
 end
 
 -- Una explosión de confeti de colores en un checkpoint
@@ -514,12 +544,15 @@ local function ponerCheckpoint(nivel, x, y, z, tamano, tema)
 		Enum.Material.SmoothPlastic,
 		carpetaMundo
 	)
-	local nombreTema = NOMBRES_TEMA[tema]
-	if nombreTema then
-		crearCartel(punto, "NIVEL " .. nivel .. "\n" .. nombreTema, 220, 90, Vector3.new(0, tamano.Y / 2 + 5, 0))
-	else
-		crearCartel(punto, "NIVEL " .. nivel, 150, 50, Vector3.new(0, tamano.Y / 2 + 4, 0))
+	-- El cartel: el número del nivel y, si tiene, su forma y su tormenta
+	local lineas = { "NIVEL " .. nivel }
+	if NOMBRES_TEMA[tema] then
+		table.insert(lineas, NOMBRES_TEMA[tema])
 	end
+	if TORMENTAS[nivel] then
+		table.insert(lineas, "⛈️ Tormenta")
+	end
+	crearCartel(punto, table.concat(lineas, "\n"), if #lineas > 1 then 220 else 150, 40 * #lineas + 10, Vector3.new(0, tamano.Y / 2 + 3 + #lineas * 1.3, 0))
 
 	punto.Touched:Connect(function(otro)
 		local jugador = buscarJugador(otro)
@@ -1191,6 +1224,13 @@ task.spawn(function()
 			local punto = checkpoints[nivel]
 			if humanoide and raiz and punto and humanoide.Health > 0 and not teletransportando[jugador] and raiz.Position.Y < punto.Position.Y - 150 then
 				humanoide.Health = 0
+			end
+
+			-- ¿En qué nivel está ahora mismo? Si ese nivel tiene tormenta, se lo decimos a su pantalla
+			local nivelAqui = raiz and nivelEnPosicion(raiz.Position.Z)
+			if nivelAqui and jugador:GetAttribute("NivelActual") ~= nivelAqui then
+				jugador:SetAttribute("NivelActual", nivelAqui)
+				jugador:SetAttribute("Clima", if TORMENTAS[nivelAqui] then "tormenta" else "")
 			end
 		end
 	end

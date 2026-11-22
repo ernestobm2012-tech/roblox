@@ -1,6 +1,6 @@
 --[[
 	📊 PANEL DE MEJORAS
-	Un panelito a la izquierda de la pantalla que enseña el nivel de tus mejoras de la tienda
+	Un panelito a la derecha de la pantalla que enseña el nivel de tus mejoras de la tienda
 	(salto, correr y brillo) y cuánto cuesta la siguiente.
 
 	Los datos los pone el script "Tienda" (en atributos del jugador).
@@ -27,7 +27,7 @@ pantalla.Parent = jugador:WaitForChild("PlayerGui")
 
 local caja = Instance.new("Frame")
 caja.Size = UDim2.fromOffset(250, 92)
-caja.Position = UDim2.new(0, 12, 0.62, 0)
+caja.Position = UDim2.new(1, -262, 0.5, 0)
 caja.BackgroundColor3 = Color3.fromRGB(30, 30, 60)
 caja.BackgroundTransparency = 0.3
 caja.Parent = pantalla

@@ -5,7 +5,8 @@
 	  - 🪙 Monedas
 	  - 🏆 Victorias
 	  - 🛒 Las mejoras de la tienda (salto, correr, brillo) y los 🎁 cofres que has abierto
-	  - 🎨 Los colores y estelas que has comprado (y el que llevas puesto)
+	  - 🎨 Los colores y estelas que has comprado (y el que llevas puesto), y tus 🐾 mascotas
+	  - 📅 El progreso de tus misiones del día
 	  - 🗼 El nivel en el que vas
 	  - ⏱️ Tu mejor tiempo (récord)
 
@@ -34,7 +35,7 @@ local AJUSTES = {
 }
 
 -- Los atributos del jugador que empiezan así se guardan (los ponen la tienda y los cofres)
-local PREFIJOS = { "Compra_", "Cofre_", "Mejora_", "Estilo_", "Equipo_" }
+local PREFIJOS = { "Compra_", "Cofre_", "Mejora_", "Estilo_", "Equipo_", "Mision_" }
 
 -- Qué valores se pueden guardar: sí/no, números y textos cortitos (el color o la estela que llevas)
 local function valorValido(valor)
@@ -122,6 +123,7 @@ local function cargarJugador(jugador)
 	end
 
 	cargado[jugador] = true
+	jugador:SetAttribute("DatosCargados", true) -- otros scripts (como Misiones) esperan a esto
 end
 
 ----------------------------------------------------------------------
