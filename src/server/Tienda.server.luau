@@ -1,13 +1,15 @@
 --[[
-	🛒 TIENDA
-	Construye una tienda junto a la salida con 3 puestos.
-	Acércate a un puesto y mantén pulsada la tecla E (o toca el botón en el móvil)
-	para comprarlo con tus 🪙 Monedas.
-	  - 👟 Botas veloces: corres más rápido
-	  - 🦘 Súper salto: saltas mucho más alto
-	  - ✨ Brillos: te rodean brillitos
-	Lo que compras se queda aunque caigas en la lava (y, con el script Guardado,
-	también para la próxima vez que juegues).
+	🛒 TIENDA DE MEJORAS
+	Construye una tienda junto a la salida con 3 puestos. Cada puesto vende una mejora que
+	se puede comprar UNA VEZ TRAS OTRA, subiendo de nivel con cada compra:
+	  - 🦘 Súper salto: saltas un poco más alto con cada nivel (hasta el nivel 600)
+	  - 👟 Correr: corres un poco más rápido con cada nivel (hasta el nivel 600)
+	  - ✨ Brillo en la espalda: te brilla la espalda cada vez más (hasta el nivel 100)
+	Se compra con las 🪙 Monedas. Acércate a un puesto y mantén pulsada la tecla E
+	(o toca el botón en el móvil). Cada compra sube la mejora UN nivel y el siguiente
+	cuesta un poquito más.
+	Tus mejoras se quedan aunque caigas en la lava (y, con el script Guardado, también
+	para la próxima vez que juegues). En la pantalla (script Mejoras) ves tus niveles.
 
 	📋 DÓNDE VA: en Roblox Studio, dentro de ServerScriptService, como "Script".
 	(Usa las Monedas del marcador que crea el script MiMundo.)
@@ -19,43 +21,78 @@ local TweenService = game:GetService("TweenService")
 -- ⚙️ AJUSTES: ¡cambia estos valores y mira qué pasa!
 local AJUSTES = {
 	posicion = Vector3.new(24, 0, 6), -- dónde está la tienda (X, Y, Z)
-	velocidadNormal = 16, -- así corres sin comprar nada
-	velocidadConBotas = 30, -- así corres con las botas veloces
-	saltoNormal = 50, -- así saltas sin comprar nada
-	saltoConSuperSalto = 100, -- así saltas con el súper salto
+	velocidadNormal = 16, velocidadPorNivel = 0.05, -- correr: velocidad = normal + nivel x esto
+	saltoNormal = 50, saltoPorNivel = 0.15, -- saltar: fuerza = normal + nivel x esto
+	brilloAlcanceBase = 8, brilloAlcancePorNivel = 0.3, -- lo lejos que llega la luz de tu espalda
 }
 
--- 🧺 LO QUE SE VENDE (precio = monedas que cuesta)
-local OBJETOS = {
-	{
-		id = "botas",
-		nombre = "👟 Botas veloces",
-		precio = 5,
-		color = Color3.fromRGB(255, 170, 40),
-		aplicar = function(humanoide, _raiz)
-			humanoide.WalkSpeed = AJUSTES.velocidadConBotas
-		end,
-	},
+-- 🧺 LO QUE SE VENDE
+-- Precio de la siguiente mejora = precioBase + (tu nivel actual dividido entre cadaNiveles)
+local MEJORAS = {
 	{
 		id = "salto",
 		nombre = "🦘 Súper salto",
-		precio = 5,
+		maximo = 600,
+		precioBase = 2,
+		cadaNiveles = 20,
 		color = Color3.fromRGB(80, 200, 255),
-		aplicar = function(humanoide, _raiz)
+		aplicar = function(humanoide, _raiz, _personaje, nivel)
 			humanoide.UseJumpPower = true
-			humanoide.JumpPower = AJUSTES.saltoConSuperSalto
+			humanoide.JumpPower = AJUSTES.saltoNormal + nivel * AJUSTES.saltoPorNivel
 		end,
 	},
 	{
-		id = "brillos",
-		nombre = "✨ Brillos",
-		precio = 3,
+		id = "velocidad",
+		nombre = "👟 Correr",
+		maximo = 600,
+		precioBase = 2,
+		cadaNiveles = 20,
+		color = Color3.fromRGB(255, 170, 40),
+		aplicar = function(humanoide, _raiz, _personaje, nivel)
+			humanoide.WalkSpeed = AJUSTES.velocidadNormal + nivel * AJUSTES.velocidadPorNivel
+		end,
+	},
+	{
+		id = "brillo",
+		nombre = "✨ Brillo en la espalda",
+		maximo = 100,
+		precioBase = 2,
+		cadaNiveles = 10,
 		color = Color3.fromRGB(255, 120, 220),
-		aplicar = function(_humanoide, raiz)
-			if not raiz:FindFirstChild("BrillosTienda") then
-				local brillos = Instance.new("Sparkles")
-				brillos.Name = "BrillosTienda"
-				brillos.Parent = raiz
+		aplicar = function(_humanoide, _raiz, personaje, nivel)
+			local torso = personaje:FindFirstChild("UpperTorso") or personaje:FindFirstChild("Torso")
+			if not torso then
+				return
+			end
+			local brillo = personaje:FindFirstChild("BrilloEspalda")
+			if not brillo then
+				brillo = Instance.new("Part")
+				brillo.Name = "BrilloEspalda"
+				brillo.Size = Vector3.new(2, 2, 0.3)
+				brillo.Material = Enum.Material.Neon
+				brillo.CanCollide = false
+				brillo.CanTouch = false
+				brillo.Massless = true
+				brillo.CastShadow = false
+				brillo.CFrame = torso.CFrame * CFrame.new(0, 0, torso.Size.Z / 2 + 0.2) -- la espalda
+				local soldadura = Instance.new("WeldConstraint")
+				soldadura.Part0 = torso
+				soldadura.Part1 = brillo
+				soldadura.Parent = brillo
+				local luz = Instance.new("PointLight")
+				luz.Name = "Luz"
+				luz.Shadows = false
+				luz.Parent = brillo
+				brillo.Parent = personaje
+			end
+			-- Cuanto más nivel, más fuerte y de otro color
+			local color = Color3.fromHSV((nivel * 0.01) % 1, 0.6, 1)
+			brillo.Color = color
+			local luz = brillo:FindFirstChild("Luz")
+			if luz then
+				luz.Color = color
+				luz.Range = math.min(AJUSTES.brilloAlcanceBase + nivel * AJUSTES.brilloAlcancePorNivel, 40)
+				luz.Brightness = math.min(1 + nivel * 0.03, 4)
 			end
 		end,
 	},
@@ -149,36 +186,57 @@ local function avisar(jugador, texto, color)
 end
 
 ----------------------------------------------------------------------
--- 🎒 LO QUE HA COMPRADO CADA JUGADOR
+-- 🎒 LAS MEJORAS DE CADA JUGADOR
 ----------------------------------------------------------------------
 
--- Cada compra se apunta como un "atributo" del jugador: Compra_botas, Compra_salto...
--- (así el script de Guardado sabe qué ha comprado, sin necesitar nada más)
-local function aplicarCompras(jugador, personaje)
+-- Cuánto cuesta la siguiente mejora (0 si ya está al máximo)
+local function precioSiguiente(mejora, nivel)
+	if nivel >= mejora.maximo then
+		return 0
+	end
+	return mejora.precioBase + math.floor(nivel / mejora.cadaNiveles)
+end
+
+-- La pantalla (script Mejoras) lee estos atributos para enseñar tu nivel y el precio
+local function actualizarPrecios(jugador)
+	for _, mejora in MEJORAS do
+		local nivel = jugador:GetAttribute("Mejora_" .. mejora.id) or 0
+		jugador:SetAttribute("Precio_" .. mejora.id, precioSiguiente(mejora, nivel))
+	end
+end
+
+-- Cada nivel de mejora se apunta como un "atributo" del jugador: Mejora_salto, Mejora_velocidad...
+-- (así el script Guardado sabe qué ha comprado, sin necesitar nada más)
+local function aplicarMejoras(jugador, personaje)
 	local humanoide = personaje:WaitForChild("Humanoid", 10)
 	local raiz = personaje:WaitForChild("HumanoidRootPart", 10)
 	if not humanoide or not raiz then
 		return
 	end
-	for _, objeto in OBJETOS do
-		if jugador:GetAttribute("Compra_" .. objeto.id) then
-			objeto.aplicar(humanoide, raiz)
+	for _, mejora in MEJORAS do
+		local nivel = jugador:GetAttribute("Mejora_" .. mejora.id) or 0
+		if nivel > 0 then
+			mejora.aplicar(humanoide, raiz, personaje, nivel)
 		end
 	end
 end
 
 local function prepararJugador(jugador)
 	jugador.CharacterAdded:Connect(function(personaje)
-		aplicarCompras(jugador, personaje)
+		aplicarMejoras(jugador, personaje)
 	end)
-	-- Cuando aparece una compra nueva (la has hecho ahora o se ha cargado de un guardado)
+	-- Cuando cambia una mejora (la has comprado ahora o se ha cargado de un guardado)
 	jugador.AttributeChanged:Connect(function(nombre)
-		if string.sub(nombre, 1, 7) == "Compra_" and jugador.Character then
-			task.spawn(aplicarCompras, jugador, jugador.Character)
+		if string.sub(nombre, 1, 7) == "Mejora_" then
+			actualizarPrecios(jugador)
+			if jugador.Character then
+				task.spawn(aplicarMejoras, jugador, jugador.Character)
+			end
 		end
 	end)
+	actualizarPrecios(jugador)
 	if jugador.Character then
-		task.spawn(aplicarCompras, jugador, jugador.Character)
+		task.spawn(aplicarMejoras, jugador, jugador.Character)
 	end
 end
 
@@ -191,9 +249,12 @@ end
 -- 🛒 COMPRAR
 ----------------------------------------------------------------------
 
-local function comprar(jugador, objeto)
-	if jugador:GetAttribute("Compra_" .. objeto.id) then
-		avisar(jugador, "Ya tienes " .. objeto.nombre, Color3.fromRGB(90, 90, 120))
+local function comprar(jugador, mejora)
+	local atributo = "Mejora_" .. mejora.id
+	local nivel = jugador:GetAttribute(atributo) or 0
+
+	if nivel >= mejora.maximo then
+		avisar(jugador, "¡" .. mejora.nombre .. " ya está al máximo! (nivel " .. mejora.maximo .. ")", Color3.fromRGB(90, 90, 120))
 		return
 	end
 
@@ -204,16 +265,18 @@ local function comprar(jugador, objeto)
 		return
 	end
 
-	if monedas.Value < objeto.precio then
-		local faltan = objeto.precio - monedas.Value
-		avisar(jugador, "Te faltan " .. faltan .. " 🪙 para " .. objeto.nombre, Color3.fromRGB(200, 60, 60))
+	local precio = precioSiguiente(mejora, nivel)
+	if monedas.Value < precio then
+		avisar(jugador, "Te faltan " .. (precio - monedas.Value) .. " 🪙 para " .. mejora.nombre .. " nivel " .. (nivel + 1), Color3.fromRGB(200, 60, 60))
 		return
 	end
 
 	-- ¡Compra hecha!
-	monedas.Value -= objeto.precio
-	jugador:SetAttribute("Compra_" .. objeto.id, true) -- esto también activa el efecto
-	avisar(jugador, "¡Has comprado " .. objeto.nombre .. "! 🎉", Color3.fromRGB(40, 160, 80))
+	monedas.Value -= precio
+	jugador:SetAttribute(atributo, nivel + 1) -- esto también activa el efecto
+	local siguiente = precioSiguiente(mejora, nivel + 1)
+	local textoSiguiente = if siguiente > 0 then "Siguiente: " .. siguiente .. " 🪙" else "¡Máximo!"
+	avisar(jugador, mejora.nombre .. " nivel " .. (nivel + 1) .. " 🎉 " .. textoSiguiente, Color3.fromRGB(40, 160, 80))
 end
 
 ----------------------------------------------------------------------
@@ -235,38 +298,38 @@ crearBloque("PosteDerecho", Vector3.new(1, 10, 1), orientacion * CFrame.new(12, 
 
 crearCartel(techo, "🛒 TIENDA", 70, Vector3.new(0, 4, 0))
 
--- Un puesto por cada objeto
+-- Un puesto por cada mejora
 local separacion = 7
-local primero = -(#OBJETOS - 1) / 2 * separacion
+local primero = -(#MEJORAS - 1) / 2 * separacion
 
-for i, objeto in OBJETOS do
+for i, mejora in MEJORAS do
 	local x = primero + (i - 1) * separacion
 
 	local pedestal = crearBloque(
-		"Puesto_" .. objeto.id,
+		"Puesto_" .. mejora.id,
 		Vector3.new(4, 3, 3),
 		orientacion * CFrame.new(x, 2.1, 0),
-		objeto.color,
+		mejora.color,
 		Enum.Material.SmoothPlastic
 	)
 
 	-- Bolita brillante encima del puesto
-	local muestra = crearBloque("Muestra_" .. objeto.id, Vector3.new(1.6, 1.6, 1.6), orientacion * CFrame.new(x, 4.6, 0), objeto.color, Enum.Material.Neon)
+	local muestra = crearBloque("Muestra_" .. mejora.id, Vector3.new(1.6, 1.6, 1.6), orientacion * CFrame.new(x, 4.6, 0), mejora.color, Enum.Material.Neon)
 	muestra.Shape = Enum.PartType.Ball
 
-	crearCartel(pedestal, objeto.nombre .. "\n" .. objeto.precio .. " 🪙", 90, Vector3.new(0, 4.5, 0))
+	crearCartel(pedestal, mejora.nombre .. "\n¡Mejora tras mejora!", 90, Vector3.new(0, 4.5, 0))
 
-	-- El botón de comprar (aparece al acercarte)
+	-- El botón de comprar (aparece al acercarte). Cada vez que lo usas, subes UN nivel.
 	local boton = Instance.new("ProximityPrompt")
-	boton.ActionText = "Comprar"
-	boton.ObjectText = objeto.nombre .. " (" .. objeto.precio .. " monedas)"
-	boton.HoldDuration = 0.3
+	boton.ActionText = "Mejorar"
+	boton.ObjectText = mejora.nombre
+	boton.HoldDuration = 0.25
 	boton.MaxActivationDistance = 10
 	boton.RequiresLineOfSight = false
 	boton.Parent = pedestal
 
 	boton.Triggered:Connect(function(jugador)
-		comprar(jugador, objeto)
+		comprar(jugador, mejora)
 	end)
 end
 

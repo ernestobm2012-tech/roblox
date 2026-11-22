@@ -26,8 +26,8 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
 - **No inventes IDs de assets** (sonidos, mallas, imágenes `rbxassetid://`). Si hacen falta, pide al
   usuario que busque uno en la Toolbox/Creator Store y lo pegue.
 - Los scripts se hablan entre sí **solo con atributos del jugador** (`jugador:SetAttribute`), nunca con
-  `require`: `Compra_<id>` (tienda), `Nivel` (el más alto alcanzado), `SaltarANivel`, `CreditosSalto`, `MejorTiempo`, `CronoEstado`/`CronoInicio`/`CronoFinal`/`CronoRecord`
-  (cronómetro). `Guardado` guarda todo `Compra_*`, `Nivel` y `MejorTiempo`, y el marcador `leaderstats`
+  `require`: `Mejora_<id>` y `Precio_<id>` (tienda de mejoras por niveles), `Cofre_<nivel>` (cofres abiertos), `Pase_<clave>` (pases de Robux), `Nivel` (el más alto alcanzado), `SaltarANivel`, `CreditosSalto`, `MejorTiempo`, `CronoEstado`/`CronoInicio`/`CronoFinal`/`CronoRecord`
+  (cronómetro). `Guardado` guarda todo lo que empiece por `Compra_`, `Cofre_` o `Mejora_` (lista `PREFIJOS`), `Nivel` y `MejorTiempo`, y el marcador `leaderstats`
   (Monedas, Victorias) que crea `MiMundo`. Si añades algo que deba guardarse, usa un atributo
   `Compra_<id>` o añádelo en `recogerDatos`/`cargarJugador` de `Guardado`.
 - Mundo: `workspace.MiMundo` (lo crea `MiMundo`) contiene `Checkpoint_<n>` y `Meta` directamente (otros scripts
@@ -43,7 +43,12 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
   valida SIEMPRE todo lo que manda el cliente, cobra con un Producto de desarrollador y pide el salto con el
   atributo `SaltarANivel` (que `Niveles` ejecuta y borra). Los saltos pagados son el atributo `CreditosSalto`
   y se guardan en su propio DataStore. Solo ese script puede usar `MarketplaceService.ProcessReceipt`.
-- **Dinero (Robux):** el usuario es un niño. Nunca inventes IDs de productos ni precios (el precio se pone en la web
+- Monedas de los niveles: llevan la etiqueta `MonedaGiratoria` y las hace girar el cliente (`GirarMonedas`), solo las cercanas.
+  Nunca muevas miles de piezas desde el servidor cada frame.
+- Clasificación: `OrderedDataStore` con el nivel más alto de cada jugador (`Clasificacion`). Pases de Robux: `PasesRobux`
+  (`MarketplaceService:PromptGamePassPurchase`, `RemoteEvent` `ComprarPase`).
+- **Dinero (Robux):** hoy hay DOS cosas de pago: el salto a checkpoint (producto de desarrollador, `SaltoCheckpoint`) y el
+  Jetpack (pase de juego, `PasesRobux`). Los ids se dejan en 0 hasta que el adulto los pase. el usuario es un niño. Nunca inventes IDs de productos ni precios (el precio se pone en la web
   de Roblox y la pantalla lo lee del producto). No añadas compras con Robux ni cambies cuánto o cuándo se cobra sin que
   el adulto lo pida claramente. Mientras `idDelProducto` sea 0 no se cobra nada.
 - `DataStore` solo funciona con el mundo publicado y con "acceso de Studio a servicios de API" activado.

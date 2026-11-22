@@ -51,22 +51,34 @@ nota.Font = Enum.Font.FredokaOne
 nota.TextColor3 = Color3.fromRGB(200, 210, 255)
 nota.Parent = caja
 
+-- Escribe un tiempo como minutos:segundos (o horas:minutos:segundos). Cambia una vez por segundo.
+local function formatear(segundos)
+	local total = math.floor(segundos)
+	local horas = total // 3600
+	local minutos = (total % 3600) // 60
+	local resto = total % 60
+	if horas > 0 then
+		return string.format("%d:%02d:%02d", horas, minutos, resto)
+	end
+	return string.format("%d:%02d", minutos, resto)
+end
+
 RunService.RenderStepped:Connect(function()
 	local estado = jugador:GetAttribute("CronoEstado")
 	local mejor = jugador:GetAttribute("MejorTiempo")
 
 	local textoRecord = "Aún no tienes récord"
 	if type(mejor) == "number" and mejor > 0 then
-		textoRecord = string.format("Récord: %.2f s", mejor)
+		textoRecord = "Récord: " .. formatear(mejor)
 	end
 
 	if estado == "corriendo" then
 		local segundos = workspace:GetServerTimeNow() - (jugador:GetAttribute("CronoInicio") or 0)
-		tiempo.Text = string.format("⏱️ %.2f", math.max(segundos, 0))
+		tiempo.Text = "⏱️ " .. formatear(math.max(segundos, 0))
 		tiempo.TextColor3 = Color3.fromRGB(255, 255, 255)
 		nota.Text = textoRecord
 	elseif estado == "terminado" then
-		tiempo.Text = string.format("🏆 %.2f s", jugador:GetAttribute("CronoFinal") or 0)
+		tiempo.Text = "🏆 " .. formatear(jugador:GetAttribute("CronoFinal") or 0)
 		tiempo.TextColor3 = Color3.fromRGB(255, 220, 80)
 		if jugador:GetAttribute("CronoRecord") then
 			nota.Text = "¡NUEVO RÉCORD! 🎉"
@@ -78,7 +90,7 @@ RunService.RenderStepped:Connect(function()
 		tiempo.TextColor3 = Color3.fromRGB(255, 255, 255)
 		nota.Text = "Vuelve a la salida para medir tu tiempo"
 	else
-		tiempo.Text = "⏱️ 0.00"
+		tiempo.Text = "⏱️ 0:00"
 		tiempo.TextColor3 = Color3.fromRGB(255, 255, 255)
 		nota.Text = "¡Sal de la salida para empezar!"
 	end

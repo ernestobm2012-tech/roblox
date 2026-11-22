@@ -9,15 +9,20 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | Archivo | Qué hace | Dónde va en Roblox Studio |
 |---|---|---|
 | `src/server/MiMundo.server.luau` | La base: suelo, punto de salida, monedas y marcador (Monedas, Victorias) | `ServerScriptService` → **Script** |
-| `src/server/Niveles.server.luau` | Los **500 niveles**: cada uno más difícil, más largo y más alto, con checkpoint, lava, obstáculos y farola. Al final, la meta 🏆 | `ServerScriptService` → **Script** |
+| `src/server/Niveles.server.luau` | Los **500 niveles**: cada uno más difícil, más largo y más alto, con checkpoint, lava, paredes, obstáculos, monedas y cofres. Al final, la meta 🏆 | `ServerScriptService` → **Script** |
 | `src/server/SaltoCheckpoint.server.luau` | El pago (5 Robux) y el salto a un checkpoint ya alcanzado. ⚠️ Falta poner el ID del producto (ver abajo) | `ServerScriptService` → **Script** |
 | `src/server/Noche.server.luau` | Se hace de noche poco a poco y se encienden las farolas 🌙 | `ServerScriptService` → **Script** |
 | `src/server/Catapulta.server.luau` | Catapulta junto a la salida: te lanza por los aires hasta el checkpoint del nivel 5 | `ServerScriptService` → **Script** |
-| `src/server/Tienda.server.luau` | Tienda con 3 puestos (botas veloces, súper salto, brillos) que se compran con las monedas | `ServerScriptService` → **Script** |
-| `src/server/Guardado.server.luau` | Guarda monedas, victorias, compras, nivel y récord para la próxima vez (⚠️ necesita publicar el mundo, ver abajo) | `ServerScriptService` → **Script** |
+| `src/server/Tienda.server.luau` | Tienda con 3 mejoras que se compran **una tras otra** con monedas: 🦘 salto y 👟 correr (hasta el nivel 600) y ✨ brillo en la espalda (hasta el 100) | `ServerScriptService` → **Script** |
+| `src/server/Clasificacion.server.luau` | Tablero con los 10 mejores jugadores por nivel 🏆 (necesita el guardado activado) | `ServerScriptService` → **Script** |
+| `src/server/PasesRobux.server.luau` | Cosas que se compran con Robux: el 🚀 Jetpack. ⚠️ Falta poner el ID del pase (ver abajo) | `ServerScriptService` → **Script** |
+| `src/server/Guardado.server.luau` | Guarda monedas, victorias, mejoras de la tienda, cofres abiertos, nivel y récord para la próxima vez (⚠️ necesita publicar el mundo, ver abajo) | `ServerScriptService` → **Script** |
 | `src/server/Cronometro.server.luau` | Mide el tiempo hasta la meta y pone la columna "Mejor tiempo" en el marcador | `ServerScriptService` → **Script** |
 | `src/client/Cronometro.client.luau` | Dibuja el reloj en la pantalla | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/SaltoCheckpoint.client.luau` | El botón "🚀 Saltar a checkpoint" y su ventanita | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/client/Jetpack.client.luau` | El jetpack: botón de comprar, botón de volar y barra de combustible | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/client/Mejoras.client.luau` | Panelito con el nivel de tus mejoras y lo que cuesta la siguiente | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/client/GirarMonedas.client.luau` | Hace girar las monedas que tienes cerca | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Bienvenida.client.luau` | Enseña un mensaje de bienvenida en la pantalla | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 
 - Los archivos que terminan en `.server.luau` son **Scripts** (funcionan en el servidor, para todos).
@@ -53,21 +58,33 @@ Antes hay que instalar Roblox Studio y Git, y bajar el proyecto una vez con
 
 ## 🗼 Los 500 niveles
 
-- Cada nivel empieza en un **checkpoint** (plataforma blanca con el número). Si te caes o tocas la lava, vuelves al último que alcanzaste.
-- **Cada nivel es más difícil, más largo y más alto**: el nivel 1 tiene 3 plataformas y casi no sube; el 500 tiene 20 y sube unos 60 studs.
-  Las plataformas son más pequeñas y más separadas, y hay más zigzag y más escalones.
-- **Plataformas especiales:** desde el nivel 60, **naranjas que se caen** al pisarlas; desde el 150, **azules que se mueven**.
+- Cada nivel empieza en un **checkpoint**: plataforma blanca con el número, una **moneda**, una farola y un **sol blanco** encima. Si te caes o tocas la lava, vuelves al último que alcanzaste.
+- **Cada nivel sube un poquito más que el anterior**: el nivel 1 sube 6 studs, el 2 sube 6,1, el 3 sube 6,2... y el 500 sube 60. Como también tiene más plataformas, cada nivel es **más largo y más alto**.
+  Además las plataformas son más pequeñas, y hay más zigzag.
+- **Plataformas especiales:** desde el nivel 60, **naranjas que se caen** al pisarlas; desde el 150, **azules que se mueven**; desde el 300, de **hielo** que resbalan (si no resbalan, díselo a Claude).
 - **Tramos de obstáculos** (una plataforma larga donde hay que saltar):
+  - **rodillos** que ruedan: en **todos los niveles del 1 al 200** (y después, a veces)
   - desde el nivel 10: **cubos** fijos (muros bajos, no hacen daño)
   - desde el 20: **charcos de lava**
-  - desde el 30: **rodillos** que ruedan de un lado a otro
   - desde el 80: **cuadrados** que se deslizan
   - desde el 250: **barras de lava que giran** como una hélice
+- **Lava debajo de todos los saltos** (cerquita) y, muy abajo, otra por si te caes más. **Paredes** transparentes a los dos lados de la pista para no salirse.
+- **Monedas por todas partes** 🪙: encima de las plataformas, flotando sobre los obstáculos (¡se cogen al saltarlos!) y una de 5 en cada checkpoint. Giran. Vuelven a aparecer al minuto.
+- **Cofre sorpresa** 🎁 en los checkpoints 50, 100, 150... Cada jugador lo abre una vez (mantén **E**) y da monedas.
+- **El checkpoint del nivel 250 es enorme**: un bloque de unos 5 metros (18 studs).
 - Llegar a un nivel nuevo da 🪙 monedas. Tu nivel sale en el marcador (columna **Nivel**) y se guarda.
 - **Cada 100 niveles** (100, 200, 300…), ¡todos los jugadores ven en pantalla quién ha llegado!
 - Al llegar a la meta 🏆 (nivel 500) ganas y vuelves a empezar.
+- **Tablero de los 10 mejores jugadores** 🏆 detrás de la salida (se actualiza cada minuto; necesita el guardado activado).
 - Al darle a Play, el juego tarda unos segundos en construir los 500 niveles (en **Salida** pondrá `🗼 ¡500 niveles construidos!`).
-- ¿Va lento? En `Niveles.server.luau` (tabla `AJUSTES`) puedes bajar `numeroDeNiveles` o subir `farolaCadaNiveles`.
+- El mundo es **enorme** (~18.000 piezas, ~80 km). ¿Va lento? En `Niveles.server.luau` (tabla `AJUSTES`) puedes bajar `numeroDeNiveles`, subir `farolaCadaNiveles`, o activar `StreamingEnabled` en Workspace.
+
+## 🛒 La tienda de mejoras
+
+Tres puestos junto a la salida. Cada puesto vende una mejora que se compra **una tras otra**: cada compra sube **un nivel** y la siguiente cuesta un poquito más.
+- 🦘 **Súper salto** (hasta el nivel 600) · 👟 **Correr** (hasta el nivel 600) · ✨ **Brillo en la espalda** (hasta el nivel 100)
+- Mantén **E** delante del puesto. En la pantalla (a la izquierda) ves tu nivel de cada mejora y lo que cuesta la siguiente. Se guardan.
+- ⚠️ En el nivel 600 de salto saltas mucho más alto que al principio: puedes cambiar cuánto da cada nivel en `Tienda.server.luau` (`saltoPorNivel`, `velocidadPorNivel`).
 
 ## 🚀 Saltar a un checkpoint (5 Robux) — ⚠️ un adulto debe activarlo
 
@@ -86,6 +103,21 @@ Para activarlo (una sola vez; los nombres de los menús de Roblox pueden cambiar
 ⚠️ **Importante:** la compra gasta los Robux de la **cuenta que está jugando**. Como el creador tiene 11 años, conviene revisar los **controles parentales** de su cuenta de Roblox (límite de gasto mensual, PIN). Roblox se queda con una parte de cada venta.
 Si compras y algo falla, el salto pagado queda guardado y se puede usar después: no se pierde.
 
+## 🚀 El Jetpack (se compra con Robux) — ⚠️ un adulto debe activarlo
+
+Con el **Pase del Jetpack** puedes **volar un ratito**: mantén **ESPACIO** en el aire (o el botón 🚀 de la pantalla, que sirve en el móvil) y subes echando fuego. Tienes combustible para unos segundos y se recarga al pisar el suelo. Se paga **una sola vez** y es tuyo para siempre.
+
+**Mientras no esté activado no se cobra nada:** en Studio es gratis (modo prueba) y en el juego publicado el botón dice que aún no está activado.
+
+Para activarlo (los nombres de los menús pueden cambiar un poco):
+1. **create.roblox.com** → **Creaciones** → tu mundo → **Monetización** → **Pases** (*Passes*) → **Crear un pase**.
+2. Nombre: `Jetpack`. Pon el **precio en Robux** que quieras (lo decides tú). Guarda y **ponlo a la venta**.
+3. Copia el **número (ID)** del pase y díselo a Claude: *"El ID del pase del jetpack es 123456789"*. Claude lo pone en `PasesRobux.server.luau`.
+4. **ACTUALIZAR**, publica y prueba. La pantalla enseña el precio real del pase.
+
+⚠️ Igual que con el salto: gasta los Robux de la cuenta que juega. Revisa los controles parentales.
+⚠️ El jetpack deja saltarse partes de los niveles (por eso el combustible dura poco y las paredes son altas).
+
 ## 💾 Para que se guarden las monedas (una sola vez, un adulto)
 
 Roblox solo guarda datos de un mundo que está **publicado**. En Roblox Studio:
@@ -100,7 +132,7 @@ Si no lo haces, el juego funciona igual pero **no guarda nada**, y en Salida ver
 
 ## 💡 Ideas para pedirle a Claude
 
-- "Pon un tobogán de hielo en los niveles de la 300 en adelante"
+- "Pon un segundo cofre sorpresa en cada checkpoint de la 25"
 - "Pon plataformas que desaparecen cuando las pisas"
 - "Construye un castillo con torres al lado del parkour"
 - "Que de noche salgan estrellas fugaces"

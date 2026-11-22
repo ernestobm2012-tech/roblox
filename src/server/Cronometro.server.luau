@@ -24,6 +24,18 @@ local AJUSTES = {
 	radioDeSalida = 12,
 }
 
+-- Escribe un tiempo como minutos:segundos (o horas:minutos:segundos). Va más tranquilo que con decimales.
+local function formatearTiempo(segundos)
+	local total = math.floor(segundos)
+	local horas = total // 3600
+	local minutos = (total % 3600) // 60
+	local resto = total % 60
+	if horas > 0 then
+		return string.format("%d:%02d:%02d", horas, minutos, resto)
+	end
+	return string.format("%d:%02d", minutos, resto)
+end
+
 -- Esperamos a que MiMundo haya construido la meta
 local carpetaMundo = workspace:WaitForChild("MiMundo", 15)
 local meta = carpetaMundo and carpetaMundo:WaitForChild("Meta", 90)
@@ -61,7 +73,7 @@ local function prepararJugador(jugador)
 		local function actualizar()
 			local mejor = jugador:GetAttribute("MejorTiempo")
 			if type(mejor) == "number" and mejor > 0 then
-				texto.Value = string.format("%.2f s", mejor)
+				texto.Value = formatearTiempo(mejor)
 			else
 				texto.Value = "--"
 			end
@@ -102,7 +114,7 @@ meta.Touched:Connect(function(otro)
 	jugador:SetAttribute("CronoRecord", esRecord)
 	ponerEstado(jugador, "terminado")
 
-	print(string.format("⏱️ %s ha llegado a la meta en %.2f segundos", jugador.Name, tiempo))
+	print("⏱️ " .. jugador.Name .. " ha llegado a la meta en " .. formatearTiempo(tiempo))
 end)
 
 ----------------------------------------------------------------------

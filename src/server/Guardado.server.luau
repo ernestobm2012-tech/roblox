@@ -4,7 +4,7 @@
 	lo sigas teniendo:
 	  - 🪙 Monedas
 	  - 🏆 Victorias
-	  - 🛒 Lo que has comprado en la tienda
+	  - 🛒 Las mejoras de la tienda (salto, correr, brillo) y los 🎁 cofres que has abierto
 	  - 🗼 El nivel en el que vas
 	  - ⏱️ Tu mejor tiempo (récord)
 
@@ -31,6 +31,18 @@ local AJUSTES = {
 	segundosEntreGuardados = 60,
 	intentos = 3, -- cuántas veces lo intenta si Roblox falla
 }
+
+-- Los atributos del jugador que empiezan así se guardan (los ponen la tienda y los cofres)
+local PREFIJOS = { "Compra_", "Cofre_", "Mejora_" }
+
+local function esParaGuardar(nombre)
+	for _, prefijo in PREFIJOS do
+		if string.sub(nombre, 1, #prefijo) == prefijo then
+			return true
+		end
+	end
+	return false
+end
 
 local almacen = DataStoreService:GetDataStore(AJUSTES.nombreDelGuardado)
 
@@ -85,7 +97,12 @@ local function cargarJugador(jugador)
 			victorias.Value += datos.victorias or 0
 		end
 		for id in datos.compras or {} do
-			jugador:SetAttribute("Compra_" .. id, true) -- la tienda lo ve y se lo pone
+			jugador:SetAttribute("Compra_" .. id, true) -- (guardados antiguos)
+		end
+		for nombre, valor in datos.extras or {} do
+			if esParaGuardar(nombre) and (valor == true or type(valor) == "number") then
+				jugador:SetAttribute(nombre, valor) -- la tienda y los cofres lo ven y se lo ponen
+			end
 		end
 		if type(datos.nivel) == "number" and datos.nivel > (jugador:GetAttribute("Nivel") or 1) then
 			jugador:SetAttribute("Nivel", datos.nivel) -- el script Niveles te lleva a tu checkpoint
@@ -110,10 +127,10 @@ local function recogerDatos(jugador)
 	local monedas = marcador and marcador:FindFirstChild("Monedas")
 	local victorias = marcador and marcador:FindFirstChild("Victorias")
 
-	local compras = {}
+	local extras = {}
 	for nombre, valor in jugador:GetAttributes() do
-		if string.sub(nombre, 1, 7) == "Compra_" and valor == true then
-			compras[string.sub(nombre, 8)] = true
+		if esParaGuardar(nombre) and (valor == true or type(valor) == "number") then
+			extras[nombre] = valor
 		end
 	end
 
@@ -122,7 +139,7 @@ local function recogerDatos(jugador)
 		victorias = victorias and victorias.Value or 0,
 		nivel = jugador:GetAttribute("Nivel") or 1,
 		mejorTiempo = jugador:GetAttribute("MejorTiempo") or 0,
-		compras = compras,
+		extras = extras,
 	}
 end
 

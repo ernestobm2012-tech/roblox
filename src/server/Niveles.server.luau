@@ -1,20 +1,26 @@
 --[[
-	🗼 NIVELES (500 niveles, cada uno más difícil)
+	🗼 NIVELES (500 niveles, cada uno más difícil, más largo y más alto)
 	Construye una pista larguísima de plataformas de colores. Está dividida en 500 niveles:
-	  - Cada nivel empieza en un CHECKPOINT (plataforma blanca grande con su número y una farola).
-	  - Si tocas la lava, te caes o te mueres, vuelves a tu último checkpoint.
-	  - Cada nivel es un poquito más difícil que el anterior:
-	      · plataformas más pequeñas · saltos más largos · más zigzag
-	      · cada nivel es más LARGO (de 3 a 20 plataformas) y más ALTO (más escalones que suben)
+	  - Cada nivel empieza en un CHECKPOINT (plataforma blanca con su número, una moneda,
+	    una farola y un SOL BLANCO encima). Si tocas la lava, te caes o te mueres, vuelves a
+	    tu último checkpoint.
+	  - Cada nivel es más difícil, más LARGO y más ALTO que el anterior:
+	      · el nivel 1 es bajito y el 500 sube muchísimo (cada nivel sube un poquito más)
+	      · plataformas más pequeñas y más separadas · más zigzag
 	      · desde el nivel 60: plataformas NARANJAS que se caen al pisarlas
 	      · desde el nivel 150: plataformas AZULES que se mueven de lado a lado
-	  - Muchos niveles tienen un TRAMO DE OBSTÁCULOS (una plataforma larga). ¡Hay que saltar!
-	      · desde el nivel 10: cubos fijos (muros bajos) ......... no hacen daño
-	      · desde el nivel 20: charcos de lava ................... ¡queman!
-	      · desde el nivel 30: rodillos que ruedan ............... ¡te matan!
-	      · desde el nivel 80: cuadrados que se deslizan ......... ¡te matan!
-	      · desde el nivel 250: BARRAS DE LAVA que giran ......... ¡te matan!
-	  - Al llegar a un nivel nuevo ganas monedas 🪙. Cada 100 niveles, ¡todos lo ven en pantalla!
+	      · desde el nivel 300: plataformas de HIELO que resbalan
+	  - Hay un TRAMO DE OBSTÁCULOS (una plataforma larga) en muchos niveles:
+	      · rodillos que ruedan: en TODOS los niveles del 1 al 200 ........ ¡te matan!
+	      · cubos fijos (muros bajos) desde el 10 ......................... no hacen daño
+	      · charcos de lava desde el 20 ................................... ¡queman!
+	      · cuadrados que se deslizan desde el 80 ......................... ¡te matan!
+	      · BARRAS DE LAVA que giran desde el 250 ......................... ¡te matan!
+	  - Hay LAVA debajo de todos los saltos, y PAREDES a los lados para no salirse de la pista.
+	  - Monedas 🪙 por todas partes (más grandes en los checkpoints) y un COFRE SORPRESA 🎁
+	    en los niveles 50, 100, 150...
+	  - El checkpoint del nivel 250 es ENORME (un bloque de unos 5 metros).
+	  - Al llegar a un nivel nuevo ganas monedas. Cada 100 niveles, ¡todos lo ven en pantalla!
 	  - Al final del nivel 500 está la META 🏆. Al ganar, vuelves a empezar desde el nivel 1.
 	  - Tu nivel se ve en el marcador y (con el script Guardado) se guarda para la próxima vez.
 	  - Puedes volver a un checkpoint que ya hayas alcanzado (lo hace el script SaltoCheckpoint).
@@ -37,37 +43,54 @@ local AJUSTES = {
 	segundosParaReaparecer = 2, -- lo que tardas en volver tras caerte
 	anunciarCadaNiveles = 100, -- cada cuántos niveles se avisa a TODOS los jugadores
 
+	-- Altura: cuántos studs sube cada nivel. El nivel 1 sube lo mínimo y el último lo máximo;
+	-- los de en medio van subiendo poco a poco (cada uno un poquito más que el anterior).
+	-- Más altura = más plataformas por nivel (así también es más LARGO).
+	alturaPrimerNivel = 6, alturaUltimoNivel = 60,
+	subidaMediaPorPaso = 3, -- cuánto sube de media cada plataforma
+	plataformasMinimas = 3,
+
 	-- Dificultad: el nivel 1 usa los valores "Fácil" y el último nivel los "Difícil".
-	-- Los niveles del medio van poco a poco de uno a otro.
-	plataformasFacil = 3, plataformasDificil = 20, -- cuántas plataformas hay en cada nivel (más = nivel más LARGO)
 	tamanoFacil = 10, tamanoDificil = 4, -- lo grande que es cada plataforma
 	huecoFacil = 2.5, huecoDificil = 6.2, -- lo lejos que está la siguiente
-	subidaFacil = 0.4, subidaDificil = 4, -- cuánto suben las plataformas (más = nivel más ALTO)
 	desvioFacil = 0, desvioDificil = 9, -- cuánto zigzaguean de lado a lado
 
 	-- A partir de qué nivel aparecen las plataformas especiales
 	nivelPlataformasQueCaen = 60,
 	nivelPlataformasQueSeMueven = 150,
+	nivelPlataformasDeHielo = 300,
 
 	-- Tramos de obstáculos: una plataforma larga con cosas que saltar
-	nivelDeLosTramos = 10, -- desde qué nivel hay tramos
+	nivelDeLosTramos = 10, -- desde qué nivel hay tramos "al azar" (antes solo hay los de rodillos)
 	probabilidadTramoFacil = 0.3, probabilidadTramoDificil = 0.9, -- 0.5 = en la mitad de los niveles
+	rodillosGarantizadosHasta = 200, -- hasta este nivel TODOS los niveles tienen un rodillo
 	nivelCubos = 10, -- desde qué nivel aparece cada obstáculo
 	nivelCharcos = 20,
-	nivelRodillos = 30,
+	nivelRodillos = 1,
 	nivelCuadrados = 80,
 	nivelBarras = 250,
 
+	-- Checkpoints
+	nivelCheckpointGrande = 250, -- este nivel tiene un checkpoint ENORME
+	tamanoCheckpointGrande = 18, -- 5 metros ≈ 18 studs (de ancho, de largo y de grueso)
+	monedaDelCheckpoint = 5, -- lo que vale la moneda de cada checkpoint
+	monedaDeLasPlataformas = 1, -- lo que vale cada moneda de las plataformas
+	segundosParaQueVuelvaLaMoneda = 60,
+	cofreCadaNiveles = 50, -- un cofre sorpresa cada tantos niveles
+	cofreBase = 30, cofreExtra = 10, -- monedas del cofre = base + extra por cada 50 niveles (y un poco al azar)
+
 	farolaCadaNiveles = 1, -- una farola cada tantos checkpoints (sube el número si va lento)
-	nivelesPorLote = 20, -- cuántos niveles construye de golpe antes de "respirar"
+	nivelesPorLote = 10, -- cuántos niveles construye de golpe antes de "respirar"
 }
 
 -- Límites para que los saltos SIEMPRE se puedan hacer (no los subas mucho)
 local HUECO_MAXIMO = 7 -- hueco más grande posible entre dos plataformas
 local SUBIDA_MAXIMA = 4.5 -- lo más que puede subir una plataforma
 local LIMITE_LADO = 22 -- lo lejos que puede zigzaguear la pista del centro
+local PARED_X = LIMITE_LADO + 18 -- a qué distancia del centro están las paredes
 local ANCHO_TRAMO = 12 -- lo ancho que es un tramo de obstáculos
 local ZONA = 14 -- el espacio que ocupa cada obstáculo dentro de un tramo
+local LAVA_GRUPO = 4 -- cada cuántas plataformas hay un trozo de lava cerca
 
 local N = math.max(AJUSTES.numeroDeNiveles, 1)
 
@@ -87,10 +110,15 @@ local carpeta = Instance.new("Folder")
 carpeta.Name = "Niveles"
 carpeta.Parent = carpetaMundo
 
+local carpetaMonedas = Instance.new("Folder")
+carpetaMonedas.Name = "Monedas"
+carpetaMonedas.Parent = carpetaMundo
+
 local checkpoints = {} -- checkpoints[nivel] = la plataforma blanca de ese nivel
 local nivelDe = {} -- nivelDe[jugador] = el checkpoint donde reaparece
 local nivelMaximo = {} -- nivelMaximo[jugador] = el nivel más alto que ha alcanzado
 local yaAparecio = {} -- para no mover al jugador la primera vez que entra
+local teletransportando = {} -- jugadores que se están moviendo a un checkpoint
 local animados = {} -- cosas que se mueven: { origen = Vector3, mover = function(tiempo) }
 local mundoListo = false
 
@@ -222,7 +250,7 @@ local function sumarMonedas(jugador, cantidad)
 end
 
 ----------------------------------------------------------------------
--- 💡 FAROLAS (se encienden cuando se hace de noche: lo hace el script Noche)
+-- 💡 FAROLAS, ☀️ SOL Y 🪙 MONEDAS
 ----------------------------------------------------------------------
 
 -- "base" es el punto donde se apoya el poste. "lado" (1 o -1) es hacia dónde cuelga el brazo.
@@ -250,21 +278,107 @@ local function crearFarola(base, lado)
 	CollectionService:AddTag(luz, "FarolaLuz") -- el script Noche las apaga de día y las enciende de noche
 end
 
+-- Un sol BLANCO brillante flotando encima de un checkpoint
+local function ponerSol(x, y, z)
+	local blanco = Color3.fromRGB(255, 255, 255)
+	local sol = crearBloque("Sol", Vector3.new(4, 4, 4), Vector3.new(x, y + 18, z), blanco, Enum.Material.Neon, carpeta)
+	sol.Shape = Enum.PartType.Ball
+	sol.CanCollide = false
+	local halo = crearBloque("SolHalo", Vector3.new(9, 9, 9), Vector3.new(x, y + 18, z), blanco, Enum.Material.Neon, carpeta)
+	halo.Shape = Enum.PartType.Ball
+	halo.Transparency = 0.85
+	halo.CanCollide = false
+end
+
+-- Una moneda que se recoge al tocarla (y vuelve a aparecer). Gira en la pantalla de cada jugador
+-- gracias al script GirarMonedas.
+local function crearMoneda(nombre, posicion, valor)
+	local moneda = crearBloque(nombre, Vector3.new(0.5, 3, 3), posicion, Color3.fromRGB(255, 200, 0), Enum.Material.Neon, carpetaMonedas)
+	moneda.Shape = Enum.PartType.Cylinder
+	moneda.CanCollide = false
+	CollectionService:AddTag(moneda, "MonedaGiratoria")
+
+	local activa = true
+	moneda.Touched:Connect(function(otro)
+		if not activa then
+			return
+		end
+		local jugador = buscarJugador(otro)
+		if not jugador then
+			return
+		end
+		activa = false
+		moneda.Transparency = 1 -- la moneda "desaparece"
+		sumarMonedas(jugador, valor)
+		task.delay(AJUSTES.segundosParaQueVuelvaLaMoneda, function()
+			moneda.Transparency = 0
+			activa = true
+		end)
+	end)
+end
+
+-- Un cofre sorpresa con monedas (cada jugador lo abre una sola vez)
+local function ponerCofre(nivel, x, y, z)
+	local base = crearBloque("Cofre_" .. nivel, Vector3.new(4, 2.4, 2.6), Vector3.new(x - 4.5, y + 1.2, z - 3), Color3.fromRGB(140, 90, 50), Enum.Material.Wood, carpeta)
+	crearBloque("CofreTapa_" .. nivel, Vector3.new(4.2, 0.9, 2.8), Vector3.new(x - 4.5, y + 2.85, z - 3), Color3.fromRGB(255, 200, 0), Enum.Material.Neon, carpeta)
+
+	local chispas = Instance.new("ParticleEmitter")
+	chispas.Enabled = false
+	chispas.Rate = 0
+	chispas.Lifetime = NumberRange.new(0.8, 1.4)
+	chispas.Speed = NumberRange.new(8, 16)
+	chispas.SpreadAngle = Vector2.new(180, 180)
+	chispas.Color = ColorSequence.new(Color3.fromRGB(255, 220, 80))
+	chispas.Size = NumberSequence.new(0.6)
+	chispas.Parent = base
+
+	local boton = Instance.new("ProximityPrompt")
+	boton.ActionText = "Abrir cofre"
+	boton.ObjectText = "🎁 Cofre sorpresa"
+	boton.HoldDuration = 0.5
+	boton.MaxActivationDistance = 10
+	boton.RequiresLineOfSight = false
+	boton.Parent = base
+
+	boton.Triggered:Connect(function(jugador)
+		local atributo = "Cofre_" .. nivel -- el script Guardado se acuerda de los cofres abiertos
+		if jugador:GetAttribute(atributo) then
+			avisar(jugador, "Ya has abierto este cofre 🎁", Color3.fromRGB(90, 90, 120))
+			return
+		end
+		local monedas = math.floor((AJUSTES.cofreBase + nivel / AJUSTES.cofreCadaNiveles * AJUSTES.cofreExtra) * Random.new():NextNumber(0.8, 1.5))
+		jugador:SetAttribute(atributo, true)
+		sumarMonedas(jugador, monedas)
+		chispas:Emit(40)
+		avisar(jugador, "🎁 ¡Cofre sorpresa! +" .. monedas .. " monedas", Color3.fromRGB(200, 150, 0))
+	end)
+end
+
 ----------------------------------------------------------------------
 -- 🧭 CHECKPOINTS Y NIVELES DE CADA JUGADOR
 ----------------------------------------------------------------------
 
 local function irAlCheckpoint(jugador)
-	local personaje = jugador.Character
 	local punto = checkpoints[nivelDe[jugador] or 1]
-	if not personaje or not punto then
+	if not punto or not jugador.Character then
 		return
 	end
-	personaje:PivotTo(punto.CFrame + Vector3.new(0, 4, 0))
-	local raiz = personaje:FindFirstChild("HumanoidRootPart")
-	if raiz then
-		raiz.AssemblyLinearVelocity = Vector3.zero -- paramos cualquier caída
+	teletransportando[jugador] = true
+
+	-- Si el mundo se carga por trozos (StreamingEnabled), pedimos que cargue la zona de destino
+	pcall(function()
+		jugador:RequestStreamAroundAsync(punto.Position, 5)
+	end)
+
+	local personaje = jugador.Character
+	if personaje and personaje.Parent then
+		personaje:PivotTo(punto.CFrame + Vector3.new(0, punto.Size.Y / 2 + 4, 0))
+		local raiz = personaje:FindFirstChild("HumanoidRootPart")
+		if raiz then
+			raiz.AssemblyLinearVelocity = Vector3.zero -- paramos cualquier caída
+		end
 	end
+	teletransportando[jugador] = nil
 end
 
 local function actualizarMarcador(jugador)
@@ -315,16 +429,26 @@ end
 -- 🧱 PIEZAS DE LOS NIVELES
 ----------------------------------------------------------------------
 
-local function ponerCheckpoint(nivel, x, y, z)
+-- El checkpoint del nivel 250 es un bloque enorme; los demás son planos
+local function tamanoDeCheckpoint(nivel)
+	if nivel == AJUSTES.nivelCheckpointGrande then
+		local grande = AJUSTES.tamanoCheckpointGrande
+		return Vector3.new(grande, grande, grande)
+	end
+	return Vector3.new(14, 1, 14)
+end
+
+-- "y" es la altura de ARRIBA de la plataforma
+local function ponerCheckpoint(nivel, x, y, z, tamano)
 	local punto = crearBloque(
 		"Checkpoint_" .. nivel,
-		Vector3.new(14, 1, 14),
-		Vector3.new(x, y - 0.5, z),
+		tamano,
+		Vector3.new(x, y - tamano.Y / 2, z),
 		Color3.fromRGB(235, 245, 255),
 		Enum.Material.SmoothPlastic,
 		carpetaMundo
 	)
-	crearCartel(punto, "NIVEL " .. nivel, 150, 50, Vector3.new(0, 4, 0))
+	crearCartel(punto, "NIVEL " .. nivel, 150, 50, Vector3.new(0, tamano.Y / 2 + 4, 0))
 
 	punto.Touched:Connect(function(otro)
 		local jugador = buscarJugador(otro)
@@ -335,7 +459,12 @@ local function ponerCheckpoint(nivel, x, y, z)
 
 	if nivel % AJUSTES.farolaCadaNiveles == 0 then
 		local lado = if nivel % 2 == 0 then 1 else -1
-		crearFarola(Vector3.new(x + lado * 6, y, z + 4), lado)
+		crearFarola(Vector3.new(x + lado * (tamano.X / 2 - 1), y, z + 4), lado)
+	end
+	ponerSol(x, y, z)
+	crearMoneda("MonedaCheckpoint_" .. nivel, Vector3.new(x, y + 2.5, z - 4), AJUSTES.monedaDelCheckpoint)
+	if nivel % AJUSTES.cofreCadaNiveles == 0 then
+		ponerCofre(nivel, x, y, z)
 	end
 	return punto
 end
@@ -363,10 +492,15 @@ end
 local function ponerPlataforma(nivel, numero, x, y, z, tamano)
 	-- ¿Qué tipo de plataforma es? Cuanto más alto el nivel, más especiales hay.
 	local tirada = Random.new(AJUSTES.semilla + nivel * 100 + numero):NextNumber()
-	local probCae = 0.35 * math.clamp((nivel - AJUSTES.nivelPlataformasQueCaen) / math.max(N - AJUSTES.nivelPlataformasQueCaen, 1), 0, 1)
-	local probMueve = 0.3 * math.clamp((nivel - AJUSTES.nivelPlataformasQueSeMueven) / math.max(N - AJUSTES.nivelPlataformasQueSeMueven, 1), 0, 1)
+	local function probabilidad(desde, maximo)
+		return maximo * math.clamp((nivel - desde) / math.max(N - desde, 1), 0, 1)
+	end
+	local probCae = probabilidad(AJUSTES.nivelPlataformasQueCaen, 0.3)
+	local probMueve = probabilidad(AJUSTES.nivelPlataformasQueSeMueven, 0.25)
+	local probHielo = probabilidad(AJUSTES.nivelPlataformasDeHielo, 0.2)
 
 	local color = Color3.fromHSV((nivel * 0.025) % 1, 0.75, 1)
+	local material = Enum.Material.Neon
 	local tipo = "normal"
 	if nivel >= AJUSTES.nivelPlataformasQueCaen and tirada < probCae then
 		tipo = "cae"
@@ -374,13 +508,20 @@ local function ponerPlataforma(nivel, numero, x, y, z, tamano)
 	elseif nivel >= AJUSTES.nivelPlataformasQueSeMueven and tirada < probCae + probMueve then
 		tipo = "mueve"
 		color = Color3.fromRGB(80, 220, 255)
+	elseif nivel >= AJUSTES.nivelPlataformasDeHielo and tirada < probCae + probMueve + probHielo then
+		tipo = "hielo"
+		color = Color3.fromRGB(190, 235, 255)
+		material = Enum.Material.Ice
 	end
 
 	local posicion = Vector3.new(x, y - 0.5, z)
-	local parte = crearBloque("Plataforma_" .. nivel .. "_" .. numero, Vector3.new(tamano, 1, tamano), posicion, color, Enum.Material.Neon, carpeta)
+	local parte = crearBloque("Plataforma_" .. nivel .. "_" .. numero, Vector3.new(tamano, 1, tamano), posicion, color, material, carpeta)
 
 	if tipo == "cae" then
 		hacerQueCaiga(parte, color)
+	elseif tipo == "hielo" then
+		-- Casi sin rozamiento: ¡resbala! (densidad, rozamiento, rebote, peso del rozamiento, peso del rebote)
+		parte.CustomPhysicalProperties = PhysicalProperties.new(0.5, 0, 0, 100, 1)
 	elseif tipo == "mueve" then
 		local azarLocal = Random.new(AJUSTES.semilla + nivel * 1000 + numero)
 		local amplitud = azarLocal:NextNumber(4, 7)
@@ -392,6 +533,11 @@ local function ponerPlataforma(nivel, numero, x, y, z, tamano)
 				parte.CFrame = CFrame.new(posicion + Vector3.new(math.sin(tiempo * velocidad + fase) * amplitud, 0, 0))
 			end,
 		})
+	end
+
+	-- Una moneda encima de una de cada dos plataformas
+	if numero % 2 == 0 then
+		crearMoneda("Moneda_" .. nivel .. "_" .. numero, Vector3.new(x, y + 3, z), AJUSTES.monedaDeLasPlataformas)
 	end
 end
 
@@ -495,22 +641,32 @@ local function ponerObstaculo(tipo, nombre, x, y, zc, d, azarLocal)
 			end,
 		})
 	end
+
+	-- Una moneda flotando encima: ¡se coge al saltar el obstáculo!
+	crearMoneda("MonedaObstaculo_" .. nombre, Vector3.new(x, y + 6, zc), AJUSTES.monedaDeLasPlataformas)
 end
 
 -- Una plataforma larga con "cantidad" obstáculos, uno detrás de otro
-local function ponerTramo(nivel, x, y, z, largo, cantidad, d)
+local function ponerTramo(nivel, x, y, z, largo, cantidad, d, forzarRodillo)
 	local azarLocal = Random.new(AJUSTES.semilla + nivel * 10007)
 	local lista = obstaculosDisponibles(nivel)
+	if #lista == 0 then
+		lista = { { "rodillo", 1 } }
+	end
 	crearBloque("Tramo_" .. nivel, Vector3.new(ANCHO_TRAMO, 1, largo), Vector3.new(x, y - 0.5, z), Color3.fromHSV((nivel * 0.025) % 1, 0.5, 0.9), Enum.Material.Neon, carpeta)
 
 	for i = 1, cantidad do
 		local zc = z - largo / 2 + 6 + ZONA * (i - 0.5)
-		local tipo = elegirObstaculo(lista, azarLocal)
+		local tipo = if i == 1 and forzarRodillo then "rodillo" else elegirObstaculo(lista, azarLocal)
 		ponerObstaculo(tipo, nivel .. "_" .. i, x, y, zc, d, azarLocal)
 	end
 end
 
--- Lava debajo de cada nivel: si te caes, la tocas y vuelves a tu checkpoint
+----------------------------------------------------------------------
+-- 🔥 LAVA Y PAREDES
+----------------------------------------------------------------------
+
+-- Lava muy abajo de cada nivel: si te caes, la tocas y vuelves a tu checkpoint
 local function crearLava(nivel, zInicio, zFin, alturaMinima)
 	local largo = zFin - zInicio + 30
 	local lava = crearBloque(
@@ -524,10 +680,50 @@ local function crearLava(nivel, zInicio, zFin, alturaMinima)
 	hacerMortal(lava)
 end
 
+-- Lava cerquita, justo debajo de los saltos (un trozo cada pocas plataformas)
+local function crearLavaCerca(nivel, piezas)
+	for primera = 1, #piezas, LAVA_GRUPO do
+		local ultima = math.min(primera + LAVA_GRUPO - 1, #piezas)
+		local alturaMinima = piezas[primera].y
+		for i = primera, ultima do
+			alturaMinima = math.min(alturaMinima, piezas[i].y)
+		end
+		local zInicio = piezas[primera].z - piezas[primera].mz - 4
+		local zFin = piezas[ultima].z + piezas[ultima].mz + (if ultima == #piezas then 10 else 4)
+		local lava = crearBloque(
+			"LavaCerca_" .. nivel .. "_" .. primera,
+			Vector3.new(PARED_X * 2, 1, zFin - zInicio),
+			Vector3.new(0, alturaMinima - 9, (zInicio + zFin) / 2),
+			COLOR_LAVA,
+			Enum.Material.Neon,
+			carpeta
+		)
+		hacerMortal(lava)
+	end
+end
+
+-- Paredes altas y transparentes a los dos lados de la pista, para no salirse
+local function crearParedes(nivel, zInicio, zFin, alturaMinima, alturaMaxima)
+	local alto = (alturaMaxima - alturaMinima) + 140
+	for _, lado in { -1, 1 } do
+		local pared = crearBloque(
+			"Pared_" .. nivel .. "_" .. lado,
+			Vector3.new(1, alto, zFin - zInicio),
+			Vector3.new(lado * PARED_X, alturaMinima - 20 + alto / 2, (zInicio + zFin) / 2),
+			Color3.fromRGB(150, 200, 255),
+			Enum.Material.Glass,
+			carpeta
+		)
+		pared.Transparency = 0.75
+		pared.CanTouch = false
+	end
+end
+
 local function ponerMeta(x, y, z)
 	local meta = crearBloque("Meta", Vector3.new(16, 1, 16), Vector3.new(x, y - 0.5, z), Color3.fromRGB(255, 215, 0), Enum.Material.Neon, carpetaMundo)
 	crearCartel(meta, "🏆 ¡META!", 200, 60, Vector3.new(0, 6, 0))
 	crearFarola(Vector3.new(x + 7, y, z), 1)
+	ponerSol(x, y, z)
 
 	local yaGanaron = {} -- para no contar la misma victoria muchas veces
 	meta.Touched:Connect(function(otro)
@@ -576,11 +772,25 @@ end
 
 local azar = Random.new(AJUSTES.semilla)
 
+-- Reparte la altura de un nivel entre sus saltos (unos suben más y otros menos)
+local function repartirSubida(altura, pasos, azarLocal)
+	local pesos = {}
+	local total = 0
+	for i = 1, pasos do
+		pesos[i] = azarLocal:NextNumber(0.6, 1.4)
+		total += pesos[i]
+	end
+	for i = 1, pasos do
+		pesos[i] = math.min(altura * pesos[i] / total, SUBIDA_MAXIMA)
+	end
+	return pesos
+end
+
 -- Calcula dónde va la siguiente plataforma. "d" va de 0 (fácil) a 1 (difícil).
 -- "zActual/zSiguiente" son lo largas que son las plataformas (hacia delante) y
--- "xActual/xSiguiente" lo anchas que son (de lado).
+-- "xActual/xSiguiente" lo anchas que son (de lado). "subida" es cuánto sube este salto.
 -- Devuelve la nueva x, la nueva altura (y) y la nueva z.
-local function paso(x, y, z, zActual, zSiguiente, xActual, xSiguiente, d)
+local function paso(x, y, z, zActual, zSiguiente, xActual, xSiguiente, d, subida)
 	local mediaZ = (zActual + zSiguiente) / 2
 	local mediaX = (xActual + xSiguiente) / 2
 
@@ -600,21 +810,8 @@ local function paso(x, y, z, zActual, zSiguiente, xActual, xSiguiente, d)
 		hueco = math.min(hueco, math.sqrt(math.max(HUECO_MAXIMO ^ 2 - extra ^ 2, 1)))
 	end
 
-	-- Subida (o, a veces, bajada)
-	local subida
-	if azar:NextNumber() < 0.15 then
-		subida = -azar:NextNumber(0.5, 1.5)
-	else
-		subida = lerp(AJUSTES.subidaFacil, AJUSTES.subidaDificil, d) * azar:NextNumber(lerp(0.3, 0.7, d), 1)
-		-- A veces es un "escalón": sube bastante, pero con el hueco cortito.
-		-- Cuanto más alto el nivel, más escalones hay (así los niveles son cada vez más altos).
-		if azar:NextNumber() < lerp(0.2, 0.85, d) then
-			subida = math.min(subida * 1.5, SUBIDA_MAXIMA)
-			hueco = math.max(math.min(hueco, HUECO_MAXIMO * (1 - subida / SUBIDA_MAXIMA)), 1)
-		end
-	end
-	-- Cuanto más largo el hueco, menos puede subir (si no, sería imposible)
-	subida = math.min(subida, SUBIDA_MAXIMA * (1 - hueco / HUECO_MAXIMO))
+	-- Cuanto más sube, más cortito el hueco (si no, sería imposible)
+	hueco = math.max(math.min(hueco, HUECO_MAXIMO * (1 - subida / SUBIDA_MAXIMA)), 1)
 
 	return nuevaX, y + subida, z + mediaZ + hueco
 end
@@ -638,45 +835,69 @@ local function construirMundo()
 
 	for nivel = 1, N do
 		local d = (nivel - 1) / math.max(N - 1, 1) -- 0 = nivel fácil, 1 = nivel difícil
-		local cantidad = math.floor(lerp(AJUSTES.plataformasFacil, AJUSTES.plataformasDificil, d) + 0.5)
+		local altura = lerp(AJUSTES.alturaPrimerNivel, AJUSTES.alturaUltimoNivel, d) -- cuánto sube este nivel
+		local cantidad = math.max(AJUSTES.plataformasMinimas, math.ceil(altura / AJUSTES.subidaMediaPorPaso))
 		local tamano = lerp(AJUSTES.tamanoFacil, AJUSTES.tamanoDificil, d)
 
-		-- ¿Este nivel tiene un tramo de obstáculos? ¿Cuántos obstáculos?
+		-- ¿Este nivel tiene un tramo de obstáculos? ¿Cuántos obstáculos? ¿Lleva rodillo?
 		local obstaculos = 0
+		local azarTramo = Random.new(AJUSTES.semilla + nivel * 7919)
 		if nivel >= AJUSTES.nivelDeLosTramos and #obstaculosDisponibles(nivel) > 0 then
-			local azarTramo = Random.new(AJUSTES.semilla + nivel * 7919)
 			if azarTramo:NextNumber() < lerp(AJUSTES.probabilidadTramoFacil, AJUSTES.probabilidadTramoDificil, d) then
 				obstaculos = math.clamp(1 + math.floor(d * 3 + azarTramo:NextNumber(0, 0.99)), 1, 4)
 			end
 		end
+		local conRodillo = nivel <= AJUSTES.rodillosGarantizadosHasta
+		if conRodillo then
+			obstaculos = math.max(obstaculos, 1 + math.floor(d * 3))
+		end
 
-		checkpoints[nivel] = ponerCheckpoint(nivel, x, y, z)
-		local zInicio = z - 7
+		-- Cuánto sube cada salto de este nivel (suman justo la altura del nivel)
+		local pasosTotales = cantidad + (if obstaculos > 0 then 1 else 0) + 1
+		local subidas = repartirSubida(altura, pasosTotales, Random.new(AJUSTES.semilla + nivel * 4001))
+		local indice = 0
+		local function siguienteSubida()
+			indice += 1
+			return subidas[indice]
+		end
+
+		local tamanoCheckpoint = tamanoDeCheckpoint(nivel)
+		checkpoints[nivel] = ponerCheckpoint(nivel, x, y, z, tamanoCheckpoint)
+		local zInicio = z - tamanoCheckpoint.Z / 2
 		local alturaMinima = y
-		local anchoActual, largoActual = 14, 14 -- el checkpoint mide 14 x 14
+		local alturaMaxima = y
+		local anchoActual, largoActual = tamanoCheckpoint.X, tamanoCheckpoint.Z
+		local piezas = { { z = z, mz = tamanoCheckpoint.Z / 2, y = y } } -- para poner lava cerquita
 
 		for numero = 1, cantidad do
-			x, y, z = paso(x, y, z, largoActual, tamano, anchoActual, tamano, d)
+			x, y, z = paso(x, y, z, largoActual, tamano, anchoActual, tamano, d, siguienteSubida())
 			ponerPlataforma(nivel, numero, x, y, z, tamano)
 			anchoActual, largoActual = tamano, tamano
 			alturaMinima = math.min(alturaMinima, y)
+			alturaMaxima = math.max(alturaMaxima, y)
+			table.insert(piezas, { z = z, mz = tamano / 2, y = y })
 		end
 
 		if obstaculos > 0 then
 			local largo = ZONA * obstaculos + 12
-			x, y, z = paso(x, y, z, largoActual, largo, anchoActual, ANCHO_TRAMO, d * 0.7)
-			ponerTramo(nivel, x, y, z, largo, obstaculos, d)
+			x, y, z = paso(x, y, z, largoActual, largo, anchoActual, ANCHO_TRAMO, d * 0.7, siguienteSubida())
+			ponerTramo(nivel, x, y, z, largo, obstaculos, d, conRodillo)
 			anchoActual, largoActual = ANCHO_TRAMO, largo
 			alturaMinima = math.min(alturaMinima, y)
+			alturaMaxima = math.max(alturaMaxima, y)
+			table.insert(piezas, { z = z, mz = largo / 2, y = y })
 		end
 
 		-- Último salto: hacia el checkpoint del siguiente nivel (o la meta)
 		local esElUltimo = nivel == N
-		local tamanoSiguiente = if esElUltimo then 16 else 14
-		x, y, z = paso(x, y, z, largoActual, tamanoSiguiente, anchoActual, tamanoSiguiente, d * 0.8)
+		local siguiente = if esElUltimo then Vector3.new(16, 1, 16) else tamanoDeCheckpoint(nivel + 1)
+		x, y, z = paso(x, y, z, largoActual, siguiente.Z, anchoActual, siguiente.X, d * 0.8, siguienteSubida())
 		alturaMinima = math.min(alturaMinima, y)
+		alturaMaxima = math.max(alturaMaxima, y)
 
 		crearLava(nivel, zInicio, z + 8, alturaMinima)
+		crearLavaCerca(nivel, piezas)
+		crearParedes(nivel, zInicio, z + 8, alturaMinima, alturaMaxima)
 		if esElUltimo then
 			ponerMeta(x, y, z)
 		end
@@ -687,7 +908,7 @@ local function construirMundo()
 	end
 
 	mundoListo = true
-	print("🗼 ¡" .. N .. " niveles construidos! La meta está a " .. math.floor(z) .. " studs de la salida.")
+	print("🗼 ¡" .. N .. " niveles construidos! La meta está a " .. math.floor(z) .. " studs de la salida y a " .. math.floor(y) .. " de altura.")
 end
 
 ----------------------------------------------------------------------
@@ -761,6 +982,7 @@ Players.PlayerRemoving:Connect(function(jugador)
 	nivelDe[jugador] = nil
 	nivelMaximo[jugador] = nil
 	yaAparecio[jugador] = nil
+	teletransportando[jugador] = nil
 end)
 
 ----------------------------------------------------------------------
@@ -803,7 +1025,7 @@ task.spawn(function()
 			local humanoide = personaje and personaje:FindFirstChildOfClass("Humanoid")
 			local raiz = personaje and personaje:FindFirstChild("HumanoidRootPart")
 			local punto = checkpoints[nivel]
-			if humanoide and raiz and punto and humanoide.Health > 0 and raiz.Position.Y < punto.Position.Y - 150 then
+			if humanoide and raiz and punto and humanoide.Health > 0 and not teletransportando[jugador] and raiz.Position.Y < punto.Position.Y - 150 then
 				humanoide.Health = 0
 			end
 		end
