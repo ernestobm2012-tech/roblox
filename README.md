@@ -39,6 +39,10 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | `src/server/Retos.server.luau` | Reto de la semana y temporadas 🏆, con premios que decoran el jardín | `ServerScriptService` → **Script** |
 | `src/client/Retos.client.luau` | Botón "🏆 Reto semanal" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Mapa.client.luau` | Botón "🗺️ Mapa": tu nivel, los checkpoints y hasta dónde han llegado tus amigos | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/server/TiendaTemporada.server.luau` | Tienda de temporada 🎁: un mueble de jardín distinto cada semana, solo esa semana | `ServerScriptService` → **Script** |
+| `src/server/RetoEquipo.server.luau` | Reto en equipo 🤝: tú y un amigo llegáis los dos al nivel 100 | `ServerScriptService` → **Script** |
+| `src/server/CarreraMascotas.server.luau` | Carrera de tus dos mascotas en una pista junto al jardín 🐾🏁 | `ServerScriptService` → **Script** |
+| `src/client/Pintar.client.luau` | Ventana para pintar un cuadro de 10 x 10 y colgarlo en tu casa 🎨 | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Jetpack.client.luau` | El jetpack: botón de comprar, botón de volar y barra de combustible | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Mejoras.client.luau` | Panelito con el nivel de tus mejoras y lo que cuesta la siguiente | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/GirarMonedas.client.luau` | Hace girar las monedas que tienes cerca | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
@@ -194,6 +198,21 @@ Ahora el día **da la vuelta entera** (unos 6 minutos): tarde → noche → **ma
 ## 🏆 Reto semanal y temporadas
 
 Cada semana hay un **reto nuevo** (por ejemplo *sube 80 niveles sin morir*). Al cumplirlo ganas monedas y un **premio para el jardín** (⛲ fuente, 🗽 estatua, 🏮 farolillos, 🚀 cohete, 🦩 flamenco, 🌈 arcoíris). Cada 4 semanas empieza una **temporada**. Cambia los jueves a las 00:00 UTC. Se ve en el botón **🏆 Reto semanal**.
+
+## 🎁🤝🐾🎨 Temporada, equipo, carrera de mascotas y cuadros
+
+- **🎁 Tienda de temporada** (en "Mi casa"): cada semana hay UN mueble de jardín (⛄🎃🏖️🌻🎄🪁) que **solo se puede comprar esa semana**. Cuesta 60 🪙 y es tuyo para siempre. Sale en la franja de césped a la derecha de tu jardín.
+- **🤝 Reto en equipo** (en "Reto semanal"): invitas a un **amigo de Roblox** y tenéis que llegar **los dos** al nivel 100. Si lo conseguís, ganáis 200 🪙 cada uno y la siguiente meta es 200, 300...
+- **🐾 Carrera de mascotas**: junto a tu jardín hay una pista de dos carriles. Corren tus dos mascotas (cuanto más nivel, más rápidas). Pulsa **E** en una banderita para animar a una; si gana, +5 🪙.
+- **🎨 Pintar cuadros**: en "Mi casa → Álbum → Pintar un cuadro" pintas un dibujo de 10 x 10 con 12 colores y se cuelga en la pared con tus fotos.
+
+## 💾 Todo se guarda
+
+Se guardan las **monedas, las victorias, el nivel, el récord y todo lo que compras** (mejoras, estilos, mascotas, muebles, premios, muebles de temporada, cuadros y fotos). Se guarda a los pocos segundos de cambiar algo, cada 30 segundos y al salir. Recuerda: hay que **publicar el mundo** y activar "acceso de Studio a servicios de API".
+
+## 🌍 Mundo 2
+
+En la meta ahora pone **"🌍 ¡MUNDO 2 muy pronto!"**. El mundo 2 se hará más adelante.
 
 ## 🗺️ Mapa
 

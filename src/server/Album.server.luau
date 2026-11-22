@@ -11,6 +11,7 @@
 	📋 DÓNDE VA: en Roblox Studio, dentro de ServerScriptService, como "Script".
 	(Usa la marca "CasaOrigen" que pone el script Casas y la cámara "Casa_camara". Habla con la pantalla
 	con un RemoteEvent. Las fotos son atributos "Foto_1_pie", "Foto_1_fecha"...)
+	🎨 También puedes PINTAR cuadros de 10 x 10 cuadraditos (ventana del script Pintar) y se cuelgan igual.
 ]]
 
 local Players = game:GetService("Players")
@@ -38,6 +39,17 @@ local FONDOS = {
 }
 
 local MADERA = Color3.fromRGB(150, 100, 60)
+
+-- 🎨 Los cuadros que pintas: una cuadrícula de 10 x 10 cuadraditos. Cada cuadradito es una letra/cifra de esta lista
+-- (la pantalla de pintar tiene la MISMA lista de colores).
+local LADO_CUADRO = 10
+local PALETA = {
+	["0"] = Color3.fromRGB(255, 255, 255), ["1"] = Color3.fromRGB(30, 30, 35), ["2"] = Color3.fromRGB(235, 60, 60),
+	["3"] = Color3.fromRGB(255, 150, 50), ["4"] = Color3.fromRGB(255, 225, 60), ["5"] = Color3.fromRGB(80, 200, 100),
+	["6"] = Color3.fromRGB(60, 140, 255), ["7"] = Color3.fromRGB(150, 90, 230), ["8"] = Color3.fromRGB(255, 130, 190),
+	["9"] = Color3.fromRGB(140, 90, 50), ["a"] = Color3.fromRGB(150, 150, 155), ["b"] = Color3.fromRGB(120, 220, 230),
+}
+local TITULOS_DE_CUADROS = { "Mi dibujo", "Un monstruo", "Mi mascota", "Mi casa", "El parkour", "Un paisaje" }
 
 local evento = Instance.new("RemoteEvent")
 evento.Name = "AlbumAccion"
@@ -219,24 +231,60 @@ local function dibujarFoto(jugador, origen, numero)
 	pantalla.LightInfluence = 0
 	pantalla.Parent = marco
 
-	-- La "foto": un retrato de tu personaje
-	local visor = Instance.new("ViewportFrame")
-	visor.Size = UDim2.new(1, -16, 0.78, -8)
-	visor.Position = UDim2.fromOffset(8, 8)
-	visor.BackgroundColor3 = FONDOS[(numero - 1) % #FONDOS + 1]
-	visor.Ambient = Color3.fromRGB(200, 200, 200)
-	visor.LightColor = Color3.fromRGB(255, 255, 255)
-	visor.Parent = pantalla
+	-- ¿Es un cuadro pintado (3 trocitos de texto con los colores) o una foto del personaje?
+	local dibujo = (jugador:GetAttribute("Foto_" .. numero .. "_d1") or "")
+		.. (jugador:GetAttribute("Foto_" .. numero .. "_d2") or "")
+		.. (jugador:GetAttribute("Foto_" .. numero .. "_d3") or "")
+	local esCuadro = #dibujo == LADO_CUADRO * LADO_CUADRO
 
-	local copia = copiaDelPersonaje(jugador)
-	if copia then
-		copia:PivotTo(CFrame.new(0, 0, 0) * CFrame.Angles(0, math.rad(20), 0))
-		copia.Parent = visor
-		local camara = Instance.new("Camera")
-		camara.FieldOfView = 40
-		camara.CFrame = CFrame.lookAt(Vector3.new(0, 0.3, -9), Vector3.new(0, 0.2, 0))
-		camara.Parent = visor
-		visor.CurrentCamera = camara
+	local visor
+	if esCuadro then
+		local lienzo = Instance.new("Frame")
+		lienzo.Size = UDim2.fromOffset(250, 250)
+		lienzo.Position = UDim2.new(0.5, -125, 0, 8)
+		lienzo.BackgroundColor3 = PALETA["0"]
+		lienzo.BorderSizePixel = 0
+		lienzo.Parent = pantalla
+		local celda = 250 / LADO_CUADRO
+		for fila = 0, LADO_CUADRO - 1 do
+			-- juntamos los cuadraditos seguidos del mismo color en uno solo (así pesa menos)
+			local columna = 0
+			while columna < LADO_CUADRO do
+				local letra = string.sub(dibujo, fila * LADO_CUADRO + columna + 1, fila * LADO_CUADRO + columna + 1)
+				local largo = 1
+				while columna + largo < LADO_CUADRO and string.sub(dibujo, fila * LADO_CUADRO + columna + largo + 1, fila * LADO_CUADRO + columna + largo + 1) == letra do
+					largo += 1
+				end
+				if letra ~= "0" and PALETA[letra] then
+					local trozo = Instance.new("Frame")
+					trozo.Size = UDim2.fromOffset(celda * largo, celda)
+					trozo.Position = UDim2.fromOffset(columna * celda, fila * celda)
+					trozo.BackgroundColor3 = PALETA[letra]
+					trozo.BorderSizePixel = 0
+					trozo.Parent = lienzo
+				end
+				columna += largo
+			end
+		end
+	else
+		visor = Instance.new("ViewportFrame")
+		visor.Size = UDim2.new(1, -16, 0.78, -8)
+		visor.Position = UDim2.fromOffset(8, 8)
+		visor.BackgroundColor3 = FONDOS[(numero - 1) % #FONDOS + 1]
+		visor.Ambient = Color3.fromRGB(200, 200, 200)
+		visor.LightColor = Color3.fromRGB(255, 255, 255)
+		visor.Parent = pantalla
+
+		local copia = copiaDelPersonaje(jugador)
+		if copia then
+			copia:PivotTo(CFrame.new(0, 0, 0) * CFrame.Angles(0, math.rad(20), 0))
+			copia.Parent = visor
+			local camara = Instance.new("Camera")
+			camara.FieldOfView = 40
+			camara.CFrame = CFrame.lookAt(Vector3.new(0, 0.3, -9), Vector3.new(0, 0.2, 0))
+			camara.Parent = visor
+			visor.CurrentCamera = camara
+		end
 	end
 
 	-- El texto de debajo: lo que pasó y cuándo
@@ -322,10 +370,57 @@ local function tomarFoto(jugador, pie, avisarSiNo)
 	jugador:SetAttribute("Foto_" .. numero .. "_pie", pie)
 	jugador:SetAttribute("Foto_" .. numero .. "_fecha", os.date("!%d/%m/%Y"))
 	jugador:SetAttribute("Foto_" .. numero .. "_nivel", jugador:GetAttribute("Nivel") or 1)
+	for k = 1, 3 do
+		jugador:SetAttribute("Foto_" .. numero .. "_d" .. k, nil) -- si había un cuadro pintado en ese hueco, se quita
+	end
 
 	jugador:SetAttribute("Estad_fotos", (jugador:GetAttribute("Estad_fotos") or 0) + 1) -- para el reto semanal
 	destello(jugador)
 	avisar(jugador, "📸 ¡Foto! Ya cuelga en tu casa", Color3.fromRGB(60, 100, 180))
+	local origen = esperarOrigen(jugador)
+	if origen then
+		dibujarFoto(jugador, origen, numero)
+	end
+end
+
+----------------------------------------------------------------------
+-- 🎨 PINTAR CUADROS
+----------------------------------------------------------------------
+
+-- "codigo" son 100 letras/cifras (una por cuadradito); "titulo" es el número del nombre de la lista
+local function colgarCuadro(jugador, codigo, titulo)
+	if not jugador:GetAttribute("CasaNumero") then
+		avisar(jugador, "Necesitas una casa para colgar el cuadro 🏠", Color3.fromRGB(200, 60, 60))
+		return
+	end
+	-- La pantalla puede mandar cualquier cosa: comprobamos que son justo 100 letras de la paleta
+	if type(codigo) ~= "string" or #codigo ~= LADO_CUADRO * LADO_CUADRO or string.find(codigo, "[^0-9ab]") then
+		return
+	end
+	if type(titulo) ~= "number" or titulo ~= titulo then
+		return
+	end
+	titulo = math.clamp(math.floor(titulo), 1, #TITULOS_DE_CUADROS)
+
+	local ahora = os.clock()
+	if ahora - (ultimaFoto[jugador] or -100) < AJUSTES.esperaEntreFotos then
+		avisar(jugador, "¡Espera un poquito para colgar otro! 🎨", Color3.fromRGB(90, 90, 120))
+		return
+	end
+	ultimaFoto[jugador] = ahora
+
+	local numero = (jugador:GetAttribute("Foto_siguiente") or 0) % AJUSTES.maximoDeFotos + 1
+	jugador:SetAttribute("Foto_siguiente", numero)
+	-- Los textos guardados pueden tener hasta 40 letras: el dibujo va en 3 trozos (40 + 40 + 20)
+	jugador:SetAttribute("Foto_" .. numero .. "_d1", string.sub(codigo, 1, 40))
+	jugador:SetAttribute("Foto_" .. numero .. "_d2", string.sub(codigo, 41, 80))
+	jugador:SetAttribute("Foto_" .. numero .. "_d3", string.sub(codigo, 81, 100))
+	jugador:SetAttribute("Foto_" .. numero .. "_pie", "🎨 " .. TITULOS_DE_CUADROS[titulo])
+	jugador:SetAttribute("Foto_" .. numero .. "_fecha", os.date("!%d/%m/%Y"))
+	jugador:SetAttribute("Foto_" .. numero .. "_nivel", jugador:GetAttribute("Nivel") or 1)
+	jugador:SetAttribute("Estad_cuadros", (jugador:GetAttribute("Estad_cuadros") or 0) + 1)
+
+	avisar(jugador, "🎨 ¡Qué bonito! Tu cuadro ya cuelga en tu casa", Color3.fromRGB(150, 70, 190))
 	local origen = esperarOrigen(jugador)
 	if origen then
 		dibujarFoto(jugador, origen, numero)
@@ -396,19 +491,24 @@ Players.PlayerRemoving:Connect(function(jugador)
 	entrada[jugador] = nil
 end)
 
-evento.OnServerEvent:Connect(function(jugador, accion, valor)
+evento.OnServerEvent:Connect(function(jugador, accion, valor, extra)
 	-- Comprobamos que lo que nos manda tiene sentido (¡nunca nos fiamos de la pantalla!)
 	if type(accion) ~= "string" then
 		return
 	end
 	if accion == "foto" then
 		tomarFoto(jugador, "📸 Nivel " .. (jugador:GetAttribute("Nivel") or 1), true)
+	elseif accion == "cuadro" then
+		colgarCuadro(jugador, valor, extra)
 	elseif accion == "borrar" and type(valor) == "number" then
 		local numero = math.floor(valor)
 		if numero >= 1 and numero <= AJUSTES.maximoDeFotos then
 			jugador:SetAttribute("Foto_" .. numero .. "_pie", nil)
 			jugador:SetAttribute("Foto_" .. numero .. "_fecha", nil)
 			jugador:SetAttribute("Foto_" .. numero .. "_nivel", nil)
+			for k = 1, 3 do
+				jugador:SetAttribute("Foto_" .. numero .. "_d" .. k, nil)
+			end
 		end
 	end
 end)

@@ -5,6 +5,7 @@
 	  - Las monedas y el premio especial para tu casa si lo cumples
 	  - Si es el reto de "sin morir" y te caes: el botón "🔁 Nuevo intento"
 	  - La TEMPORADA (cada 4 semanas) y todos los premios de jardín: los que ya tienes y los que te faltan
+	  - 🤝 RETO EN EQUIPO: invita a un amigo de Roblox y llegad los dos al nivel 100 (después 200, 300...)
 
 	Lo hace todo el script "Retos" del servidor.
 
@@ -18,6 +19,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local jugador = Players.LocalPlayer
 local evento = ReplicatedStorage:WaitForChild("RetoAccion", 30)
 local catalogo = ReplicatedStorage:WaitForChild("CatalogoPremios", 30)
+local equipo = ReplicatedStorage:WaitForChild("EquipoAccion", 30) -- lo crea el script RetoEquipo
+local sonAmigos = {} -- sonAmigos[idDeUsuario] = true/false (se lo preguntamos una vez a Roblox)
 if not evento or not catalogo then
 	return
 end
@@ -99,7 +102,8 @@ distribucion.Padding = UDim.new(0, 8)
 distribucion.SortOrder = Enum.SortOrder.LayoutOrder
 distribucion.Parent = lista
 
-local function dibujar()
+local dibujar
+function dibujar()
 	for _, hijo in lista:GetChildren() do
 		if hijo:IsA("GuiObject") then
 			hijo:Destroy()
@@ -194,6 +198,66 @@ local function dibujar()
 		end
 	end
 
+	-- 🤝 Reto en equipo
+	if equipo then
+		texto("🤝 Reto en equipo", 30, Color3.fromRGB(255, 220, 120))
+		local idPareja = jugador:GetAttribute("Pareja")
+		local invitaDe = jugador:GetAttribute("EquipoInvitaNombre")
+		if idPareja then
+			local otro = Players:GetPlayerByUserId(idPareja)
+			local metaEquipo = jugador:GetAttribute("ParejaMeta") or 100
+			local mio = jugador:GetAttribute("Nivel") or 1
+			local suyo = otro and (otro:GetAttribute("Nivel") or 1) or 1
+			texto("Equipo con " .. (jugador:GetAttribute("ParejaNombre") or "tu amigo") .. ": ¡llegad los DOS al nivel " .. metaEquipo .. "!", 44)
+			texto("Tú: nivel " .. mio .. "  ·  Tu amigo: nivel " .. suyo, 28, Color3.fromRGB(200, 230, 255))
+			orden += 1
+			local salir = crearBoton("Dejar el equipo", UDim2.new(1, -10, 0, 36), UDim2.new(), Color3.fromRGB(150, 80, 80), lista)
+			salir.LayoutOrder = orden
+			salir.Activated:Connect(function()
+				equipo:FireServer("salir")
+			end)
+		else
+			if invitaDe then
+				texto("📨 " .. invitaDe .. " te invita a hacer equipo", 30, Color3.fromRGB(255, 240, 150))
+				orden += 1
+				local aceptar = crearBoton("✅ Aceptar", UDim2.new(1, -10, 0, 40), UDim2.new(), Color3.fromRGB(70, 150, 90), lista)
+				aceptar.LayoutOrder = orden
+				aceptar.Activated:Connect(function()
+					equipo:FireServer("aceptar")
+				end)
+			end
+			local hayAmigos = false
+			for _, otro in Players:GetPlayers() do
+				if otro ~= jugador then
+					local guardado = sonAmigos[otro.UserId]
+					if guardado == nil then
+						sonAmigos[otro.UserId] = false
+						task.spawn(function()
+							local bien, respuesta = pcall(function()
+								return jugador:IsFriendsWith(otro.UserId)
+							end)
+							sonAmigos[otro.UserId] = bien and respuesta == true
+							if panel.Visible then
+								dibujar()
+							end
+						end)
+					elseif guardado then
+						hayAmigos = true
+						orden += 1
+						local invitar = crearBoton("🤝 Invitar a " .. otro.DisplayName, UDim2.new(1, -10, 0, 38), UDim2.new(), Color3.fromRGB(70, 100, 170), lista)
+						invitar.LayoutOrder = orden
+						invitar.Activated:Connect(function()
+							equipo:FireServer("invitar", otro.UserId)
+						end)
+					end
+				end
+			end
+			if not hayAmigos then
+				texto("(Cuando un amigo de Roblox juegue contigo, podrás invitarlo. ¡Llegad los dos al nivel 100!)", 44, Color3.fromRGB(190, 200, 255))
+			end
+		end
+	end
+
 	texto("🏡 Premios para tu jardín", 30, Color3.fromRGB(255, 220, 120))
 	local fichas = catalogo:GetChildren()
 	table.sort(fichas, function(a, b)
@@ -238,4 +302,28 @@ workspace.AttributeChanged:Connect(function(nombre)
 	if string.sub(nombre, 1, 4) == "Reto" then
 		siEstaAbierto()
 	end
+end)
+
+-- Cambios del equipo (invitaciones, el nivel de tu amigo...)
+jugador.AttributeChanged:Connect(function(nombre)
+	if string.sub(nombre, 1, 7) == "Pareja" or nombre == "EquipoInvita" or nombre == "EquipoInvitaNombre" or nombre == "Nivel" then
+		siEstaAbierto()
+	end
+end)
+local function vigilarNivelDe(otro)
+	otro.AttributeChanged:Connect(function(nombre)
+		if nombre == "Nivel" then
+			siEstaAbierto()
+		end
+	end)
+end
+for _, otro in Players:GetPlayers() do
+	vigilarNivelDe(otro)
+end
+Players.PlayerAdded:Connect(function(otro)
+	vigilarNivelDe(otro)
+	siEstaAbierto()
+end)
+Players.PlayerRemoving:Connect(function()
+	task.defer(siEstaAbierto)
 end)

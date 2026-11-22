@@ -19,6 +19,9 @@ local Debris = game:GetService("Debris")
 -- ⚙️ AJUSTES: ¡cambia estos valores y mira qué pasa!
 local AJUSTES = {
 	horaInicial = 15, -- hora a la que empieza el juego (15 = las 3 de la tarde)
+	brilloDeNoche = 0.8, -- cuánta luz hay de noche (el normal de Roblox es 2)
+	brilloDeDia = 1.4, -- cuánta luz hay de día (más bajo = menos brillo)
+	exposicion = -0.35, -- negativo = todo un poco más oscuro y suave
 	segundosPorDia = 360, -- lo que dura un día entero (6 minutos): tarde, noche y mañana
 	horaDeEncender = 18, -- las farolas se encienden a esta hora (18 = las 6 de la tarde)
 	colorAmbienteExterior = Color3.fromRGB(70, 75, 120), -- el color del aire de noche (azulado)
@@ -56,8 +59,9 @@ Lighting:GetPropertyChangedSignal("ClockTime"):Connect(function()
 end)
 
 -- 🌅 → 🌙 → 🌅 Un día entero que se repite: atardecer, noche, MAÑANA con niebla, mediodía...
-local COLOR_DIA = Color3.fromRGB(140, 150, 160)
-local COLOR_DIA_AIRE = Color3.fromRGB(150, 160, 170)
+local COLOR_DIA = Color3.fromRGB(105, 112, 122)
+local COLOR_DIA_AIRE = Color3.fromRGB(115, 122, 132)
+Lighting.ExposureCompensation = AJUSTES.exposicion
 
 task.spawn(function()
 	local horasPorSegundo = 24 / AJUSTES.segundosPorDia
@@ -68,7 +72,7 @@ task.spawn(function()
 		local dia = math.clamp(math.sin((hora - 6) / 12 * math.pi) * 1.6, 0, 1)
 		Lighting.Ambient = AJUSTES.colorAmbiente:Lerp(COLOR_DIA, dia)
 		Lighting.OutdoorAmbient = AJUSTES.colorAmbienteExterior:Lerp(COLOR_DIA_AIRE, dia)
-		Lighting.Brightness = 1 + dia
+		Lighting.Brightness = AJUSTES.brilloDeNoche + (AJUSTES.brilloDeDia - AJUSTES.brilloDeNoche) * dia
 		task.wait(0.2)
 	end
 end)

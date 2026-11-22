@@ -11,7 +11,8 @@
 	  - 🗼 El nivel en el que vas
 	  - ⏱️ Tu mejor tiempo (récord)
 
-	Se guarda solo: cada minuto, cuando sales del juego y cuando se cierra el juego.
+	Se guarda solo: a los pocos segundos de ganar monedas, victorias o comprar algo, cada 30 segundos,
+	cuando sales del juego y cuando se cierra el juego.
 
 	⚠️ IMPORTANTE: para que funcione en Roblox Studio hay que
 	   1) Publicar el mundo (Archivo → Publicar en Roblox) y
@@ -31,12 +32,13 @@ local DataStoreService = game:GetService("DataStoreService")
 local AJUSTES = {
 	-- Nombre del "cajón" donde se guarda. Si lo cambias, ¡todos empiezan de cero!
 	nombreDelGuardado = "MiMundoDatos_v1",
-	segundosEntreGuardados = 60,
+	segundosEntreGuardados = 30,
+	segundosTrasUnCambio = 6, -- si ganas monedas o compras algo, se guarda a los pocos segundos
 	intentos = 3, -- cuántas veces lo intenta si Roblox falla
 }
 
 -- Los atributos del jugador que empiezan así se guardan (los ponen la tienda y los cofres)
-local PREFIJOS = { "Compra_", "Cofre_", "Mejora_", "Estilo_", "Equipo_", "Mision_", "Logro_", "Casa_", "Mascota_", "Estad_", "Venta_", "Foto_", "Premio_", "Reto_" }
+local PREFIJOS = { "Compra_", "Cofre_", "Mejora_", "Estilo_", "Equipo_", "Mision_", "Logro_", "Casa_", "Mascota_", "Estad_", "Venta_", "Foto_", "Premio_", "Reto_", "Temporada_" }
 
 -- Qué valores se pueden guardar: sí/no, números y textos cortitos (el color o la estela que llevas)
 local function valorValido(valor)
@@ -182,6 +184,46 @@ end
 ----------------------------------------------------------------------
 -- 🔌 CUÁNDO SE GUARDA
 ----------------------------------------------------------------------
+
+-- 💨 Si cambia algo importante (monedas, victorias o una compra), guardamos enseguida (sin repetir muchas veces)
+local pendiente = {}
+local function guardarPronto(jugador)
+	if pendiente[jugador] or not cargado[jugador] then
+		return
+	end
+	pendiente[jugador] = true
+	task.delay(AJUSTES.segundosTrasUnCambio, function()
+		pendiente[jugador] = nil
+		if jugador.Parent then
+			guardar(jugador)
+		end
+	end)
+end
+
+local function vigilarCambios(jugador)
+	jugador.AttributeChanged:Connect(function(nombre)
+		if esParaGuardar(nombre) or nombre == "Nivel" then
+			guardarPronto(jugador)
+		end
+	end)
+	local marcador = jugador:WaitForChild("leaderstats", 30)
+	if not marcador then
+		return
+	end
+	for _, nombre in { "Monedas", "Victorias" } do
+		local valor = marcador:WaitForChild(nombre, 30)
+		if valor then
+			valor:GetPropertyChangedSignal("Value"):Connect(function()
+				guardarPronto(jugador)
+			end)
+		end
+	end
+end
+
+Players.PlayerAdded:Connect(vigilarCambios)
+for _, jugador in Players:GetPlayers() do
+	task.spawn(vigilarCambios, jugador)
+end
 
 Players.PlayerAdded:Connect(cargarJugador)
 for _, jugador in Players:GetPlayers() do

@@ -890,6 +890,7 @@ end
 local function ponerMeta(x, y, z)
 	local meta = crearBloque("Meta", Vector3.new(16, 1, 16), Vector3.new(x, y - 0.5, z), Color3.fromRGB(255, 215, 0), Enum.Material.Neon, carpetaMundo)
 	crearCartel(meta, "🏆 ¡META!", 200, 60, Vector3.new(0, 6, 0))
+	crearCartel(meta, "🌍 ¡MUNDO 2 muy pronto!", 330, 55, Vector3.new(0, 11, 0)) -- el mundo 2 se hará más adelante
 	crearFarola(Vector3.new(x + 7, y, z), 1)
 	ponerSol(x, y, z)
 

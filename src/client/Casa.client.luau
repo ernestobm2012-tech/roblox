@@ -326,6 +326,31 @@ local function dibujar()
 			titular("(Precio entre 1 y 999 🪙. Se vende desde la mesa de tu jardín)")
 		end
 
+		-- 🎁 Tienda de temporada: un mueble de jardín distinto cada semana
+		local catalogoTemporada = ReplicatedStorage:FindFirstChild("CatalogoTemporada")
+		if catalogoTemporada then
+			titular("🎁 Tienda de temporada (solo esta semana)")
+			local deLaSemana = workspace:GetAttribute("TemporadaMueble")
+			for _, ficha in ordenar(catalogoTemporada:GetChildren()) do
+				local id = ficha:GetAttribute("Id")
+				local loTiene = jugador:GetAttribute("Temporada_" .. id) == true
+				local aLaVenta = id == deLaSemana
+				local textoTemporada = ficha:GetAttribute("Icono") .. " " .. ficha:GetAttribute("Nombre")
+				if loTiene then
+					boton(textoTemporada .. "  ✅ ya es tuyo", Color3.fromRGB(70, 110, 80), 34, function() end)
+				elseif aLaVenta then
+					boton(textoTemporada .. "  —  " .. ficha:GetAttribute("Precio") .. " 🪙  ¡ESTA SEMANA!", Color3.fromRGB(210, 120, 40), 40, function()
+						local tiendaTemporada = eventoDe("TemporadaAccion")
+						if tiendaTemporada then
+							tiendaTemporada:FireServer("comprar", id)
+						end
+					end)
+				else
+					boton(textoTemporada .. "  🔒 otra semana", Color3.fromRGB(80, 80, 100), 30, function() end)
+				end
+			end
+		end
+
 		-- 📸 Álbum de fotos
 		titular("📸 Álbum de fotos")
 		local tieneCamara = (jugador:GetAttribute("Casa_camara") or 0) >= 1
@@ -340,6 +365,10 @@ local function dibujar()
 				end
 			end
 		)
+		boton("🎨 Pintar un cuadro (10 x 10)", Color3.fromRGB(150, 80, 190), 40, function()
+			panel.Visible = false
+			jugador:SetAttribute("AbrirPintura", os.clock()) -- el script "Pintar" abre su ventana
+		end)
 		for numero = 1, 6 do
 			local pieDeFoto = jugador:GetAttribute("Foto_" .. numero .. "_pie")
 			if pieDeFoto then

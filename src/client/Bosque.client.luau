@@ -296,7 +296,7 @@ task.spawn(function()
 			Density = AJUSTES.densidadNeblina + manana * AJUSTES.nieblaDeLaManana,
 			Color = Color3.fromRGB(165, 205, 150):Lerp(Color3.fromRGB(235, 238, 232), manana),
 		}):Play()
-		TweenService:Create(rayosDeSol, TweenInfo.new(1), { Intensity = 0.28 * dia }):Play()
+		TweenService:Create(rayosDeSol, TweenInfo.new(1), { Intensity = 0.15 * dia }):Play()
 
 		-- Los haces se ven más de día y sobre todo por la mañana
 		local transparencia = 1 - (0.12 + 0.08 * manana) * dia

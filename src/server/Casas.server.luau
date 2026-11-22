@@ -34,7 +34,7 @@ local CollectionService = game:GetService("CollectionService")
 local AJUSTES = {
 	casasPorLado = 6, -- cuántas casas hay a cada lado (el total es el doble)
 	distanciaDelCentro = 72, -- lo lejos que están las casas del centro (en X)
-	separacion = 28, -- lo separadas que están unas de otras (en Z)
+	separacion = 38, -- lo separadas que están unas de otras (en Z)
 	-- La canción de las fiestas: el número (ID) de un audio de Roblox. 0 = sin música.
 	-- (Busca una canción en la Toolbox o en el Creator Store, pestaña "Audio", y cópiale el número.)
 	musicaDeLaFiesta = 0,

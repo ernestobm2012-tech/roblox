@@ -90,6 +90,12 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
   catálogo `ReplicatedStorage.CatalogoPremios`. `Guardado` también guarda `Venta_`, `Foto_`, `Premio_`, `Reto_`.
 - Tiempo: `Noche` hace un día continuo (`segundosPorDia`); `Bosque` (cliente) pone niebla de mañana, `SunRaysEffect`, haces de luz, pájaros y ciervos locales. `Mapa` (cliente)
   dibuja el mapa con `Nivel` de los jugadores y `IsFriendsWith` (solo amigos presentes).
+- Temporada y más: `TiendaTemporada` (mueble de la semana en `workspace:GetAttribute("TemporadaMueble")`, compra con RemoteEvent `TemporadaAccion`, atributo `Temporada_<id>` que se guarda,
+  dibujado en la franja x=+14 del jardín), `RetoEquipo` (RemoteEvent `EquipoAccion`, atributos `Pareja`, `ParejaNombre`, `ParejaMeta`, `EquipoInvita*`; solo amigos de Roblox, NO empiezan por `Equipo_`
+  porque eso se guarda), `CarreraMascotas` (pista en la franja x=−14 del jardín, lee `Equipo_mascota`/`Equipo_mascota2` y `Mascota_xp_*`), `Pintar` (cliente) + `Album` (acción `cuadro`: 100 letras de la
+  paleta en `Foto_<n>_d1..d3`, 3 trozos de ≤40 letras para que `Guardado` los guarde). `Casas.separacion` es 38 (casa 22 + jardín 13 + hueco) para que los jardines no pisen la casa vecina.
+- `Guardado` guarda también a los pocos segundos de cambiar monedas/victorias/algo guardable (`guardarPronto`). Prefijos: añade `Temporada_`. La meta lleva el cartel "MUNDO 2 muy pronto" (el mundo 2 es un proyecto futuro).
+- Brillo: `Noche` tiene `brilloDeNoche`, `brilloDeDia`, `exposicion` (bajados a petición del usuario).
 - **Dinero (Robux):** hoy hay DOS cosas de pago: el salto a checkpoint (producto de desarrollador, `SaltoCheckpoint`) y el
   Jetpack (pase de juego, `PasesRobux`). Los ids se dejan en 0 hasta que el adulto los pase. el usuario es un niño. Nunca inventes IDs de productos ni precios (el precio se pone en la web
   de Roblox y la pantalla lo lee del producto). No añadas compras con Robux ni cambies cuánto o cuándo se cobra sin que
