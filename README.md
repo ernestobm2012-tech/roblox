@@ -27,20 +27,20 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 > Para copiar el código desde GitHub: abre el archivo y pulsa el botón de **copiar** (dos cuadraditos) arriba a la derecha.
 > Ojo: mira la rama donde Claude ha guardado los cambios (el desplegable de ramas arriba a la izquierda).
 
-## 🚀 Forma pro: Rojo (conexión en directo)
+## 🚀 Forma pro: Rojo (conexión en directo, sin copiar y pegar)
 
-Con **Rojo**, lo que hay en esta carpeta aparece **solo** en Roblox Studio, sin copiar y pegar.
-Un adulto lo prepara una vez en el ordenador:
+📘 **Guía paso a paso con dibujos:** [`guia/GUIA-Mundos-Roblox.pdf`](guia/GUIA-Mundos-Roblox.pdf)
 
-1. Instala **Git** y descarga este proyecto: `git clone https://github.com/ernestobm2012-tech/roblox.git`
-2. Instala **Rokit** (https://github.com/rojo-rbx/rokit) y, dentro de la carpeta del proyecto, ejecuta `rokit install` (esto instala Rojo).
-3. En Roblox Studio, instala el **plugin de Rojo** (pestaña Plugins → buscar "Rojo" en la tienda de Creator, el de *rojo-rbx*).
+Resumen:
 
-Cada vez que quieras trabajar:
+| Archivo (doble clic) | Cuándo | Qué hace |
+|---|---|---|
+| `INSTALAR` (.bat Windows / .command Mac) | Una sola vez | Descarga Rojo y pone su plugin en Roblox Studio |
+| `ACTUALIZAR` | Cada vez que Claude hace algo nuevo | Baja de GitHub lo último (elige sola la rama más reciente) |
+| `CONECTAR` | Cada vez que juegas | Enciende Rojo. En Studio: Plugins → Rojo → Connect |
 
-1. En la carpeta del proyecto: `git pull` (para bajar lo último que ha hecho Claude).
-2. Ejecuta `rojo serve`.
-3. En Roblox Studio, abre el plugin de **Rojo** y pulsa **Connect**. ¡Listo! Los scripts aparecen solos.
+Antes hay que instalar Roblox Studio y Git, y bajar el proyecto una vez con
+`git clone https://github.com/ernestobm2012-tech/roblox.git` (todo explicado en la guía).
 
 ## 💡 Ideas para pedirle a Claude
 

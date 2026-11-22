@@ -4,3 +4,7 @@
 # Mundos construidos con `rojo build` (se pueden volver a generar)
 build/
 .DS_Store
+# Rojo descargado por INSTALAR (cada ordenador tiene el suyo)
+rojo
+rojo.exe
+rojo.zip

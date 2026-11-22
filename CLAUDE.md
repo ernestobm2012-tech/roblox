@@ -27,6 +27,13 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
   usuario que busque uno en la Toolbox/Creator Store y lo pegue.
 - Nada de `HttpService` a webs externas ni de `require` de módulos de terceros por ID.
 
+## Cómo le llega el código al niño
+- Hace doble clic en `ACTUALIZAR` (baja la rama de GitHub con el commit más reciente) y tiene `CONECTAR`
+  (Rojo) abierto, así que los cambios aparecen solos en Studio. Por eso **siempre hay que hacer push**.
+- La guía para principiantes está en `guia/guia.html` (fuente) y `guia/GUIA-Mundos-Roblox.pdf`.
+  Si cambias el proceso, actualiza las dos.
+- Cuando termines, dile: "Para, dale a **ACTUALIZAR** y luego a **Play**".
+
 ## Al terminar un cambio
 1. Explica en 2–4 frases qué has hecho y **dónde pegar** cada archivo en Roblox Studio.
 2. Haz commit y push a la rama de trabajo.

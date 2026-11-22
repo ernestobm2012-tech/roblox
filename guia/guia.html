@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Guía Mundos Roblox</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Noto+Color+Emoji&display=block" rel="stylesheet">
+<style>
+  :root {
+    --azul: #2f6bff; --azul-claro: #e8efff; --verde: #1fa455; --verde-claro: #e3f6ea;
+    --naranja: #ff7a1a; --naranja-claro: #fff1e6; --rojo: #e5383b; --rojo-claro: #fde8e8;
+    --morado: #7b4dff; --morado-claro: #f0eaff; --tinta: #1d2333; --gris: #5d6475; --linea: #d9dde7;
+    --studio: #2b2b2b; --studio2: #353535; --studio3: #444;
+  }
+  @page { size: A4; margin: 14mm 14mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Nunito", "DejaVu Sans", sans-serif, "Noto Color Emoji"; color: var(--tinta); margin: 0; font-size: 11.5pt; line-height: 1.45; background: #fff; }
+  .e { font-family: "Noto Color Emoji"; font-weight: normal; }
+  h1, h2, h3 { margin: 0; line-height: 1.15; font-weight: 900; }
+  h2 { font-size: 22pt; margin-bottom: 4mm; }
+  h3 { font-size: 13.5pt; margin-bottom: 2mm; }
+  p { margin: 0 0 2.5mm; }
+  code, .cmd { font-family: "DejaVu Sans Mono", monospace; font-size: 10pt; }
+  code { background: #eef0f5; padding: 0.3mm 1.5mm; border-radius: 1.5mm; }
+  .pagina { page-break-before: always; }
+  .sin-corte { break-inside: avoid; }
+  b { font-weight: 800; }
+
+  /* Portada */
+  .portada { text-align: center; padding-top: 8mm; }
+  .portada .titulo { font-size: 34pt; font-weight: 900; line-height: 1.05; margin: 4mm 0; }
+  .portada .titulo span { color: var(--azul); }
+  .portada .sub { font-size: 14pt; color: var(--gris); margin-bottom: 8mm; }
+  .grande-emoji { font-size: 54pt; }
+
+  /* Diagrama */
+  .flujo { display: flex; align-items: stretch; justify-content: center; gap: 2mm; margin: 6mm 0; }
+  .flujo .caja { flex: 1; border-radius: 4mm; padding: 4mm 2mm; text-align: center; font-weight: 800; font-size: 10.5pt; }
+  .flujo .caja .e { display: block; font-size: 22pt; margin-bottom: 1mm; }
+  .flujo .caja small { display: block; font-weight: 400; font-size: 8.5pt; color: var(--gris); margin-top: 1mm; }
+  .flujo .flecha { align-self: center; font-size: 16pt; color: var(--gris); font-weight: 900; }
+
+  .partes { display: flex; gap: 5mm; margin-top: 6mm; text-align: left; }
+  .parte-tarjeta { flex: 1; border-radius: 4mm; padding: 5mm; }
+  .parte-tarjeta h3 { font-size: 14pt; }
+
+  /* Etiquetas de parte */
+  .etiqueta { display: inline-block; font-weight: 900; font-size: 9.5pt; letter-spacing: 0.06em; text-transform: uppercase; padding: 1mm 3mm; border-radius: 10mm; margin-bottom: 2mm; }
+  .et-papa { background: var(--morado-claro); color: var(--morado); }
+  .et-nino { background: var(--verde-claro); color: var(--verde); }
+  .et-extra { background: var(--naranja-claro); color: var(--naranja); }
+
+  /* Pasos */
+  .paso { display: flex; gap: 4mm; margin-bottom: 5mm; break-inside: avoid; }
+  .num { flex: 0 0 11mm; height: 11mm; border-radius: 50%; color: #fff; font-weight: 900; font-size: 15pt; display: flex; align-items: center; justify-content: center; }
+  .num.papa { background: var(--morado); }
+  .num.nino { background: var(--verde); width: 14mm; flex-basis: 14mm; height: 14mm; font-size: 20pt; }
+  .paso .cuerpo { flex: 1; }
+  .fila { display: flex; gap: 4mm; align-items: flex-start; }
+  .fila > * { flex: 1; }
+
+  /* Avisos */
+  .aviso { border-radius: 3mm; padding: 3mm 4mm; margin: 2mm 0 3mm; font-size: 10.5pt; break-inside: avoid; }
+  .aviso.ojo { background: var(--naranja-claro); border-left: 2mm solid var(--naranja); }
+  .aviso.info { background: var(--azul-claro); border-left: 2mm solid var(--azul); }
+  .aviso.bien { background: var(--verde-claro); border-left: 2mm solid var(--verde); }
+  .aviso.mal { background: var(--rojo-claro); border-left: 2mm solid var(--rojo); }
+  .nota-dibujo { font-size: 8.5pt; color: var(--gris); text-align: center; margin-top: 1mm; font-style: italic; }
+
+  /* ===== Dibujos ===== */
+  .ventana { border: 0.4mm solid #b9bfcc; border-radius: 2.5mm; overflow: hidden; background: #fff; box-shadow: 0 1mm 3mm rgba(0,0,0,0.12); font-size: 9.5pt; }
+  .ventana .barra { background: #eceef3; padding: 1.5mm 3mm; display: flex; align-items: center; gap: 1.5mm; font-size: 8.5pt; color: var(--gris); border-bottom: 0.3mm solid #d5d9e2; }
+  .punto { width: 2.5mm; height: 2.5mm; border-radius: 50%; display: inline-block; }
+  .url { flex: 1; background: #fff; border-radius: 3mm; padding: 0.6mm 3mm; margin-left: 2mm; font-family: "DejaVu Sans Mono", monospace; font-size: 8pt; color: var(--tinta); }
+  .ventana .dentro { padding: 4mm; }
+
+  .boton { display: inline-block; padding: 1.8mm 4mm; border-radius: 2mm; font-weight: 800; font-size: 9.5pt; }
+  .boton.azul { background: var(--azul); color: #fff; }
+  .boton.gris { background: #e3e6ed; color: var(--tinta); }
+  .resalta { outline: 0.8mm solid var(--rojo); outline-offset: 1mm; position: relative; }
+  .clic { color: var(--rojo); font-weight: 900; font-size: 9pt; }
+
+  .terminal { background: #10131a; color: #d7dde8; border-radius: 2.5mm; font-family: "DejaVu Sans Mono", monospace; font-size: 8.8pt; overflow: hidden; break-inside: avoid; }
+  .terminal .tbarra { background: #262b36; color: #9aa3b5; padding: 1.3mm 3mm; font-family: "Nunito", sans-serif; font-size: 8.5pt; font-weight: 700; }
+  .terminal pre { margin: 0; padding: 3mm 4mm; white-space: pre-wrap; font-family: inherit; }
+  .terminal .p { color: #7ee787; }
+  .terminal .ok { color: #ffd866; font-weight: bold; }
+  .terminal .tu { color: #fff; background: rgba(255,255,255,0.12); }
+
+  /* Explorador de archivos */
+  .archivos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2mm; }
+  .archivo { text-align: center; padding: 2mm 1mm; border-radius: 2mm; font-size: 8.5pt; font-weight: 700; word-break: break-word; }
+  .archivo .e { display: block; font-size: 18pt; }
+  .archivo.estrella { background: #fff6cc; outline: 0.6mm solid #f0c400; }
+  .archivo.apagado { color: #9aa0ad; }
+
+  /* Roblox Studio */
+  .studio { background: var(--studio); color: #e6e6e6; border-radius: 2.5mm; overflow: hidden; font-size: 8.8pt; box-shadow: 0 1mm 3mm rgba(0,0,0,0.25); break-inside: avoid; }
+  .studio .pestanas { display: flex; gap: 0; background: #202020; padding: 0 2mm; }
+  .studio .pestanas span { padding: 1.6mm 3mm; color: #aaa; }
+  .studio .pestanas span.activa { color: #fff; background: var(--studio2); border-top: 0.6mm solid #3d8bff; }
+  .studio .cinta { background: var(--studio2); padding: 2.5mm 3mm; display: flex; gap: 4mm; align-items: center; border-bottom: 0.3mm solid #1a1a1a; }
+  .studio .herr { text-align: center; font-size: 8pt; color: #ddd; padding: 1mm 2mm; border-radius: 1.5mm; }
+  .studio .herr .e { display: block; font-size: 15pt; }
+  .studio .zona { display: flex; min-height: 34mm; }
+  .studio .mundo3d { flex: 1; background: linear-gradient(#8ecbff, #cfe9ff 55%, #7cbf6a 55%, #5fa851); position: relative; }
+  .studio .panel { width: 52mm; background: var(--studio2); border-left: 0.3mm solid #1a1a1a; padding: 2mm; font-size: 8.3pt; }
+  .studio .panel .tit { font-weight: 800; color: #fff; margin-bottom: 1.5mm; border-bottom: 0.3mm solid #555; padding-bottom: 1mm; }
+  .arbol div { padding: 0.4mm 0; white-space: nowrap; }
+  .arbol .n1 { padding-left: 3mm; } .arbol .n2 { padding-left: 6mm; } .arbol .n3 { padding-left: 9mm; }
+  .arbol .nuevo { background: rgba(61,139,255,0.35); border-radius: 1mm; }
+  .rojo-widget { position: absolute; right: 4mm; top: 3mm; width: 48mm; background: #2f2f2f; border: 0.3mm solid #555; border-radius: 2mm; padding: 2.5mm; color: #eee; font-size: 8pt; }
+  .rojo-widget .campo { background: #1e1e1e; border-radius: 1mm; padding: 1mm 2mm; margin: 1mm 0; font-family: "DejaVu Sans Mono", monospace; }
+  .rojo-widget .conectar { background: #e13835; color: #fff; text-align: center; border-radius: 1.5mm; padding: 1.5mm; font-weight: 800; margin-top: 2mm; }
+  .plantillas { display: flex; gap: 3mm; padding: 4mm; background: var(--studio2); }
+  .plantilla { width: 26mm; text-align: center; font-size: 8pt; color: #ddd; }
+  .plantilla .img { height: 17mm; border-radius: 1.5mm; margin-bottom: 1mm; }
+
+  /* Chuleta */
+  .chuleta { border: 1.2mm dashed var(--verde); border-radius: 6mm; padding: 7mm; }
+  .chuleta h2 { text-align: center; }
+  .chuleta .gran-paso { display: flex; align-items: center; gap: 5mm; padding: 4mm; border-radius: 4mm; margin-bottom: 3.5mm; font-size: 14pt; font-weight: 800; }
+  .chuleta .gran-paso .num { flex: 0 0 15mm; height: 15mm; font-size: 20pt; }
+  .chuleta .gran-paso small { display: block; font-weight: 400; font-size: 10.5pt; color: var(--gris); }
+
+  table.problemas { width: 100%; border-collapse: collapse; font-size: 10pt; }
+  table.problemas th { text-align: left; background: #f1f3f8; padding: 2mm 3mm; }
+  table.problemas td { padding: 2.2mm 3mm; border-bottom: 0.3mm solid var(--linea); vertical-align: top; }
+  table.problemas tr { break-inside: avoid; }
+
+  .chat { background: #faf9f5; border: 0.4mm solid #e2ded3; border-radius: 3mm; padding: 4mm; font-size: 10pt; }
+  .burbuja { border-radius: 3mm; padding: 2.5mm 3.5mm; margin-bottom: 2.5mm; max-width: 85%; }
+  .burbuja.yo { background: #e8e3d6; margin-left: auto; }
+  .burbuja.claude { background: #fff; border: 0.3mm solid #e2ded3; }
+  .ejemplos { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5mm; }
+  .ejemplo { border-radius: 2.5mm; padding: 2.5mm 3mm; font-size: 10pt; }
+  .ejemplo.bueno { background: var(--verde-claro); }
+  .ejemplo.flojo { background: var(--rojo-claro); }
+</style>
+</head>
+<body>
+
+<!-- ============ PORTADA ============ -->
+<section class="portada">
+  <div class="grande-emoji e">🌍🧱🚀</div>
+  <div class="titulo">Cómo crear mundos de <span>Roblox</span><br>con Claude</div>
+  <div class="sub">Guía para principiantes · para papá y para el creador del mundo</div>
+
+  <h3 style="margin-top:4mm">¿Cómo funciona?</h3>
+  <div class="flujo">
+    <div class="caja" style="background:var(--naranja-claro)"><span class="e">💬</span>Tú le pides algo a Claude<small>"Quiero un trampolín"</small></div>
+    <div class="flecha">→</div>
+    <div class="caja" style="background:var(--morado-claro)"><span class="e">🤖</span>Claude escribe el código<small>y lo guarda en GitHub</small></div>
+    <div class="flecha">→</div>
+    <div class="caja" style="background:var(--azul-claro)"><span class="e">⬇️</span>ACTUALIZAR<small>lo baja a tu ordenador</small></div>
+    <div class="flecha">→</div>
+    <div class="caja" style="background:#fff6cc"><span class="e">🔌</span>CONECTAR<small>Rojo lo manda a Studio</small></div>
+    <div class="flecha">→</div>
+    <div class="caja" style="background:var(--verde-claro)"><span class="e">🎮</span>¡A jugar!<small>en Roblox Studio</small></div>
+  </div>
+
+  <div class="partes">
+    <div class="parte-tarjeta" style="background:var(--morado-claro)">
+      <span class="etiqueta et-papa">Parte A · Papá</span>
+      <h3>Preparar el ordenador</h3>
+      <p>Se hace <b>una sola vez</b>. Unos 20–30 minutos. Instalamos Roblox Studio, Git y Rojo, y bajamos el proyecto.</p>
+      <p style="margin:0;color:var(--gris)">Páginas 2 y 3</p>
+    </div>
+    <div class="parte-tarjeta" style="background:var(--verde-claro)">
+      <span class="etiqueta et-nino">Parte B · El creador</span>
+      <h3>Jugar y crear</h3>
+      <p><b>Cada vez</b> que quieras crear: 4 pasos con doble clic. Sin escribir comandos.</p>
+      <p style="margin:0;color:var(--gris)">Páginas 4 a 6 · y la <b>chuleta</b> para imprimir al final</p>
+    </div>
+  </div>
+
+  <div class="aviso info" style="text-align:left;margin-top:6mm">
+    <b>Sobre los dibujos:</b> son dibujos para orientarse, no fotos reales. Roblox Studio cambia de vez en cuando
+    y puede verse un poco distinto (colores, sitio de los botones, idioma). Busca el botón con el mismo nombre.
+  </div>
+</section>
+
+<!-- ============ PARTE A ============ -->
+<section class="pagina">
+  <span class="etiqueta et-papa">Parte A · Papá · Solo una vez</span>
+  <h2>Preparar el ordenador</h2>
+  <p>Necesitas un ordenador <b>Windows o Mac</b> (Roblox Studio no funciona en tablets, móviles ni Chromebook) y una <b>cuenta de Roblox</b>. Sirve la del niño: Studio se puede usar a cualquier edad.</p>
+
+  <div class="paso">
+    <div class="num papa">1</div>
+    <div class="cuerpo">
+      <h3>Descargar Roblox Studio</h3>
+      <div class="fila">
+        <div>
+          <p>Entra en <b>create.roblox.com</b>, inicia sesión y pulsa <b>"Empezar a crear"</b> (o <i>"Start Creating"</i>). Se descarga el instalador: ábrelo y espera.</p>
+          <p>Cuando se abra Roblox Studio, inicia sesión con la cuenta de Roblox. Luego <b>ciérralo</b> (esto deja preparado todo para el paso 4).</p>
+        </div>
+        <div>
+          <div class="ventana">
+            <div class="barra"><span class="punto" style="background:#ff5f57"></span><span class="punto" style="background:#febc2e"></span><span class="punto" style="background:#28c840"></span><span class="url">create.roblox.com</span></div>
+            <div class="dentro" style="text-align:center">
+              <div style="font-weight:900;font-size:12pt;margin-bottom:1mm">Crea lo que imagines</div>
+              <div style="color:var(--gris);font-size:8.5pt;margin-bottom:3mm">Roblox Creator Hub</div>
+              <span class="boton azul resalta">Empezar a crear</span>
+              <div class="clic" style="margin-top:2mm">↑ clic aquí</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="num papa">2</div>
+    <div class="cuerpo">
+      <h3>Instalar Git (el programa que baja el código de GitHub)</h3>
+      <p><b>Windows:</b> entra en <b>git-scm.com</b> → <b>Download for Windows</b> → abre el instalador y pulsa <b>Next</b> en todo (las opciones que trae están bien) → <b>Install</b> → <b>Finish</b>.</p>
+      <p><b>Mac:</b> abre la app <b>Terminal</b> (búscala con <span class="e">🔍</span> Spotlight), escribe <code>git --version</code> y pulsa Enter. Si te pregunta si quieres instalar las herramientas, pulsa <b>Instalar</b>.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="num papa">3</div>
+    <div class="cuerpo">
+      <h3>Bajar el proyecto al ordenador</h3>
+      <p><b>Windows:</b> abre el menú Inicio, busca <b>Git Bash</b> y ábrelo. <b>Mac:</b> abre <b>Terminal</b>.
+        Escribe estas dos líneas (Enter después de cada una):</p>
+      <div class="terminal">
+        <div class="tbarra">Git Bash / Terminal</div>
+<pre><span class="p">$</span> <span class="tu">cd ~/Documents</span>
+<span class="p">$</span> <span class="tu">git clone https://github.com/ernestobm2012-tech/roblox.git</span>
+Cloning into 'roblox'...
+<span class="ok">done.</span></pre>
+      </div>
+      <p style="margin-top:2mm">Si te pide <b>iniciar sesión en GitHub</b>, hazlo con tu cuenta (se abre el navegador). Al terminar tendrás una carpeta <b>roblox</b> dentro de <b>Documentos</b>. ¡Ya puedes cerrar esta ventana!</p>
+    </div>
+  </div>
+</section>
+
+<section class="pagina">
+  <span class="etiqueta et-papa">Parte A · Papá · Solo una vez</span>
+
+  <div class="paso">
+    <div class="num papa">4</div>
+    <div class="cuerpo">
+      <h3>Instalar Rojo con doble clic</h3>
+      <p>Abre la carpeta <b>Documentos → roblox</b>. Verás estos archivos. Los tres importantes tienen nombre en MAYÚSCULAS:</p>
+      <div class="ventana" style="margin-bottom:3mm">
+        <div class="barra"><span class="e">📁</span>&nbsp;Documentos &gt; roblox</div>
+        <div class="dentro">
+          <div class="archivos">
+            <div class="archivo estrella"><span class="e">🛠️</span>INSTALAR</div>
+            <div class="archivo estrella"><span class="e">⬇️</span>ACTUALIZAR</div>
+            <div class="archivo estrella"><span class="e">🔌</span>CONECTAR</div>
+            <div class="archivo apagado"><span class="e">📁</span>src</div>
+            <div class="archivo apagado"><span class="e">📁</span>guia</div>
+            <div class="archivo apagado"><span class="e">📄</span>README.md</div>
+            <div class="archivo apagado"><span class="e">📄</span>CLAUDE.md</div>
+            <div class="archivo apagado"><span class="e">📄</span>default.project.json</div>
+          </div>
+        </div>
+      </div>
+      <p>Haz <b>doble clic en INSTALAR</b> (en Windows es <code>INSTALAR.bat</code>; en Mac, <code>INSTALAR.command</code>). Se abre una ventana negra que descarga Rojo y pone su plugin en Roblox Studio. Espera a que diga <b>LISTO</b>.</p>
+
+      <div class="fila">
+        <div class="aviso ojo" style="margin-top:0">
+          <b>Windows puede avisar:</b> "Windows protegió su PC". Es normal con archivos nuevos.
+          Pulsa <b>Más información</b> y después <b>Ejecutar de todas formas</b>.
+        </div>
+        <div class="ventana">
+          <div class="dentro" style="background:#0067b8;color:#fff">
+            <div style="font-weight:900;font-size:11pt">Windows protegió su PC</div>
+            <div style="font-size:8.5pt;margin:1.5mm 0">Microsoft Defender SmartScreen impidió el inicio de una aplicación no reconocida…</div>
+            <div style="text-decoration:underline;font-size:8.5pt" class="resalta">1. Más información</div>
+            <div style="text-align:right;margin-top:3mm"><span class="boton gris resalta">2. Ejecutar de todas formas</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="aviso ojo"><b>En Mac</b>, si dice que no se puede abrir: clic derecho sobre el archivo → <b>Abrir</b> → <b>Abrir</b>.</div>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="num papa">5</div>
+    <div class="cuerpo">
+      <h3>Comprobar que todo funciona</h3>
+      <p>Haz con tu hijo la <b>Parte B</b> (siguiente página) la primera vez. Si al darle a Play aparece un parkour de colores con lava… <b>¡todo está listo!</b> <span class="e">🎉</span></p>
+      <div class="aviso info"><b>Truco:</b> crea en el escritorio accesos directos a <b>ACTUALIZAR</b> y <b>CONECTAR</b> (clic derecho → <i>Enviar a → Escritorio (crear acceso directo)</i>). Así el niño no tiene que buscar la carpeta.</div>
+    </div>
+  </div>
+
+  <div class="aviso bien sin-corte">
+    <h3 style="margin-bottom:1mm"><span class="e">✅</span> Resumen de lo que has instalado</h3>
+    <b>Roblox Studio</b>: el programa para hacer juegos de Roblox. ·
+    <b>Git</b>: baja el código que escribe Claude desde GitHub. ·
+    <b>Rojo</b>: pasa el código de la carpeta a Roblox Studio, solo, en directo.
+  </div>
+</section>
+
+<!-- ============ PARTE B ============ -->
+<section class="pagina">
+  <span class="etiqueta et-nino">Parte B · El creador · Cada vez</span>
+  <h2>¡A crear! 4 pasos</h2>
+
+  <div class="paso">
+    <div class="num nino">1</div>
+    <div class="cuerpo">
+      <div class="fila">
+        <div>
+          <h3>Doble clic en <span style="color:var(--azul)">ACTUALIZAR</span> <span class="e">⬇️</span></h3>
+          <p>Baja a tu ordenador lo último que ha hecho Claude. Cuando ponga <b>LISTO</b>, pulsa una tecla para cerrar.</p>
+        </div>
+        <div class="terminal">
+          <div class="tbarra">ACTUALIZAR</div>
+<pre> Bajando lo ultimo que ha hecho Claude...
+ <span class="ok">LISTO! Ya tienes lo ultimo de Claude.</span>
+ Presione una tecla para continuar . . .</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="num nino">2</div>
+    <div class="cuerpo">
+      <div class="fila">
+        <div>
+          <h3>Doble clic en <span style="color:#c99700">CONECTAR</span> <span class="e">🔌</span></h3>
+          <p>Enciende Rojo. Esta ventana se queda abierta: <b>NO la cierres</b> mientras juegas (la puedes minimizar).</p>
+        </div>
+        <div class="terminal">
+          <div class="tbarra">CONECTAR</div>
+<pre> <span class="ok">Rojo esta ENCENDIDO. NO cierres esta ventana.</span>
+ Rojo server listening:
+   Address: localhost
+   Port:    34872</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="num nino">3</div>
+    <div class="cuerpo">
+      <h3>Abre Roblox Studio y conecta Rojo</h3>
+      <p><b>a)</b> En la pantalla de inicio, crea uno <b>Nuevo</b> (<i>New</i>) y elige la plantilla <b>Baseplate</b>.</p>
+      <div class="studio" style="margin-bottom:3mm">
+        <div class="plantillas">
+          <div class="plantilla resalta"><div class="img" style="background:linear-gradient(#8ecbff 50%,#a3a3a3 50%)"></div><b>Baseplate</b></div>
+          <div class="plantilla"><div class="img" style="background:linear-gradient(#8ecbff 50%,#6fae5c 50%)"></div>Classic Baseplate</div>
+          <div class="plantilla"><div class="img" style="background:linear-gradient(#ffb36b 50%,#c98a54 50%)"></div>Obby</div>
+          <div class="plantilla"><div class="img" style="background:linear-gradient(#7aa6ff 50%,#557a99 50%)"></div>Village</div>
+        </div>
+      </div>
+      <p><b>b)</b> Arriba, ve a la pestaña <b>Plugins</b> (en español puede llamarse <b>Complementos</b>) y pulsa el botón <b>Rojo</b>. Se abre una ventanita: pulsa <b>Connect</b>. Si sale una lista de cambios, pulsa <b>Accept</b> (Aceptar).</p>
+      <div class="studio">
+        <div class="pestanas"><span>Inicio</span><span>Modelo</span><span>Prueba</span><span>Vista</span><span class="activa">Plugins</span></div>
+        <div class="cinta">
+          <div class="herr resalta" style="background:#4a4a4a"><span class="e">🟥</span>Rojo</div>
+          <div class="herr"><span class="e">🧩</span>Manage Plugins</div>
+          <span class="clic" style="margin-left:2mm">← 1. clic</span>
+        </div>
+        <div class="zona" style="min-height:44mm">
+          <div class="mundo3d">
+            <div class="rojo-widget">
+              <div style="font-weight:900;margin-bottom:1mm">Rojo</div>
+              <div class="campo">localhost</div>
+              <div class="campo">34872</div>
+              <div class="conectar resalta">Connect</div>
+              <div class="clic" style="text-align:center;margin-top:1.5mm">↑ 2. clic</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nota-dibujo">Dibujo orientativo: en tu Studio los botones pueden estar en otro sitio. Busca la palabra "Rojo".</div>
+    </div>
+  </div>
+</section>
+
+<section class="pagina">
+  <span class="etiqueta et-nino">Parte B · El creador · Cada vez</span>
+
+  <div class="paso">
+    <div class="num nino">4</div>
+    <div class="cuerpo">
+      <h3>¡Dale a Play! <span class="e">▶️</span></h3>
+      <p>En la pestaña <b>Inicio</b> (o <b>Prueba</b>), pulsa <b>Play</b> (o la tecla <b>F5</b>). Tu mundo se construye solo y apareces dentro. Para salir del juego, pulsa <b>Stop</b> <span class="e">⏹️</span> (o <b>Mayúsculas + F5</b>).</p>
+      <div class="studio">
+        <div class="pestanas"><span class="activa">Inicio</span><span>Modelo</span><span>Prueba</span><span>Vista</span><span>Plugins</span></div>
+        <div class="cinta">
+          <div class="herr resalta" style="background:#4a4a4a"><span class="e">▶️</span>Play</div>
+          <div class="herr"><span class="e">⏹️</span>Stop</div>
+          <span class="clic" style="margin-left:2mm">← clic para jugar</span>
+        </div>
+        <div class="zona">
+          <div class="mundo3d"></div>
+          <div class="panel">
+            <div class="tit">Explorer</div>
+            <div class="arbol">
+              <div><span class="e">🌐</span> Workspace</div>
+              <div><span class="e">🖥️</span> ServerScriptService</div>
+              <div class="n1 nuevo"><span class="e">📁</span> Servidor</div>
+              <div class="n2 nuevo"><span class="e">📜</span> MiMundo</div>
+              <div><span class="e">🧍</span> StarterPlayer</div>
+              <div class="n1"><span class="e">📁</span> StarterPlayerScripts</div>
+              <div class="n2 nuevo"><span class="e">📁</span> Cliente</div>
+              <div class="n3 nuevo"><span class="e">📜</span> Bienvenida</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nota-dibujo">En azul: lo que Rojo ha traído. Si lo ves en el panel <b>Explorer</b>, ¡la conexión funciona!</div>
+    </div>
+  </div>
+
+  <div class="aviso bien sin-corte" style="padding:5mm">
+    <h3><span class="e">✨</span> Cuando Claude haya hecho algo nuevo…</h3>
+    <p style="font-size:12pt;margin:2mm 0">1. Para el juego (<b>Stop</b>). &nbsp; 2. Doble clic en <b>ACTUALIZAR</b>. &nbsp; 3. <b>Play</b> otra vez.</p>
+    <p style="margin:0">¡Ya está! Si la ventana de <b>CONECTAR</b> sigue abierta y Rojo conectado, los cambios llegan <b>solos</b> a Roblox Studio. No hace falta copiar nada.</p>
+  </div>
+
+  <h3 style="margin-top:6mm"><span class="e">⚠️</span> Reglas de oro</h3>
+  <div class="aviso mal"><b>No cambies los scripts dentro de Roblox Studio.</b> Rojo los vuelve a poner como están en la carpeta, y lo que cambies se borra. ¿Quieres cambiar algo? <b>Pídeselo a Claude.</b></div>
+  <div class="aviso ojo"><b>Lo que construyas a mano</b> en Studio (bloques que pongas tú con el ratón) sí se queda, pero <b>solo si guardas</b>: menú <b>Archivo → Guardar en Roblox</b> (<i>File → Save to Roblox</i>).</div>
+  <div class="aviso info"><b>¿Algo sale mal?</b> Ve a <b>Vista → Salida</b> (<i>View → Output</i>). Si hay letras rojas, haz una foto o cópialas y enséñaselas a Claude: él lo arregla.</div>
+</section>
+
+<!-- ============ HABLAR CON CLAUDE ============ -->
+<section class="pagina">
+  <span class="etiqueta et-nino">Parte B · El creador</span>
+  <h2>Cómo pedirle cosas a Claude <span class="e">💬</span></h2>
+  <p>Abre la app de <b>Claude</b> (o <b>claude.ai/code</b> en el navegador), entra en <b>Code</b> y elige el proyecto <b>roblox</b>. Después escribe lo que quieres, como si se lo contaras a un amigo.</p>
+
+  <div class="fila" style="margin:3mm 0 5mm">
+    <div class="chat">
+      <div class="burbuja yo">Quiero un trampolín azul al lado de la salida que te lance muy alto <span class="e">🚀</span></div>
+      <div class="burbuja claude"><b>¡Hecho!</b> He puesto un trampolín azul al lado de la salida. Si lo pisas, saltas 3 veces más alto. Dale a <b>ACTUALIZAR</b> y luego a <b>Play</b> para probarlo.</div>
+      <div class="burbuja yo">¡Mola! Ahora que sea todavía más alto</div>
+    </div>
+    <div>
+      <h3>Trucos para pedir bien</h3>
+      <p><span class="e">🎯</span> <b>Una cosa cada vez.</b> Pruébala y luego pide la siguiente.</p>
+      <p><span class="e">🎨</span> <b>Da detalles:</b> color, tamaño, dónde va, qué pasa al tocarlo.</p>
+      <p><span class="e">🐞</span> <b>Si falla</b>, cuéntale qué ha pasado o pega el mensaje rojo de Output.</p>
+      <p><span class="e">🔁</span> <b>¿No te gusta?</b> Dile "quítalo" o "vuelve a como estaba antes".</p>
+    </div>
+  </div>
+
+  <div class="ejemplos">
+    <div class="ejemplo flojo"><span class="e">🤔</span> "Haz el juego mejor"</div>
+    <div class="ejemplo bueno"><span class="e">👍</span> "Pon 5 plataformas más al final, que se muevan de lado a lado"</div>
+    <div class="ejemplo flojo"><span class="e">🤔</span> "Pon cosas"</div>
+    <div class="ejemplo bueno"><span class="e">👍</span> "Construye un castillo gris con 4 torres a la izquierda de la salida"</div>
+    <div class="ejemplo flojo"><span class="e">🤔</span> "No va"</div>
+    <div class="ejemplo bueno"><span class="e">👍</span> "Cuando cojo una moneda no sube el marcador. Output dice: …"</div>
+  </div>
+
+  <h3 style="margin-top:6mm">Ideas para empezar</h3>
+  <div class="ejemplos">
+    <div class="ejemplo" style="background:var(--azul-claro)"><span class="e">✅</span> Checkpoints para no volver al principio</div>
+    <div class="ejemplo" style="background:var(--azul-claro)"><span class="e">🛒</span> Una tienda para gastar las monedas</div>
+    <div class="ejemplo" style="background:var(--azul-claro)"><span class="e">👻</span> Plataformas que desaparecen al pisarlas</div>
+    <div class="ejemplo" style="background:var(--azul-claro)"><span class="e">🌙</span> Que sea de noche y haya farolas</div>
+    <div class="ejemplo" style="background:var(--azul-claro)"><span class="e">🔥</span> Una barra de lava que gira</div>
+    <div class="ejemplo" style="background:var(--azul-claro)"><span class="e">⏱️</span> Un cronómetro para ver quién tarda menos</div>
+  </div>
+</section>
+
+<!-- ============ PLAN B Y PROBLEMAS ============ -->
+<section class="pagina">
+  <span class="etiqueta et-extra">Extra</span>
+  <h2>Plan B: copiar y pegar <span class="e">📋</span></h2>
+  <p>Si Rojo no funciona, puedes meter el código a mano. Es más lento pero siempre funciona.</p>
+  <div class="fila" style="margin-bottom:5mm">
+    <div>
+      <p><b>1.</b> En GitHub (o en la carpeta <b>src</b>), abre el archivo y copia todo su contenido (en GitHub, el botón <b>Copy</b> <span class="e">📋</span> arriba a la derecha).</p>
+      <p><b>2.</b> En Studio, panel <b>Explorer</b>: pon el ratón sobre <b>ServerScriptService</b>, pulsa el <b>+</b> y elige <b>Script</b>.</p>
+      <p><b>3.</b> Borra lo que trae (<code>print("Hello world!")</code>) y pega con <b>Ctrl + V</b> (en Mac, <b>Cmd + V</b>).</p>
+      <p><b>4.</b> Los archivos que terminan en <code>.client.luau</code> van en <b>StarterPlayer → StarterPlayerScripts</b>, como <b>LocalScript</b>.</p>
+    </div>
+    <div class="studio">
+      <div class="zona" style="min-height:0">
+        <div class="panel" style="width:100%">
+          <div class="tit">Explorer</div>
+          <div class="arbol">
+            <div><span class="e">🌐</span> Workspace</div>
+            <div><span class="e">👥</span> Players</div>
+            <div><span class="e">💡</span> Lighting</div>
+            <div><span class="e">📦</span> ReplicatedStorage</div>
+            <div class="resalta" style="background:#4a4a4a;border-radius:1mm"><span class="e">🖥️</span> ServerScriptService <span style="float:right;font-weight:900;background:#3d8bff;border-radius:1mm;padding:0 1.5mm">+</span></div>
+            <div class="n1" style="color:#9ec5ff">↳ Script &nbsp;<span class="clic">← elige "Script"</span></div>
+            <div><span class="e">🧍</span> StarterPlayer</div>
+            <div class="n1"><span class="e">📁</span> StarterPlayerScripts</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 style="font-size:18pt">Si algo no funciona <span class="e">🔧</span></h2>
+  <table class="problemas">
+    <tr><th style="width:42%">Lo que pasa</th><th>Qué hacer</th></tr>
+    <tr><td>ACTUALIZAR dice <i>"git no se reconoce…"</i></td><td>Falta instalar Git (Parte A, paso 2). Después reinicia el ordenador.</td></tr>
+    <tr><td>CONECTAR dice <i>"Falta Rojo"</i></td><td>Haz doble clic en <b>INSTALAR</b> primero.</td></tr>
+    <tr><td>En Studio no aparece el botón <b>Rojo</b></td><td>Cierra Studio del todo y vuelve a abrirlo. Si sigue sin salir, haz doble clic en <b>INSTALAR</b> otra vez (con Studio cerrado).</td></tr>
+    <tr><td>Rojo no conecta al pulsar <b>Connect</b></td><td>¿Está abierta la ventana de <b>CONECTAR</b>? Ábrela y vuelve a pulsar Connect.</td></tr>
+    <tr><td>CONECTAR dice algo de <i>"address already in use"</i></td><td>Ya hay otra ventana de CONECTAR abierta. Cierra las dos y abre solo una.</td></tr>
+    <tr><td>Le doy a Play y no pasa nada</td><td>Mira <b>Vista → Salida</b> (<i>View → Output</i>). Copia las letras rojas y pásaselas a Claude.</td></tr>
+    <tr><td>He actualizado pero no veo lo nuevo</td><td>Para el juego (<b>Stop</b>) y dale a <b>Play</b> otra vez. Comprueba que Rojo sigue conectado.</td></tr>
+    <tr><td>Cualquier otra cosa</td><td>Haz una foto a la pantalla y cuéntaselo a Claude. <span class="e">🙂</span></td></tr>
+  </table>
+</section>
+
+<!-- ============ CHULETA ============ -->
+<section class="pagina">
+  <div class="chuleta">
+    <div style="text-align:center" class="grande-emoji e">🎮</div>
+    <h2>Chuleta para crear mi mundo</h2>
+    <p style="text-align:center;color:var(--gris);margin-bottom:6mm">Recórtala y pégala al lado del ordenador <span class="e">✂️</span></p>
+
+    <div class="gran-paso" style="background:var(--azul-claro)"><div class="num nino" style="background:var(--azul)">1</div><div>Doble clic en <b>ACTUALIZAR</b> <span class="e">⬇️</span><small>Espera a que ponga LISTO</small></div></div>
+    <div class="gran-paso" style="background:#fff6cc"><div class="num nino" style="background:#d9a800">2</div><div>Doble clic en <b>CONECTAR</b> <span class="e">🔌</span><small>¡No cierres esa ventana!</small></div></div>
+    <div class="gran-paso" style="background:var(--morado-claro)"><div class="num nino" style="background:var(--morado)">3</div><div>Roblox Studio → Nuevo → <b>Baseplate</b><small>Plugins → Rojo → Connect</small></div></div>
+    <div class="gran-paso" style="background:var(--verde-claro)"><div class="num nino">4</div><div><b>Play</b> <span class="e">▶️</span> ¡a jugar!<small>Stop para salir</small></div></div>
+
+    <div class="aviso naranja" style="background:var(--naranja-claro);border-left:2mm solid var(--naranja);font-size:12pt;margin-top:5mm">
+      <span class="e">💬</span> <b>¿Quieres algo nuevo?</b> Pídeselo a Claude → cuando diga "¡Hecho!": <b>Stop → ACTUALIZAR → Play</b>
+    </div>
+    <div class="aviso mal" style="font-size:11pt">
+      <span class="e">🚫</span> No cambies los scripts en Studio: ¡pídeselo a Claude!
+    </div>
+    <div class="aviso info" style="font-size:11pt">
+      <span class="e">🐞</span> ¿Error? <b>Vista → Salida</b>, y enséñale las letras rojas a Claude.
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
