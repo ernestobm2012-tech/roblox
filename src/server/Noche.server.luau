@@ -1,6 +1,6 @@
 --[[
 	🌙 NOCHE Y FAROLAS
-	El juego empieza por la tarde y, en unos segundos, se va haciendo de noche.
+	El juego empieza por la tarde y se va haciendo de noche; después amanece (¡con niebla!) y el día se repite.
 	Cuando oscurece, las farolas se encienden solas 💡 y, de vez en cuando, pasa una
 	ESTRELLA FUGAZ por el cielo ⭐ (pide un deseo).
 
@@ -19,8 +19,7 @@ local Debris = game:GetService("Debris")
 -- ⚙️ AJUSTES: ¡cambia estos valores y mira qué pasa!
 local AJUSTES = {
 	horaInicial = 15, -- hora a la que empieza el juego (15 = las 3 de la tarde)
-	horaFinal = 23.9, -- hora a la que termina de oscurecer (23.9 = casi medianoche)
-	segundosHastaLaNoche = 45, -- lo que tarda en hacerse de noche
+	segundosPorDia = 360, -- lo que dura un día entero (6 minutos): tarde, noche y mañana
 	horaDeEncender = 18, -- las farolas se encienden a esta hora (18 = las 6 de la tarde)
 	colorAmbienteExterior = Color3.fromRGB(70, 75, 120), -- el color del aire de noche (azulado)
 	colorAmbiente = Color3.fromRGB(40, 40, 80),
@@ -56,18 +55,23 @@ Lighting:GetPropertyChangedSignal("ClockTime"):Connect(function()
 	end
 end)
 
--- 🌅 → 🌙 Oscurece poco a poco
-local oscurecer = TweenService:Create(
-	Lighting,
-	TweenInfo.new(AJUSTES.segundosHastaLaNoche, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
-	{
-		ClockTime = AJUSTES.horaFinal,
-		OutdoorAmbient = AJUSTES.colorAmbienteExterior,
-		Ambient = AJUSTES.colorAmbiente,
-		Brightness = 1,
-	}
-)
-oscurecer:Play()
+-- 🌅 → 🌙 → 🌅 Un día entero que se repite: atardecer, noche, MAÑANA con niebla, mediodía...
+local COLOR_DIA = Color3.fromRGB(140, 150, 160)
+local COLOR_DIA_AIRE = Color3.fromRGB(150, 160, 170)
+
+task.spawn(function()
+	local horasPorSegundo = 24 / AJUSTES.segundosPorDia
+	while true do
+		local hora = (Lighting.ClockTime + horasPorSegundo * 0.2) % 24
+		Lighting.ClockTime = hora
+		-- 0 = noche cerrada, 1 = pleno día (sube desde las 6 y baja hasta las 18)
+		local dia = math.clamp(math.sin((hora - 6) / 12 * math.pi) * 1.6, 0, 1)
+		Lighting.Ambient = AJUSTES.colorAmbiente:Lerp(COLOR_DIA, dia)
+		Lighting.OutdoorAmbient = AJUSTES.colorAmbienteExterior:Lerp(COLOR_DIA_AIRE, dia)
+		Lighting.Brightness = 1 + dia
+		task.wait(0.2)
+	end
+end)
 
 -- ⭐ Estrellas fugaces: de noche, de vez en cuando, cruza una por el cielo delante de un jugador
 local function lanzarEstrella()

@@ -80,7 +80,16 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
   el INVITADO, no se guarda); el visitante lleva `CasaVisitada` y `EnCasa`. Paredes: `Casa_pared` (color puesto) y `Casa_pared_<id>` (comprado).
   RemoteEvent `CasaAccion` (ir, salir, comprar, pared, abrir, invitar), catálogos `ReplicatedStorage.CatalogoMuebles` y `CatalogoParedes`.
 - Botones de la pantalla: columna a la izquierda desde `UDim2.new(0, 12, 0.3, 0)`, cada uno 54 px más abajo (checkpoint 0,
-  estilo 54, carrera 108, jetpack 162, mascotas 216, logros 270, casa 324). El panel de mejoras va a la derecha.
+  estilo 54, carrera 108, jetpack 162, mascotas 216, logros 270, casa 324, reto semanal 378, mapa 432). El panel de mejoras va a la derecha.
+- Casa ampliada: minijuegos (`JuegosCasa`, etiquetas `JuegoDiana`/`JuegoPelota`/`JuegoCocina` puestas por `Casas` en los muebles `diana`/`pelota`/`cocina`),
+  álbum (`Album`, mueble `camara`, atributos `Foto_<n>_pie/fecha/nivel`, RemoteEvent `AlbumAccion`) y puesto de venta (`Mercadillo`, atributos
+  `Venta_<hueco>_id/precio`, RemoteEvent `MercadilloAccion`; mueve monedas y `Casa_<id>` de forma atómica). Las casas llevan una pieza `Origen` con la
+  etiqueta `CasaOrigen` y atributo `Indice`: otros scripts cuelgan cosas de ahí. Zonas libres en el jardín: puesto (x −10.7..−3.5, z −22.7..−17.5) y `SITIOS_DE_PREMIOS`.
+- Retos (`Retos`): reto semanal rotando (`RETOS`, semana = `os.time() // 604800`), progreso con `Reto_*` y los contadores `Estad_*`; premios `Premio_<id>` que
+  `Retos` dibuja en la carpeta `Premios` del jardín. Datos de la semana en atributos de `workspace` (`RetoTipo`, `RetoObjetivo`...). RemoteEvent `RetoAccion`,
+  catálogo `ReplicatedStorage.CatalogoPremios`. `Guardado` también guarda `Venta_`, `Foto_`, `Premio_`, `Reto_`.
+- Tiempo: `Noche` hace un día continuo (`segundosPorDia`); `Bosque` (cliente) pone niebla de mañana, `SunRaysEffect`, haces de luz, pájaros y ciervos locales. `Mapa` (cliente)
+  dibuja el mapa con `Nivel` de los jugadores y `IsFriendsWith` (solo amigos presentes).
 - **Dinero (Robux):** hoy hay DOS cosas de pago: el salto a checkpoint (producto de desarrollador, `SaltoCheckpoint`) y el
   Jetpack (pase de juego, `PasesRobux`). Los ids se dejan en 0 hasta que el adulto los pase. el usuario es un niño. Nunca inventes IDs de productos ni precios (el precio se pone en la web
   de Roblox y la pantalla lo lee del producto). No añadas compras con Robux ni cambies cuánto o cuándo se cobra sin que

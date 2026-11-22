@@ -36,7 +36,7 @@ local AJUSTES = {
 }
 
 -- Los atributos del jugador que empiezan así se guardan (los ponen la tienda y los cofres)
-local PREFIJOS = { "Compra_", "Cofre_", "Mejora_", "Estilo_", "Equipo_", "Mision_", "Logro_", "Casa_", "Mascota_", "Estad_" }
+local PREFIJOS = { "Compra_", "Cofre_", "Mejora_", "Estilo_", "Equipo_", "Mision_", "Logro_", "Casa_", "Mascota_", "Estad_", "Venta_", "Foto_", "Premio_", "Reto_" }
 
 -- Qué valores se pueden guardar: sí/no, números y textos cortitos (el color o la estela que llevas)
 local function valorValido(valor)

@@ -30,9 +30,15 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | `src/server/Logros.server.luau` | Insignias por logros (primer cofre, nivel 100, 10 carreras ganadas...) con premio de monedas 🏅 | `ServerScriptService` → **Script** |
 | `src/server/Casas.server.luau` | El barrio de casitas: privadas, con visitas, muebles, colores de pared y estantería de trofeos 🏠 | `ServerScriptService` → **Script** |
 | `src/client/Logros.client.luau` | Botón "🏅 Logros" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
-| `src/client/Casa.client.luau` | Botón "🏠 Mi casa": ir a casa, salir y comprar muebles | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/client/Casa.client.luau` | Botón "🏠 Mi casa": ir a casa, visitas, paredes, muebles, 🛍️ mi puesto y 📸 álbum | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/server/Bosque.server.luau` | Prado de hierba y un bosque de árboles alrededor de la zona de salida 🌲 | `ServerScriptService` → **Script** |
-| `src/client/Bosque.client.luau` | El bosque gigante de fondo del parkour, la neblina verde, luciérnagas y hojas | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/client/Bosque.client.luau` | El bosque gigante de fondo del parkour, la neblina (espesa por las mañanas), rayos de sol, luciérnagas, hojas, 🐦 pájaros y 🦌 ciervos | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/server/JuegosCasa.server.luau` | Minijuegos de la casa: 🎯 diana, ⚽ pelota que bota y 🍳 cocina de comida de adorno | `ServerScriptService` → **Script** |
+| `src/server/Album.server.luau` | Álbum de fotos 📸: la cámara cuelga cuadros con tus mejores momentos en la pared | `ServerScriptService` → **Script** |
+| `src/server/Mercadillo.server.luau` | Puesto de venta 🛍️ en el jardín: vende muebles a otros jugadores por monedas | `ServerScriptService` → **Script** |
+| `src/server/Retos.server.luau` | Reto de la semana y temporadas 🏆, con premios que decoran el jardín | `ServerScriptService` → **Script** |
+| `src/client/Retos.client.luau` | Botón "🏆 Reto semanal" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/client/Mapa.client.luau` | Botón "🗺️ Mapa": tu nivel, los checkpoints y hasta dónde han llegado tus amigos | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Jetpack.client.luau` | El jetpack: botón de comprar, botón de volar y barra de combustible | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Mejoras.client.luau` | Panelito con el nivel de tus mejoras y lo que cuesta la siguiente | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/GirarMonedas.client.luau` | Hace girar las monedas que tienes cerca | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
@@ -174,6 +180,24 @@ El parkour está **en medio de un bosque**:
 - En la **zona de salida**, el suelo es un **prado de hierba** y alrededor hay **robles, pinos, arbustos y rocas**.
 - A los dos lados de la **pista** salen **árboles altísimos** (troncos y copas verdes) a medida que avanzas, como si estuvieras saltando entre las copas. Hay una **neblina verde** suave, **luciérnagas** que flotan alrededor (se ven mejor de noche) y **hojas que caen**.
 - El bosque de la pista **se dibuja solo en tu pantalla** (no pesa nada). Si quieres menos neblina o árboles más lejos, se cambia en `Bosque.client.luau` (tabla `AJUSTES`).
+
+## 🌤️ Día y noche, niebla y animales
+
+Ahora el día **da la vuelta entera** (unos 6 minutos): tarde → noche → **mañana con niebla espesa** → mediodía con **rayos de sol** entre los árboles. Los **pájaros** cruzan el cielo y los **ciervos** pasean junto a la pista (solo en tu pantalla). Se ajusta en `Noche.server.luau` (`segundosPorDia`) y `Bosque.client.luau`.
+
+## 🏡 Casa: minijuegos, álbum y puesto
+
+- **Minijuegos** (se compran en 🛋️ Muebles): 🎯 **diana** (lanza dardos, récord de puntos), ⚽ **pelota** que bota y 🍳 **cocina** (cocinas pizza, tarta, donuts... de adorno).
+- **📸 Álbum**: compra la **cámara**, pulsa *Hacer una foto* y tu personaje queda en un cuadro en la pared. Salen fotos solas al conseguir logros y cada 50 niveles. Las fotos son un retrato de tu personaje (Roblox no deja guardar capturas de pantalla reales).
+- **🛍️ Mi puesto**: en el jardín tienes una mesa donde vendes hasta 3 muebles. Pones tú el precio (1–999 🪙). El comprador necesita casa, sitio y monedas.
+
+## 🏆 Reto semanal y temporadas
+
+Cada semana hay un **reto nuevo** (por ejemplo *sube 80 niveles sin morir*). Al cumplirlo ganas monedas y un **premio para el jardín** (⛲ fuente, 🗽 estatua, 🏮 farolillos, 🚀 cohete, 🦩 flamenco, 🌈 arcoíris). Cada 4 semanas empieza una **temporada**. Cambia los jueves a las 00:00 UTC. Se ve en el botón **🏆 Reto semanal**.
+
+## 🗺️ Mapa
+
+El botón **🗺️ Mapa** enseña tu nivel, un punto cada 10 checkpoints y a tus **amigos de Roblox que están jugando ahora** (los que no están conectados no salen).
 
 ## 🎨 Estilo: colores y estelas
 

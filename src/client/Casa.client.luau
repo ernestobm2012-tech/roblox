@@ -6,6 +6,8 @@
 	  - 🎉 Poner una FIESTA con luces de colores
 	  - 🎨 Pintar las paredes del color que quieras (con monedas)
 	  - 🛋️ Comprar camas y muebles con monedas. Se colocan solos dentro de tu casa.
+	  - 🛍️ MI PUESTO: vender muebles a otros jugadores desde el puesto de tu jardín, con TU precio en monedas.
+	  - 📸 ÁLBUM: hacer una foto de tu personaje (necesitas la 📷 cámara, que se compra en muebles) y verla colgada en tu pared.
 
 	Todo lo hace el script "Casas" del servidor.
 
@@ -20,6 +22,12 @@ local jugador = Players.LocalPlayer
 local evento = ReplicatedStorage:WaitForChild("CasaAccion")
 local catalogo = ReplicatedStorage:WaitForChild("CatalogoMuebles")
 local catalogoParedes = ReplicatedStorage:WaitForChild("CatalogoParedes")
+
+-- Estos dos eventos los crean los scripts Mercadillo y Album; los buscamos cuando hacen falta
+local function eventoDe(nombre)
+	return ReplicatedStorage:WaitForChild(nombre, 5)
+end
+local preciosEscritos = {} -- el precio que el niño ha escrito para cada mueble (para que no se borre al redibujar)
 
 local pantalla = Instance.new("ScreenGui")
 pantalla.Name = "Casa"
@@ -232,6 +240,117 @@ local function dibujar()
 			boton(textoMueble, if completo then Color3.fromRGB(80, 80, 110) else Color3.fromRGB(150, 100, 60), 40, function()
 				evento:FireServer("comprar", id)
 			end)
+		end
+
+		-- 🛍️ Mi puesto (vender muebles)
+		titular("🛍️ Mi puesto del jardín")
+		local hayAlgo = false
+		for _, ficha in ordenar(catalogo:GetChildren()) do
+			local id = ficha:GetAttribute("Id")
+			local cantidad = jugador:GetAttribute("Casa_" .. id) or 0
+			local enVenta = 0
+			for k = 1, 3 do
+				if jugador:GetAttribute("Venta_" .. k .. "_id") == id then
+					enVenta = k
+				end
+			end
+			if cantidad > 0 then
+				hayAlgo = true
+				orden += 1
+				local fila = Instance.new("Frame")
+				fila.Size = UDim2.new(1, -10, 0, 40)
+				fila.BackgroundTransparency = 1
+				fila.LayoutOrder = orden
+				fila.Parent = lista
+
+				local nombre = Instance.new("TextLabel")
+				nombre.Size = UDim2.new(0.4, 0, 1, 0)
+				nombre.BackgroundTransparency = 1
+				nombre.Text = ficha:GetAttribute("Nombre") .. " x" .. cantidad
+				nombre.TextColor3 = Color3.fromRGB(255, 255, 255)
+				nombre.TextScaled = true
+				nombre.Font = Enum.Font.FredokaOne
+				nombre.TextXAlignment = Enum.TextXAlignment.Left
+				nombre.Parent = fila
+
+				local caja = Instance.new("TextBox")
+				caja.Size = UDim2.new(0.2, 0, 1, 0)
+				caja.Position = UDim2.fromScale(0.41, 0)
+				caja.BackgroundColor3 = Color3.fromRGB(235, 235, 245)
+				caja.TextColor3 = Color3.fromRGB(30, 30, 40)
+				caja.TextScaled = true
+				caja.Font = Enum.Font.FredokaOne
+				caja.PlaceholderText = "🪙"
+				caja.ClearTextOnFocus = false
+				local precioActual = jugador:GetAttribute("Venta_" .. enVenta .. "_precio")
+				caja.Text = tostring(preciosEscritos[id] or (enVenta > 0 and precioActual) or 10)
+				caja.Parent = fila
+				redondear(caja, 8)
+				caja:GetPropertyChangedSignal("Text"):Connect(function()
+					local soloNumeros = string.gsub(caja.Text, "%D", "")
+					soloNumeros = string.sub(soloNumeros, 1, 3)
+					if soloNumeros ~= caja.Text then
+						caja.Text = soloNumeros
+					end
+					preciosEscritos[id] = tonumber(soloNumeros)
+				end)
+
+				local vender = crearBoton(
+					if enVenta > 0 then "Cambiar" else "Vender",
+					UDim2.new(0.2, -4, 1, 0),
+					UDim2.fromScale(0.62, 0),
+					Color3.fromRGB(70, 140, 80),
+					fila
+				)
+				vender.Activated:Connect(function()
+					local mercado = eventoDe("MercadilloAccion")
+					local precio = tonumber(caja.Text)
+					if mercado and precio then
+						mercado:FireServer("vender", id, precio)
+					end
+				end)
+				if enVenta > 0 then
+					local quitar = crearBoton("Quitar", UDim2.new(0.17, -4, 1, 0), UDim2.fromScale(0.83, 0), Color3.fromRGB(170, 70, 70), fila)
+					quitar.Activated:Connect(function()
+						local mercado = eventoDe("MercadilloAccion")
+						if mercado then
+							mercado:FireServer("quitar", "", enVenta)
+						end
+					end)
+				end
+			end
+		end
+		if not hayAlgo then
+			titular("(Compra muebles y podrás venderlos aquí: máximo 3 a la vez)")
+		else
+			titular("(Precio entre 1 y 999 🪙. Se vende desde la mesa de tu jardín)")
+		end
+
+		-- 📸 Álbum de fotos
+		titular("📸 Álbum de fotos")
+		local tieneCamara = (jugador:GetAttribute("Casa_camara") or 0) >= 1
+		boton(
+			if tieneCamara then "📸 ¡Hacer una foto ahora!" else "📷 Compra la cámara en 'Muebles' para hacer fotos",
+			if tieneCamara then Color3.fromRGB(190, 80, 140) else Color3.fromRGB(90, 90, 110),
+			40,
+			function()
+				local album = eventoDe("AlbumAccion")
+				if album and tieneCamara then
+					album:FireServer("foto")
+				end
+			end
+		)
+		for numero = 1, 6 do
+			local pieDeFoto = jugador:GetAttribute("Foto_" .. numero .. "_pie")
+			if pieDeFoto then
+				local fecha = jugador:GetAttribute("Foto_" .. numero .. "_fecha") or ""
+				boton("🖼️ " .. pieDeFoto .. " (" .. fecha .. ") — borrar", Color3.fromRGB(100, 90, 140), 34, function()
+					local album = eventoDe("AlbumAccion")
+					if album then
+						album:FireServer("borrar", numero)
+					end
+				end)
+			end
 		end
 
 		orden += 1

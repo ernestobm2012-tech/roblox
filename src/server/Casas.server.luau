@@ -10,6 +10,10 @@
 	  - Dentro se van poniendo CAMAS Y MUEBLES que se compran con monedas (en el botón "🏠 Mi casa").
 	    Los muebles se colocan solos y se guardan (con el script Guardado).
 	  - 🎨 Las PAREDES se pintan del color que quieras (se compran con monedas).
+	  - 🎮 Hay muebles con JUEGOS (diana, pelota que bota, cocina) y una 📷 cámara para el álbum de fotos:
+	    los pone en marcha el script JuegosCasa y el script Album.
+	  - 🛍️ En el jardín hay un puestecito para vender muebles (script Mercadillo) y sitios para los premios
+	    del reto semanal (script Retos).
 	  - 🏡 Delante de cada casa hay un JARDÍN con césped, un camino, una valla blanca y flores.
 	  - 🎉 FIESTAS: cuando hay visitas dentro (o cuando el dueño pulsa "🎉 Fiesta") se encienden focos de
 	    colores en el techo y una bola de discoteca, sale confeti y, si has puesto una canción, suena música.
@@ -24,6 +28,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local CollectionService = game:GetService("CollectionService")
 
 -- ⚙️ AJUSTES: ¡cambia estos valores y mira qué pasa!
 local AJUSTES = {
@@ -36,6 +41,10 @@ local AJUSTES = {
 }
 
 local PISO = 0.6 -- la altura del suelo de dentro de las casas
+
+-- Los sitios del jardín donde salen los premios del reto semanal (x, z; los usa el script Retos).
+-- Aquí no ponemos flores para no taparlos. (El puesto de venta está a la izquierda, delante.)
+local SITIOS_DE_PREMIOS = { { -7.5, -13.5 }, { -7.5, -16 }, { 7.5, -13.5 }, { 7.5, -17 }, { 7.5, -20.5 }, { 4.5, -22.5 } }
 
 -- 🧺 LOS MUEBLES. "huecos" son los sitios de la casa donde van (x, z); el primero que compras
 -- va al primer hueco, el segundo al segundo... Así que no se puede comprar más que huecos hay.
@@ -220,6 +229,44 @@ local MUEBLES = {
 			{ tam = Vector3.new(0.4, 3, 0.2), pos = Vector3.new(0, 6.8, 0), color = Color3.fromRGB(245, 245, 250), sinColision = true },
 			{ tam = Vector3.new(0.4, 0.2, 2.6), pos = Vector3.new(0, 6.8, 0), color = Color3.fromRGB(245, 245, 250), sinColision = true },
 		},
+	},	-- 🎮 Estos tienen JUEGOS: los pone en marcha el script JuegosCasa (por la etiqueta de la pieza)
+	{
+		id = "diana", nombre = "🎯 Diana (juego)", precio = 30,
+		huecos = { { -9.3, 2 } },
+		partes = {
+			{ tam = Vector3.new(0.3, 2.8, 2.8), pos = Vector3.new(0, 4.5, 0), color = Color3.fromRGB(220, 50, 50), forma = Enum.PartType.Cylinder, sinColision = true, etiqueta = "JuegoDiana" },
+			{ tam = Vector3.new(0.34, 2.0, 2.0), pos = Vector3.new(0, 4.5, 0), color = Color3.fromRGB(245, 245, 245), forma = Enum.PartType.Cylinder, sinColision = true },
+			{ tam = Vector3.new(0.38, 1.2, 1.2), pos = Vector3.new(0, 4.5, 0), color = Color3.fromRGB(220, 50, 50), forma = Enum.PartType.Cylinder, sinColision = true },
+			{ tam = Vector3.new(0.42, 0.5, 0.5), pos = Vector3.new(0, 4.5, 0), color = Color3.fromRGB(60, 220, 100), material = Enum.Material.Neon, forma = Enum.PartType.Cylinder, sinColision = true },
+		},
+	},
+	{
+		id = "pelota", nombre = "⚽ Pelota que bota (juego)", precio = 20,
+		huecos = { { 2.9, 2.8 } },
+		partes = {
+			{ tam = Vector3.new(2, 2, 2), pos = Vector3.new(0, 1, 0), color = Color3.fromRGB(240, 70, 70), forma = Enum.PartType.Ball, suelta = true, fisica = true, etiqueta = "JuegoPelota" },
+		},
+	},
+	{
+		id = "cocina", nombre = "🍳 Cocina (juego)", precio = 50,
+		huecos = { { 8.7, 2.05 } },
+		partes = {
+			{ tam = Vector3.new(1.6, 2.2, 2.7), pos = Vector3.new(0, 1.1, 0), color = Color3.fromRGB(240, 240, 245), etiqueta = "JuegoCocina" },
+			{ tam = Vector3.new(1.4, 0.1, 2.5), pos = Vector3.new(0, 2.25, 0), color = Color3.fromRGB(45, 45, 50) },
+			{ tam = Vector3.new(0.6, 0.05, 0.6), pos = Vector3.new(0, 2.32, -0.7), color = Color3.fromRGB(255, 90, 40), material = Enum.Material.Neon, sinColision = true },
+			{ tam = Vector3.new(0.6, 0.05, 0.6), pos = Vector3.new(0, 2.32, 0.7), color = Color3.fromRGB(255, 90, 40), material = Enum.Material.Neon, sinColision = true },
+		},
+	},
+	{
+		id = "camara", nombre = "📷 Cámara de fotos", precio = 25,
+		huecos = { { -8.4, 1.2 } },
+		partes = {
+			{ tam = Vector3.new(0.15, 2, 0.15), pos = Vector3.new(-0.35, 1, 0), color = Color3.fromRGB(60, 60, 70) },
+			{ tam = Vector3.new(0.15, 2, 0.15), pos = Vector3.new(0.35, 1, 0), color = Color3.fromRGB(60, 60, 70) },
+			{ tam = Vector3.new(0.15, 2, 0.15), pos = Vector3.new(0, 1, 0.35), color = Color3.fromRGB(60, 60, 70) },
+			{ tam = Vector3.new(0.9, 0.7, 0.6), pos = Vector3.new(0, 2.35, 0), color = Color3.fromRGB(40, 40, 45) },
+			{ tam = Vector3.new(0.5, 0.5, 0.5), pos = Vector3.new(0, 2.35, -0.45), color = Color3.fromRGB(80, 170, 255), material = Enum.Material.Neon, forma = Enum.PartType.Ball },
+		},
 	},
 }
 
@@ -336,6 +383,20 @@ local function construirCasa(indice, posicion)
 	casa.trofeos = Instance.new("Folder")
 	casa.trofeos.Name = "Trofeos"
 	casa.trofeos.Parent = carpetaCasa
+
+	-- Una marca invisible que dice dónde está la casa (la usan los scripts Album, Mercadillo y Retos)
+	local origen = Instance.new("Part")
+	origen.Name = "Origen"
+	origen.Size = Vector3.new(1, 1, 1)
+	origen.CFrame = cf
+	origen.Transparency = 1
+	origen.Anchored = true
+	origen.CanCollide = false
+	origen.CanQuery = false
+	origen.CanTouch = false
+	origen:SetAttribute("Indice", indice)
+	origen.Parent = carpetaCasa
+	CollectionService:AddTag(origen, "CasaOrigen")
 
 	local pared = PASTELES[(indice - 1) % #PASTELES + 1]
 	casa.colorBase = pared
@@ -458,7 +519,14 @@ local function construirCasa(indice, posicion)
 		local z = azarJardin:NextNumber(-23, -12)
 		local enElPorche = math.abs(x) < 5.5 and z > -19
 		local enElCamino = math.abs(x) < 2.5
-		if not enElPorche and not enElCamino then
+		local enElPuesto = x > -10.7 and x < -3.5 and z > -22.7 and z < -17.5
+		local enUnPremio = false
+		for _, sitio in SITIOS_DE_PREMIOS do
+			if (x - sitio[1]) ^ 2 + (z - sitio[2]) ^ 2 < 6.25 then
+				enUnPremio = true
+			end
+		end
+		if not enElPorche and not enElCamino and not enElPuesto and not enUnPremio then
 			puestas += 1
 			local tallo = parte("Tallo", Vector3.new(0.15, 0.9, 0.15), Vector3.new(x, 0.65, z), Color3.fromRGB(60, 150, 60))
 			tallo.CanCollide = false
@@ -536,12 +604,19 @@ local function amueblar(casa, jugador)
 				parte.Color = pieza.color
 				parte.Material = pieza.material or Enum.Material.SmoothPlastic
 				parte.Shape = pieza.forma or Enum.PartType.Block
-				parte.Anchored = true
+				parte.Anchored = not pieza.suelta -- (la pelota no está anclada: bota de verdad)
 				parte.CanCollide = not pieza.sinColision
 				parte.CastShadow = false
 				parte.TopSurface = Enum.SurfaceType.Smooth
 				parte.BottomSurface = Enum.SurfaceType.Smooth
 				parte.Parent = casa.muebles
+				if pieza.fisica then
+					parte.CustomPhysicalProperties = PhysicalProperties.new(0.4, 0.4, 0.85, 1, 1) -- (densidad, rozamiento, rebote...)
+				end
+				if pieza.etiqueta then
+					parte:SetAttribute("CasaIndice", casa.indice)
+					CollectionService:AddTag(parte, pieza.etiqueta) -- el script JuegosCasa le pone el juego
+				end
 				if pieza.luz then
 					local lamparaLuz = Instance.new("PointLight")
 					lamparaLuz.Color = Color3.fromRGB(255, 214, 140)
@@ -684,6 +759,8 @@ local function puedeEntrar(casa, jugador)
 	return dueno:GetAttribute("Casa_abierta") == 1 and esAmigo(dueno, jugador)
 end
 
+local ultimaVisita = {} -- para contar cada visita solo una vez por minuto
+
 local function entrarEnCasa(jugador, casa, esVisita)
 	if jugador:GetAttribute("EnCarrera") then
 		avisar(jugador, "No puedes ir a casa durante la carrera 🏁", Color3.fromRGB(200, 60, 60))
@@ -696,6 +773,12 @@ local function entrarEnCasa(jugador, casa, esVisita)
 	jugador:SetAttribute("EnCasa", true) -- el script Niveles no te "tira" por estar lejos de tu nivel
 	if esVisita then
 		jugador:SetAttribute("CasaVisitada", casa.indice)
+		-- Le contamos una visita al dueño (para el reto semanal)
+		local clave = jugador.UserId .. "-" .. casa.indice
+		if casa.dueno and os.clock() - (ultimaVisita[clave] or -100) > 60 then
+			ultimaVisita[clave] = os.clock()
+			casa.dueno:SetAttribute("Estad_visitas", (casa.dueno:GetAttribute("Estad_visitas") or 0) + 1)
+		end
 	end
 	local destino = casa.cf * CFrame.new(0, 3.5, -7.2) * CFrame.Angles(0, math.pi, 0) -- junto a la puerta, mirando hacia dentro
 	pcall(function()
@@ -985,6 +1068,7 @@ local function comprarMueble(jugador, id)
 	end
 	monedas.Value -= mueble.precio
 	jugador:SetAttribute(atributo, cantidad + 1) -- esto también coloca el mueble en la casa
+	jugador:SetAttribute("Estad_muebles", (jugador:GetAttribute("Estad_muebles") or 0) + 1) -- para el reto semanal
 	avisar(jugador, "¡" .. mueble.nombre .. " para tu casa! 🎉", Color3.fromRGB(40, 160, 80))
 end
 
