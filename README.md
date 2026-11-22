@@ -9,6 +9,7 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | Archivo | Qué hace | Dónde va en Roblox Studio |
 |---|---|---|
 | `src/server/MiMundo.server.luau` | Construye el mundo: parkour de colores, lava, meta con trofeo, monedas y marcador | `ServerScriptService` → **Script** |
+| `src/server/Catapulta.server.luau` | Catapulta junto a la salida: te lanza por los aires hasta la meta | `ServerScriptService` → **Script** |
 | `src/client/Bienvenida.client.luau` | Enseña un mensaje de bienvenida en la pantalla | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 
 - Los archivos que terminan en `.server.luau` son **Scripts** (funcionan en el servidor, para todos).
