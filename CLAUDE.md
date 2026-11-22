@@ -96,6 +96,10 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
   paleta en `Foto_<n>_d1..d3`, 3 trozos de ≤40 letras para que `Guardado` los guarde). `Casas.separacion` es 38 (casa 22 + jardín 13 + hueco) para que los jardines no pisen la casa vecina.
 - `Guardado` guarda también a los pocos segundos de cambiar monedas/victorias/algo guardable (`guardarPronto`). Prefijos: añade `Temporada_`. La meta lleva el cartel "MUNDO 2 muy pronto" (el mundo 2 es un proyecto futuro).
 - Brillo: `Noche` tiene `brilloDeNoche`, `brilloDeDia`, `exposicion` (bajados a petición del usuario).
+- Animales: en `Bosque` (cliente) la tabla `ESPECIES` (suelo/aire) con prompts E (acariciar), R (comida) y F (foto → RemoteEvent `AlbumAccion` "fotoAnimal"); `Playa` (servidor) hace la playa en z −190..−350 y los
+  animales del mar (lista `animales`, solo se mueven si hay un jugador cerca; foto con el atributo `PedirFotoAnimal` = "clave:n"). `Album` tiene la lista blanca `ANIMALES` (clave → emoji/nombre) y guarda `Foto_<n>_animal`.
+- Pisos (`Pisos`): atributo `Casa_pisos` (1–4, se guarda), RemoteEvent `PisosAccion` ("comprar", "ir", n), catálogo `CatalogoPisos`. Cada piso mide 11 de alto (`yBase(k) = 0.6 + 11*(k-1)`), sube la pieza `Tejado`
+  de `Casas` y el ascensor es un botón (no hay escaleras). Si cambias el tamaño de la casa en `Casas`, revisa `Pisos`.
 - **Dinero (Robux):** hoy hay DOS cosas de pago: el salto a checkpoint (producto de desarrollador, `SaltoCheckpoint`) y el
   Jetpack (pase de juego, `PasesRobux`). Los ids se dejan en 0 hasta que el adulto los pase. el usuario es un niño. Nunca inventes IDs de productos ni precios (el precio se pone en la web
   de Roblox y la pantalla lo lee del producto). No añadas compras con Robux ni cambies cuánto o cuándo se cobra sin que

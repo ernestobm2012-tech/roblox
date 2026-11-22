@@ -44,6 +44,8 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | `src/server/CarreraMascotas.server.luau` | Carrera de tus dos mascotas en una pista junto al jardín 🐾🏁 | `ServerScriptService` → **Script** |
 | `src/client/Pintar.client.luau` | Ventana para pintar un cuadro de 10 x 10 y colgarlo en tu casa 🎨 | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/EstadoGuardado.client.luau` | Etiqueta abajo a la izquierda: dice si tus monedas se están guardando 💾 | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/server/Playa.server.luau` | La playa y el mar 🏖️ con tiburones, delfines, ballena, tortugas, medusas, pulpos, estrellas de mar, cangrejos, focas... (se tocan y se les hace foto) | `ServerScriptService` → **Script** |
+| `src/server/Pisos.server.luau` | Hasta 4 pisos para tu casa 🏢, con monedas, y el ascensor entre ellos | `ServerScriptService` → **Script** |
 | `src/client/Jetpack.client.luau` | El jetpack: botón de comprar, botón de volar y barra de combustible | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Mejoras.client.luau` | Panelito con el nivel de tus mejoras y lo que cuesta la siguiente | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/GirarMonedas.client.luau` | Hace girar las monedas que tienes cerca | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
@@ -206,6 +208,12 @@ Cada semana hay un **reto nuevo** (por ejemplo *sube 80 niveles sin morir*). Al 
 - **🤝 Reto en equipo** (en "Reto semanal"): invitas a un **amigo de Roblox** y tenéis que llegar **los dos** al nivel 100. Si lo conseguís, ganáis 200 🪙 cada uno y la siguiente meta es 200, 300...
 - **🐾 Carrera de mascotas**: junto a tu jardín hay una pista de dos carriles. Corren tus dos mascotas (cuanto más nivel, más rápidas). Pulsa **E** en una banderita para animar a una; si gana, +5 🪙.
 - **🎨 Pintar cuadros**: en "Mi casa → Álbum → Pintar un cuadro" pintas un dibujo de 10 x 10 con 12 colores y se cuelga en la pared con tus fotos.
+
+## 🏖️ Playa, 🦊 más animales y 🏢 pisos
+
+- **Más animales en el bosque** (cada uno con su comida): 🦌 ciervo (manzana), 🐰 conejo (zanahoria), 🦊 zorro (uvas), 🐿️ ardilla (nuez), 🐻 oso (miel), 🐦 pájaros, 🦋 mariposas (de día) y 🦉 búhos (de noche). **E** = acariciar, **R** = dar de comer, **F** = hacerle una **foto 📸** con tu cámara (sale en tu álbum).
+- **Playa**: al fondo, detrás de la zona de salida, sigue el **camino de madera**. Hay palmeras, sombrillas y un mar (el agua llega al pecho, no pasa nada por entrar) con 🦈 tiburones, 🐬 delfines, 🐋 una ballena, 🐢 tortugas, 🐠 peces payaso, 🪼 medusas, 🐙 pulpos, 🐴 caballitos de mar, 🐡 peces globo, ⭐ estrellas de mar, 🦀 cangrejos y 🦭 focas. Se tocan (E) y se les hace foto (F).
+- **Pisos**: en "Mi casa → Pisos" compras hasta **4 pisos** (150, 300 y 600 🪙): dormitorio, sala de juegos y mirador de cristal. Te mueves con el **🛗 Ascensor**.
 
 ## 💾 Todo se guarda
 

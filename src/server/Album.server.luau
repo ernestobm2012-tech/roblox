@@ -49,6 +49,14 @@ local PALETA = {
 	["6"] = Color3.fromRGB(60, 140, 255), ["7"] = Color3.fromRGB(150, 90, 230), ["8"] = Color3.fromRGB(255, 130, 190),
 	["9"] = Color3.fromRGB(140, 90, 50), ["a"] = Color3.fromRGB(150, 150, 155), ["b"] = Color3.fromRGB(120, 220, 230),
 }
+-- 🦌 Los animales a los que se puede hacer foto (la clave la mandan la pantalla o el script Playa; solo valen estas)
+local ANIMALES = {
+	ciervo = { "🦌", "un ciervo" }, pajaro = { "🐦", "un pajarito" }, conejo = { "🐰", "un conejo" }, zorro = { "🦊", "un zorro" },
+	ardilla = { "🐿️", "una ardilla" }, oso = { "🐻", "un oso" }, mariposa = { "🦋", "una mariposa" }, buho = { "🦉", "un búho" },
+	tiburon = { "🦈", "un tiburón" }, delfin = { "🐬", "un delfín" }, ballena = { "🐋", "una ballena" }, tortuga = { "🐢", "una tortuga marina" },
+	pezpayaso = { "🐠", "un pez payaso" }, medusa = { "🪼", "una medusa" }, pulpo = { "🐙", "un pulpo" }, cangrejo = { "🦀", "un cangrejo" },
+	estrella = { "⭐", "una estrella de mar" }, caballito = { "🐴", "un caballito de mar" }, pezglobo = { "🐡", "un pez globo" }, foca = { "🦭", "una foca" },
+}
 local TITULOS_DE_CUADROS = { "Mi dibujo", "Un monstruo", "Mi mascota", "Mi casa", "El parkour", "Un paisaje" }
 
 local evento = Instance.new("RemoteEvent")
@@ -236,9 +244,24 @@ local function dibujarFoto(jugador, origen, numero)
 		.. (jugador:GetAttribute("Foto_" .. numero .. "_d2") or "")
 		.. (jugador:GetAttribute("Foto_" .. numero .. "_d3") or "")
 	local esCuadro = #dibujo == LADO_CUADRO * LADO_CUADRO
+	local emojiAnimal = jugador:GetAttribute("Foto_" .. numero .. "_animal")
 
 	local visor
-	if esCuadro then
+	if emojiAnimal and not esCuadro then
+		-- Foto de un animal: un fondo de color con el animal bien grande
+		local fondoAnimal = Instance.new("Frame")
+		fondoAnimal.Size = UDim2.new(1, -16, 0.78, -8)
+		fondoAnimal.Position = UDim2.fromOffset(8, 8)
+		fondoAnimal.BackgroundColor3 = FONDOS[(numero - 1) % #FONDOS + 1]
+		fondoAnimal.BorderSizePixel = 0
+		fondoAnimal.Parent = pantalla
+		local bicho = Instance.new("TextLabel")
+		bicho.Size = UDim2.fromScale(1, 1)
+		bicho.BackgroundTransparency = 1
+		bicho.Text = emojiAnimal
+		bicho.TextScaled = true
+		bicho.Parent = fondoAnimal
+	elseif esCuadro then
 		local lienzo = Instance.new("Frame")
 		lienzo.Size = UDim2.fromOffset(250, 250)
 		lienzo.Position = UDim2.new(0.5, -125, 0, 8)
@@ -337,7 +360,7 @@ local function tieneCamara(jugador)
 	return (jugador:GetAttribute("Casa_camara") or 0) >= 1
 end
 
-local function tomarFoto(jugador, pie, avisarSiNo)
+local function tomarFoto(jugador, pie, avisarSiNo, animal)
 	if not jugador:GetAttribute("CasaNumero") then
 		if avisarSiNo then
 			avisar(jugador, "Necesitas una casa para colgar las fotos 🏠", Color3.fromRGB(200, 60, 60))
@@ -373,6 +396,7 @@ local function tomarFoto(jugador, pie, avisarSiNo)
 	for k = 1, 3 do
 		jugador:SetAttribute("Foto_" .. numero .. "_d" .. k, nil) -- si había un cuadro pintado en ese hueco, se quita
 	end
+	jugador:SetAttribute("Foto_" .. numero .. "_animal", animal) -- (nil si es una foto normal)
 
 	jugador:SetAttribute("Estad_fotos", (jugador:GetAttribute("Estad_fotos") or 0) + 1) -- para el reto semanal
 	destello(jugador)
@@ -381,6 +405,16 @@ local function tomarFoto(jugador, pie, avisarSiNo)
 	if origen then
 		dibujarFoto(jugador, origen, numero)
 	end
+end
+
+-- 📸 Foto de un animal (clave de la lista ANIMALES)
+local function fotoDeAnimal(jugador, clave)
+	local datos = type(clave) == "string" and ANIMALES[clave]
+	if not datos then
+		return
+	end
+	tomarFoto(jugador, "📸 Foto de " .. datos[2], true, datos[1])
+	jugador:SetAttribute("Estad_animalesFotografiados", (jugador:GetAttribute("Estad_animalesFotografiados") or 0) + 1)
 end
 
 ----------------------------------------------------------------------
@@ -419,6 +453,7 @@ local function colgarCuadro(jugador, codigo, titulo)
 	jugador:SetAttribute("Foto_" .. numero .. "_fecha", os.date("!%d/%m/%Y"))
 	jugador:SetAttribute("Foto_" .. numero .. "_nivel", jugador:GetAttribute("Nivel") or 1)
 	jugador:SetAttribute("Estad_cuadros", (jugador:GetAttribute("Estad_cuadros") or 0) + 1)
+	jugador:SetAttribute("Foto_" .. numero .. "_animal", nil)
 
 	avisar(jugador, "🎨 ¡Qué bonito! Tu cuadro ya cuelga en tu casa", Color3.fromRGB(150, 70, 190))
 	local origen = esperarOrigen(jugador)
@@ -445,7 +480,13 @@ local function prepararJugador(jugador)
 	end
 
 	jugador.AttributeChanged:Connect(function(nombre)
-		if nombre == "CasaNumero" or string.sub(nombre, 1, 5) == "Foto_" then
+		if nombre == "PedirFotoAnimal" then
+			-- El script Playa lo pone así: "tiburon:7" (el número cambia para que se note cada vez)
+			local pedido = jugador:GetAttribute("PedirFotoAnimal")
+			if type(pedido) == "string" then
+				fotoDeAnimal(jugador, string.match(pedido, "^(%a+):"))
+			end
+		elseif nombre == "CasaNumero" or string.sub(nombre, 1, 5) == "Foto_" then
 			programarRedibujo(jugador)
 		elseif string.sub(nombre, 1, 6) == "Logro_" and jugador:GetAttribute(nombre) == true and cargado() then
 			-- ¡Un logro nuevo! Foto automática
@@ -498,6 +539,8 @@ evento.OnServerEvent:Connect(function(jugador, accion, valor, extra)
 	end
 	if accion == "foto" then
 		tomarFoto(jugador, "📸 Nivel " .. (jugador:GetAttribute("Nivel") or 1), true)
+	elseif accion == "fotoAnimal" then
+		fotoDeAnimal(jugador, valor)
 	elseif accion == "cuadro" then
 		colgarCuadro(jugador, valor, extra)
 	elseif accion == "borrar" and type(valor) == "number" then
@@ -509,6 +552,7 @@ evento.OnServerEvent:Connect(function(jugador, accion, valor, extra)
 			for k = 1, 3 do
 				jugador:SetAttribute("Foto_" .. numero .. "_d" .. k, nil)
 			end
+			jugador:SetAttribute("Foto_" .. numero .. "_animal", nil)
 		end
 	end
 end)

@@ -32,9 +32,8 @@ local AJUSTES = {
 	zEmpiezaElBosque = 120, -- por delante de este sitio empieza el bosque del parkour (antes está el de la salida)
 	densidadNeblina = 0.22, -- 0 = nada, 0.5 = mucha
 	nieblaDeLaManana = 0.38, -- lo que SUBE la niebla por la mañana (0 = nada)
-	maximoDePajaros = 4,
-	maximoDeCiervos = 2,
-	segundosEntreAnimales = { 8, 16 }, -- cada cuánto sale un animal nuevo (mínimo, máximo)
+	maximoDeAnimales = 6, -- cuántos puede haber a la vez en tu pantalla
+	segundosEntreAnimales = { 5, 11 }, -- cada cuánto sale un animal nuevo (mínimo, máximo)
 }
 
 local carpeta = Instance.new("Folder")
@@ -252,6 +251,7 @@ hojas.Parent = crearNube(Vector3.new(90, 1, 90), Vector3.new(0, 40, 0))
 ----------------------------------------------------------------------
 
 local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local rayosDeSol = Instance.new("SunRaysEffect")
 rayosDeSol.Intensity = 0
@@ -318,7 +318,7 @@ end)
 -- 🐦 🦌 LOS ANIMALES (solo se ven en tu pantalla)
 ----------------------------------------------------------------------
 
-local animales = {} -- { modelo, tipo, ... }
+local animales = {} -- { modelo, especie, velocidad, vive, fase, pausa }
 
 local function pieza(modelo, nombre, tamano, cf, color, forma)
 	local p = Instance.new("Part")
@@ -382,26 +382,168 @@ local function crearPajaro(posicion)
 	return m
 end
 
-local function contar(tipo)
+----------------------------------------------------------------------
+-- 🦊🐰🐿️🐻🦋🦉 MÁS ANIMALES (un constructor sencillo para todos)
+----------------------------------------------------------------------
+
+-- Un animal de cuatro patas. "e" es lo grande que es (1 = normal). Mira hacia -Z.
+local function crearTerrestre(especie, posicion)
+	local e = especie.e
+	local m = Instance.new("Model")
+	m.Name = especie.nombre
+	local base = CFrame.new(posicion)
+	local patas = (especie.patas or 0.9) * e
+	local function o(x, y, z)
+		return base * CFrame.new(x * e, y * e + patas, z * e)
+	end
+	local function v(x, y, z)
+		return Vector3.new(x * e, y * e, z * e)
+	end
+	local cuerpo = pieza(m, "Cuerpo", v(1.4, 1.3, 2.4), o(0, 0.65, 0), especie.color, Enum.PartType.Ball)
+	cuerpo.Shape = Enum.PartType.Block
+	pieza(m, "Panza", v(1.1, 0.5, 2), o(0, 0.2, 0), especie.panza or especie.color)
+	pieza(m, "Cabeza", v(0.95, 0.9, 0.95), o(0, 1.25, -1.35), especie.color, Enum.PartType.Ball)
+	pieza(m, "Nariz", v(0.3, 0.25, 0.3), o(0, 1.15, -1.8), especie.nariz or Color3.fromRGB(40, 30, 30), Enum.PartType.Ball)
+	pieza(m, "Ojo", v(0.14, 0.14, 0.1), o(-0.22, 1.4, -1.75), Color3.fromRGB(15, 15, 15))
+	pieza(m, "Ojo", v(0.14, 0.14, 0.1), o(0.22, 1.4, -1.75), Color3.fromRGB(15, 15, 15))
+	for _, lado in { -1, 1 } do
+		pieza(m, "Pata", Vector3.new(0.35 * e, patas, 0.35 * e), base * CFrame.new(lado * 0.45 * e, patas / 2, -0.8 * e), especie.color)
+		pieza(m, "Pata", Vector3.new(0.35 * e, patas, 0.35 * e), base * CFrame.new(lado * 0.45 * e, patas / 2, 0.8 * e), especie.color)
+		if especie.orejas == "largas" then
+			pieza(m, "Oreja", v(0.22, 1, 0.12), o(lado * 0.25, 2.0, -1.3), especie.color)
+		elseif especie.orejas == "puntas" then
+			pieza(m, "Oreja", v(0.3, 0.5, 0.12), o(lado * 0.3, 1.9, -1.3), especie.color)
+		else
+			pieza(m, "Oreja", v(0.3, 0.3, 0.15), o(lado * 0.35, 1.8, -1.3), especie.color, Enum.PartType.Ball)
+		end
+	end
+	if especie.cola == "peluda" then
+		pieza(m, "Cola", v(0.6, 0.7, 1.6), o(0, 0.9, 1.7), especie.colaColor or especie.color, Enum.PartType.Ball)
+		if especie.punta then
+			pieza(m, "Punta", v(0.5, 0.55, 0.5), o(0, 0.95, 2.4), Color3.fromRGB(255, 255, 255), Enum.PartType.Ball)
+		end
+	elseif especie.cola == "pompon" then
+		pieza(m, "Cola", v(0.45, 0.45, 0.45), o(0, 0.8, 1.25), Color3.fromRGB(255, 255, 255), Enum.PartType.Ball)
+	else
+		pieza(m, "Cola", v(0.3, 0.3, 0.3), o(0, 0.8, 1.25), especie.color, Enum.PartType.Ball)
+	end
+	pieza(m, "Hierba", Vector3.new(3, 0.5, 4) * math.max(e, 0.8), base * CFrame.new(0, -0.25, 0), Color3.fromRGB(80, 150, 70))
+	m.PrimaryPart = cuerpo
+	m.Parent = carpeta
+	return m
+end
+
+-- Un animal que vuela (pajarito, mariposa, búho): cuerpo + dos alas que se mueven
+local function crearVolador(especie, posicion)
+	local m = Instance.new("Model")
+	m.Name = especie.nombre
+	local base = CFrame.new(posicion)
+	local t = especie.tam
+	local cuerpo = pieza(m, "Cuerpo", Vector3.new(t, t * 0.9, t * 1.8), base, especie.color, Enum.PartType.Ball)
+	pieza(m, "Cabeza", Vector3.new(t * 0.6, t * 0.6, t * 0.6), base * CFrame.new(0, t * 0.2, -t), especie.color, Enum.PartType.Ball)
+	if especie.ojos then
+		pieza(m, "Ojo", Vector3.new(t * 0.25, t * 0.25, 0.1), base * CFrame.new(-t * 0.18, t * 0.3, -t * 1.28), especie.ojos, Enum.PartType.Ball)
+		pieza(m, "Ojo", Vector3.new(t * 0.25, t * 0.25, 0.1), base * CFrame.new(t * 0.18, t * 0.3, -t * 1.28), especie.ojos, Enum.PartType.Ball)
+	end
+	pieza(m, "Pico", Vector3.new(t * 0.2, t * 0.2, t * 0.4), base * CFrame.new(0, t * 0.15, -t * 1.4), Color3.fromRGB(255, 190, 40))
+	pieza(m, "AlaI", Vector3.new(especie.ala, 0.1, especie.ala * 0.55), base * CFrame.new(-(especie.ala / 2 + t * 0.3), 0.1, 0), especie.colorAla or especie.color)
+	pieza(m, "AlaD", Vector3.new(especie.ala, 0.1, especie.ala * 0.55), base * CFrame.new(especie.ala / 2 + t * 0.3, 0.1, 0), especie.colorAla or especie.color)
+	m.PrimaryPart = cuerpo
+	m.Parent = carpeta
+	return m
+end
+
+-- La lista de animales del bosque. "foto" es la clave del álbum (script Album).
+local ESPECIES = {
+	ciervo = { clase = "suelo", nombre = "Ciervo", icono = "🦌", maximo = 1, vel = { 4, 7 }, vive = 22, comida = { "🍎", "una manzana" }, hacer = crearCiervo },
+	conejo = { clase = "suelo", nombre = "Conejo", icono = "🐰", maximo = 1, vel = { 3, 5 }, vive = 20, salta = true, comida = { "🥕", "una zanahoria" },
+		e = 0.6, color = Color3.fromRGB(235, 230, 220), orejas = "largas", cola = "pompon", patas = 0.6 },
+	zorro = { clase = "suelo", nombre = "Zorro", icono = "🦊", maximo = 1, vel = { 5, 8 }, vive = 20, comida = { "🍇", "unas uvas" },
+		e = 0.9, color = Color3.fromRGB(230, 120, 40), panza = Color3.fromRGB(250, 240, 225), orejas = "puntas", cola = "peluda", punta = true, patas = 1 },
+	ardilla = { clase = "suelo", nombre = "Ardilla", icono = "🐿️", maximo = 1, vel = { 4, 6 }, vive = 18, salta = true, comida = { "🌰", "una nuez" },
+		e = 0.5, color = Color3.fromRGB(150, 95, 55), panza = Color3.fromRGB(235, 215, 185), orejas = "puntas", cola = "peluda", patas = 0.6 },
+	oso = { clase = "suelo", nombre = "Oso", icono = "🐻", maximo = 1, vel = { 2, 4 }, vive = 26, comida = { "🍯", "un poco de miel" },
+		e = 1.6, color = Color3.fromRGB(105, 70, 45), orejas = "redondas", cola = "corta", patas = 1, nariz = Color3.fromRGB(20, 15, 15) },
+	pajaro = { clase = "aire", nombre = "Pajarito", icono = "🐦", maximo = 3, vel = { 12, 18 }, vive = 16, tam = 1, ala = 1.8, ala_color = true },
+	mariposa = { clase = "aire", nombre = "Mariposa", icono = "🦋", maximo = 3, vel = { 5, 8 }, vive = 20, tam = 0.35, ala = 1.1, aleteo = 2.2,
+		colorAla = Color3.fromRGB(255, 130, 200), color = Color3.fromRGB(60, 40, 60), de = "dia" },
+	buho = { clase = "aire", nombre = "Búho", icono = "🦉", maximo = 1, vel = { 7, 10 }, vive = 20, tam = 1.4, ala = 2.4, de = "noche",
+		color = Color3.fromRGB(130, 95, 60), colorAla = Color3.fromRGB(105, 75, 50), ojos = Color3.fromRGB(255, 220, 60) },
+}
+-- el pájaro y el ciervo ya sabían construirse solos
+ESPECIES.pajaro.hacer = function(pos)
+	return crearPajaro(pos)
+end
+ESPECIES.ciervo.clave = "ciervo"
+for clave, especie in ESPECIES do
+	especie.clave = clave
+end
+
+local function contar(clave)
 	local n = 0
 	for _, a in animales do
-		if a.tipo == tipo then
+		if a.especie.clave == clave then
 			n += 1
 		end
 	end
 	return n
 end
 
--- 🤚 TOCAR A LOS ANIMALES: acércate y pulsa E. Se paran, se ponen contentos y salen corazones.
-local function ponerCaricia(animal, texto)
+-- Un aviso pequeñito en pantalla (por ejemplo "necesitas la cámara")
+local avisoPantalla = Instance.new("ScreenGui")
+avisoPantalla.Name = "AvisoAnimales"
+avisoPantalla.ResetOnSpawn = false
+avisoPantalla.Parent = jugador:WaitForChild("PlayerGui")
+local avisoTexto = Instance.new("TextLabel")
+avisoTexto.Size = UDim2.fromOffset(420, 40)
+avisoTexto.Position = UDim2.new(0.5, -210, 0.2, 0)
+avisoTexto.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+avisoTexto.BackgroundTransparency = 0.2
+avisoTexto.TextColor3 = Color3.fromRGB(255, 255, 255)
+avisoTexto.TextScaled = true
+avisoTexto.Font = Enum.Font.FredokaOne
+avisoTexto.Visible = false
+avisoTexto.Parent = avisoPantalla
+Instance.new("UICorner", avisoTexto).CornerRadius = UDim.new(0, 10)
+local avisoNumero = 0
+local function avisarLocal(texto)
+	avisoNumero += 1
+	local mio = avisoNumero
+	avisoTexto.Text = texto
+	avisoTexto.Visible = true
+	task.delay(3, function()
+		if mio == avisoNumero then
+			avisoTexto.Visible = false
+		end
+	end)
+end
+
+-- Una burbuja con emojis encima del animal
+local function burbuja(animal, emojis)
 	local cuerpo = animal.modelo.PrimaryPart
-	local aviso = Instance.new("ProximityPrompt")
-	aviso.ActionText = texto
-	aviso.ObjectText = if animal.tipo == "ciervo" then "Ciervo" else "Pajarito"
-	aviso.HoldDuration = 0
-	aviso.MaxActivationDistance = 14
-	aviso.RequiresLineOfSight = false
-	aviso.Parent = cuerpo
+	if not cuerpo then
+		return
+	end
+	local bocadillo = Instance.new("BillboardGui")
+	bocadillo.Size = UDim2.fromOffset(90, 40)
+	bocadillo.StudsOffset = Vector3.new(0, 4, 0)
+	bocadillo.AlwaysOnTop = true
+	bocadillo.Parent = cuerpo
+	local cara = Instance.new("TextLabel")
+	cara.Size = UDim2.fromScale(1, 1)
+	cara.BackgroundTransparency = 1
+	cara.TextScaled = true
+	cara.Text = emojis
+	cara.Parent = bocadillo
+	task.delay(2.2, function()
+		bocadillo:Destroy()
+	end)
+end
+
+-- 🤚 TOCAR A LOS ANIMALES: E = acariciar / saludar · R = darle de comer · F = hacerle una foto con tu cámara
+local function ponerPrompts(animal)
+	local especie = animal.especie
+	local cuerpo = animal.modelo.PrimaryPart
 
 	local corazones = Instance.new("ParticleEmitter")
 	corazones.Enabled = false
@@ -416,55 +558,111 @@ local function ponerCaricia(animal, texto)
 	corazones.Transparency = NumberSequence.new(0, 1)
 	corazones.Parent = cuerpo
 
-	aviso.Triggered:Connect(function()
+	local function nuevoPrompt(texto, tecla, desplazamiento)
+		local aviso = Instance.new("ProximityPrompt")
+		aviso.ActionText = texto
+		aviso.ObjectText = especie.nombre
+		aviso.HoldDuration = 0
+		aviso.MaxActivationDistance = 14
+		aviso.RequiresLineOfSight = false
+		aviso.KeyboardKeyCode = tecla
+		aviso.UIOffset = Vector2.new(0, desplazamiento)
+		aviso.Parent = cuerpo
+		return aviso
+	end
+
+	nuevoPrompt(if especie.clase == "aire" then "Saludar" else "Acariciar", Enum.KeyCode.E, 0).Triggered:Connect(function()
 		animal.pausa = 4 -- se queda quieto 4 segundos
 		animal.vive += 4
 		corazones:Emit(14)
-		local bocadillo = Instance.new("BillboardGui")
-		bocadillo.Size = UDim2.fromOffset(60, 40)
-		bocadillo.StudsOffset = Vector3.new(0, 4, 0)
-		bocadillo.AlwaysOnTop = true
-		bocadillo.Parent = cuerpo
-		local cara = Instance.new("TextLabel")
-		cara.Size = UDim2.fromScale(1, 1)
-		cara.BackgroundTransparency = 1
-		cara.TextScaled = true
-		cara.Text = if animal.tipo == "ciervo" then "💕" else "🎵"
-		cara.Parent = bocadillo
-		task.delay(2, function()
-			bocadillo:Destroy()
-		end)
+		burbuja(animal, if especie.clase == "aire" then "🎵" else "💕")
 	end)
+
+	if especie.comida then
+		nuevoPrompt("Dar " .. especie.comida[2], Enum.KeyCode.R, -56).Triggered:Connect(function()
+			animal.pausa = 5
+			animal.vive += 5
+			corazones:Emit(26)
+			burbuja(animal, especie.comida[1] .. "😋")
+		end)
+	end
+
+	nuevoPrompt("Hacer una foto 📸", Enum.KeyCode.F, if especie.comida then -112 else -56).Triggered:Connect(function()
+		if (jugador:GetAttribute("Casa_camara") or 0) < 1 then
+			avisarLocal("📷 Necesitas la cámara (cómprala en Mi casa → Muebles)")
+			return
+		end
+		local album = ReplicatedStorage:FindFirstChild("AlbumAccion")
+		if album then
+			album:FireServer("fotoAnimal", especie.clave)
+			animal.pausa = 2 -- posa para la foto
+		end
+	end)
+end
+
+local function elegirEspecie()
+	local hora = Lighting.ClockTime
+	local esDeDia = hora >= 6 and hora < 18.5
+	local candidatas = {}
+	for clave, especie in ESPECIES do
+		local vale = contar(clave) < especie.maximo
+		if especie.de == "dia" and not esDeDia then
+			vale = false
+		elseif especie.de == "noche" and esDeDia then
+			vale = false
+		end
+		if vale then
+			table.insert(candidatas, especie)
+		end
+	end
+	if #candidatas == 0 then
+		return nil
+	end
+	return candidatas[azar:NextInteger(1, #candidatas)]
 end
 
 local function nuevoAnimal()
 	local raiz = raizDelJugador()
-	if not raiz then
+	if not raiz or #animales >= AJUSTES.maximoDeAnimales then
 		return
 	end
-	local quePonemos = azar:NextNumber() < 0.55 and "pajaro" or "ciervo"
+	local especie = elegirEspecie()
+	if not especie then
+		return
+	end
 	local lado = azar:NextInteger(0, 1) == 0 and -1 or 1
+	local animal
 
-	if quePonemos == "ciervo" and contar("ciervo") < AJUSTES.maximoDeCiervos then
-		-- Pasea junto a la pista, un poco por delante de ti, mirando hacia donde va
+	if especie.clase == "suelo" then
+		-- Pasea junto a la pista, un poco por delante de ti
 		local x = raiz.Position.X + lado * azar:NextNumber(8, 14)
 		local z = raiz.Position.Z + azar:NextNumber(40, 90)
 		local sentido = azar:NextInteger(0, 1) == 0 and 1 or -1
-		local modelo = crearCiervo(Vector3.new(x, raiz.Position.Y - 3.5, z))
+		local posicion = Vector3.new(x, raiz.Position.Y - 3.5, z)
+		local modelo = if especie.hacer then especie.hacer(posicion) else crearTerrestre(especie, posicion)
 		modelo:PivotTo(modelo:GetPivot() * CFrame.Angles(0, sentido == 1 and math.pi or 0, 0))
-		local animal = { modelo = modelo, tipo = "ciervo", velocidad = Vector3.new(0, 0, sentido * azar:NextNumber(4, 7)), vive = 22, fase = azar:NextNumber(0, 6), pausa = 0 }
-		table.insert(animales, animal)
-		ponerCaricia(animal, "Acariciar")
-	elseif quePonemos == "pajaro" and contar("pajaro") < AJUSTES.maximoDePajaros then
-		-- Cruza el cielo de un lado a otro, más alto que tú
+		animal = {
+			modelo = modelo, especie = especie, velocidad = Vector3.new(0, 0, sentido * azar:NextNumber(especie.vel[1], especie.vel[2])),
+			vive = especie.vive, fase = azar:NextNumber(0, 6), pausa = 0,
+		}
+	else
+		-- Cruza el cielo de un lado a otro, a poca altura
 		local z = raiz.Position.Z + azar:NextNumber(-20, 80)
 		local inicio = Vector3.new(raiz.Position.X - lado * 120, raiz.Position.Y + azar:NextNumber(3, 9), z)
-		local modelo = crearPajaro(inicio)
+		local modelo
+		if especie.hacer then
+			modelo = especie.hacer(inicio)
+		else
+			modelo = crearVolador(especie, inicio)
+		end
 		modelo:PivotTo(CFrame.lookAt(inicio, inicio + Vector3.new(lado, 0, 0)))
-		local animal = { modelo = modelo, tipo = "pajaro", velocidad = Vector3.new(lado * azar:NextNumber(12, 18), 0, 0), vive = 16, fase = azar:NextNumber(0, 6), pausa = 0 }
-		table.insert(animales, animal)
-		ponerCaricia(animal, "Saludar")
+		animal = {
+			modelo = modelo, especie = especie, velocidad = Vector3.new(lado * azar:NextNumber(especie.vel[1], especie.vel[2]), 0, 0),
+			vive = especie.vive, fase = azar:NextNumber(0, 6), pausa = 0, alaOff = if especie.ala then especie.ala / 2 else 0.9,
+		}
 	end
+	table.insert(animales, animal)
+	ponerPrompts(animal)
 end
 
 task.spawn(function()
@@ -477,8 +675,9 @@ end)
 RunService.Heartbeat:Connect(function(dt)
 	for i = #animales, 1, -1 do
 		local a = animales[i]
+		local especie = a.especie
 		a.vive -= dt
-		a.fase += dt * (a.tipo == "pajaro" and 14 or 4)
+		a.fase += dt * (if especie.clase == "aire" then 14 * (especie.aleteo or 1) else 4)
 		if a.vive <= 0 or not a.modelo.Parent then
 			a.modelo:Destroy()
 			table.remove(animales, i)
@@ -488,20 +687,22 @@ RunService.Heartbeat:Connect(function(dt)
 				a.pausa -= dt
 			end
 			local nueva = if a.pausa > 0 then cf else cf + a.velocidad * dt -- si lo han tocado, se queda quieto
-			if a.tipo == "pajaro" then
-				nueva += Vector3.new(0, math.sin(a.fase * 0.3) * 0.05, 0)
+			if especie.clase == "aire" then
+				nueva += Vector3.new(0, math.sin(a.fase * 0.3) * (if especie.clave == "mariposa" then 0.12 else 0.05), 0)
 				local aleteo = math.sin(a.fase) * 0.6
 				local alaI = a.modelo:FindFirstChild("AlaI")
 				local alaD = a.modelo:FindFirstChild("AlaD")
 				a.modelo:PivotTo(nueva)
 				if alaI and alaD then
 					-- las alas suben y bajan alrededor del cuerpo
-					alaI.CFrame = a.modelo.PrimaryPart.CFrame * CFrame.new(-0.9, 0, 0) * CFrame.Angles(0, 0, -aleteo) * CFrame.new(-0.9, 0, 0)
-					alaD.CFrame = a.modelo.PrimaryPart.CFrame * CFrame.new(0.9, 0, 0) * CFrame.Angles(0, 0, aleteo) * CFrame.new(0.9, 0, 0)
+					local off = a.alaOff
+					alaI.CFrame = a.modelo.PrimaryPart.CFrame * CFrame.new(-off, 0, 0) * CFrame.Angles(0, 0, -aleteo) * CFrame.new(-off, 0, 0)
+					alaD.CFrame = a.modelo.PrimaryPart.CFrame * CFrame.new(off, 0, 0) * CFrame.Angles(0, 0, aleteo) * CFrame.new(off, 0, 0)
 				end
 			else
-				-- el ciervo anda con un balanceito
-				a.modelo:PivotTo(nueva * CFrame.new(0, math.sin(a.fase) * 0.01, 0))
+				-- anda con un balanceito (los conejos y las ardillas van a saltitos)
+				local salto = if especie.salta and a.pausa <= 0 then math.abs(math.sin(a.fase * 1.5)) * 0.8 else math.sin(a.fase) * 0.01
+				a.modelo:PivotTo(nueva * CFrame.new(0, salto, 0))
 			end
 		end
 	end

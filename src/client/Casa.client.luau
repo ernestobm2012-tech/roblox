@@ -6,6 +6,7 @@
 	  - 🎉 Poner una FIESTA con luces de colores
 	  - 🎨 Pintar las paredes del color que quieras (con monedas)
 	  - 🛋️ Comprar camas y muebles con monedas. Se colocan solos dentro de tu casa.
+	  - 🏢 PISOS: compra hasta 4 pisos para tu casa con monedas, y usa el 🛗 ascensor para moverte entre ellos.
 	  - 🛍️ MI PUESTO: vender muebles a otros jugadores desde el puesto de tu jardín, con TU precio en monedas.
 	  - 📸 ÁLBUM: hacer una foto de tu personaje (necesitas la 📷 cámara, que se compra en muebles) y verla colgada en tu pared.
 
@@ -162,7 +163,54 @@ local function dibujar()
 		panel.Visible = false
 	end)
 
+	-- 🛗 Ascensor: dentro de una casa con varios pisos (tuya o de visita)
+	if enCasa then
+		local indiceCasa = jugador:GetAttribute("CasaVisitada") or jugador:GetAttribute("CasaNumero")
+		local pisosCasa = 1
+		for _, otro in Players:GetPlayers() do
+			if indiceCasa and otro:GetAttribute("CasaNumero") == indiceCasa then
+				pisosCasa = otro:GetAttribute("Casa_pisos") or 1
+			end
+		end
+		if pisosCasa > 1 then
+			titular("🛗 Ascensor")
+			local nombresPisos = { "Planta baja", "🛏️ Dormitorio", "🎮 Sala de juegos", "🔭 Mirador" }
+			for k = 1, math.min(pisosCasa, 4) do
+				boton("Piso " .. k .. ": " .. nombresPisos[k], Color3.fromRGB(70, 110, 160), 34, function()
+					local pisos = ReplicatedStorage:FindFirstChild("PisosAccion")
+					if pisos then
+						pisos:FireServer("ir", k)
+					end
+					panel.Visible = false
+				end)
+			end
+		end
+	end
+
 	if tieneCasa then
+		-- 🏢 Pisos para comprar
+		local catalogoPisos = ReplicatedStorage:FindFirstChild("CatalogoPisos")
+		if catalogoPisos then
+			local misPisos = jugador:GetAttribute("Casa_pisos") or 1
+			titular("🏢 Pisos (tienes " .. misPisos .. " de 4)")
+			local siguiente = catalogoPisos:FindFirstChild("Piso" .. (misPisos + 1))
+			if siguiente then
+				boton(
+					"Comprar el piso " .. (misPisos + 1) .. ": " .. siguiente:GetAttribute("Nombre") .. "  —  " .. siguiente:GetAttribute("Precio") .. " 🪙",
+					Color3.fromRGB(170, 110, 60),
+					40,
+					function()
+						local pisos = ReplicatedStorage:FindFirstChild("PisosAccion")
+						if pisos then
+							pisos:FireServer("comprar")
+						end
+					end
+				)
+			else
+				titular("🏆 ¡Tu casa ya tiene los 4 pisos!")
+			end
+		end
+
 		-- 👋 Visitas
 		titular("👋 Visitas")
 		local abierta = jugador:GetAttribute("Casa_abierta") == 1
