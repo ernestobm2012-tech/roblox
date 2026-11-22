@@ -392,6 +392,51 @@ local function contar(tipo)
 	return n
 end
 
+-- 🤚 TOCAR A LOS ANIMALES: acércate y pulsa E. Se paran, se ponen contentos y salen corazones.
+local function ponerCaricia(animal, texto)
+	local cuerpo = animal.modelo.PrimaryPart
+	local aviso = Instance.new("ProximityPrompt")
+	aviso.ActionText = texto
+	aviso.ObjectText = if animal.tipo == "ciervo" then "Ciervo" else "Pajarito"
+	aviso.HoldDuration = 0
+	aviso.MaxActivationDistance = 14
+	aviso.RequiresLineOfSight = false
+	aviso.Parent = cuerpo
+
+	local corazones = Instance.new("ParticleEmitter")
+	corazones.Enabled = false
+	corazones.Rate = 0
+	corazones.Lifetime = NumberRange.new(1.2, 1.8)
+	corazones.Speed = NumberRange.new(3, 6)
+	corazones.EmissionDirection = Enum.NormalId.Top
+	corazones.SpreadAngle = Vector2.new(40, 40)
+	corazones.Size = NumberSequence.new(0.9, 0.2)
+	corazones.LightEmission = 0.6
+	corazones.Color = ColorSequence.new(Color3.fromRGB(255, 90, 150))
+	corazones.Transparency = NumberSequence.new(0, 1)
+	corazones.Parent = cuerpo
+
+	aviso.Triggered:Connect(function()
+		animal.pausa = 4 -- se queda quieto 4 segundos
+		animal.vive += 4
+		corazones:Emit(14)
+		local bocadillo = Instance.new("BillboardGui")
+		bocadillo.Size = UDim2.fromOffset(60, 40)
+		bocadillo.StudsOffset = Vector3.new(0, 4, 0)
+		bocadillo.AlwaysOnTop = true
+		bocadillo.Parent = cuerpo
+		local cara = Instance.new("TextLabel")
+		cara.Size = UDim2.fromScale(1, 1)
+		cara.BackgroundTransparency = 1
+		cara.TextScaled = true
+		cara.Text = if animal.tipo == "ciervo" then "💕" else "🎵"
+		cara.Parent = bocadillo
+		task.delay(2, function()
+			bocadillo:Destroy()
+		end)
+	end)
+end
+
 local function nuevoAnimal()
 	local raiz = raizDelJugador()
 	if not raiz then
@@ -402,19 +447,23 @@ local function nuevoAnimal()
 
 	if quePonemos == "ciervo" and contar("ciervo") < AJUSTES.maximoDeCiervos then
 		-- Pasea junto a la pista, un poco por delante de ti, mirando hacia donde va
-		local x = raiz.Position.X + lado * azar:NextNumber(22, 38)
+		local x = raiz.Position.X + lado * azar:NextNumber(8, 14)
 		local z = raiz.Position.Z + azar:NextNumber(40, 90)
 		local sentido = azar:NextInteger(0, 1) == 0 and 1 or -1
 		local modelo = crearCiervo(Vector3.new(x, raiz.Position.Y - 3.5, z))
 		modelo:PivotTo(modelo:GetPivot() * CFrame.Angles(0, sentido == 1 and math.pi or 0, 0))
-		table.insert(animales, { modelo = modelo, tipo = "ciervo", velocidad = Vector3.new(0, 0, sentido * azar:NextNumber(4, 7)), vive = 22, fase = azar:NextNumber(0, 6) })
+		local animal = { modelo = modelo, tipo = "ciervo", velocidad = Vector3.new(0, 0, sentido * azar:NextNumber(4, 7)), vive = 22, fase = azar:NextNumber(0, 6), pausa = 0 }
+		table.insert(animales, animal)
+		ponerCaricia(animal, "Acariciar")
 	elseif quePonemos == "pajaro" and contar("pajaro") < AJUSTES.maximoDePajaros then
 		-- Cruza el cielo de un lado a otro, más alto que tú
 		local z = raiz.Position.Z + azar:NextNumber(-20, 80)
-		local inicio = Vector3.new(raiz.Position.X - lado * 120, raiz.Position.Y + azar:NextNumber(8, 28), z)
+		local inicio = Vector3.new(raiz.Position.X - lado * 120, raiz.Position.Y + azar:NextNumber(3, 9), z)
 		local modelo = crearPajaro(inicio)
 		modelo:PivotTo(CFrame.lookAt(inicio, inicio + Vector3.new(lado, 0, 0)))
-		table.insert(animales, { modelo = modelo, tipo = "pajaro", velocidad = Vector3.new(lado * azar:NextNumber(22, 32), 0, 0), vive = 9, fase = azar:NextNumber(0, 6) })
+		local animal = { modelo = modelo, tipo = "pajaro", velocidad = Vector3.new(lado * azar:NextNumber(12, 18), 0, 0), vive = 16, fase = azar:NextNumber(0, 6), pausa = 0 }
+		table.insert(animales, animal)
+		ponerCaricia(animal, "Saludar")
 	end
 end
 
@@ -435,7 +484,10 @@ RunService.Heartbeat:Connect(function(dt)
 			table.remove(animales, i)
 		else
 			local cf = a.modelo:GetPivot()
-			local nueva = cf + a.velocidad * dt
+			if a.pausa > 0 then
+				a.pausa -= dt
+			end
+			local nueva = if a.pausa > 0 then cf else cf + a.velocidad * dt -- si lo han tocado, se queda quieto
 			if a.tipo == "pajaro" then
 				nueva += Vector3.new(0, math.sin(a.fase * 0.3) * 0.05, 0)
 				local aleteo = math.sin(a.fase) * 0.6
