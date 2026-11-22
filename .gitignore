@@ -1,0 +1,6 @@
+# Archivos que Roblox Studio crea mientras tiene un mundo abierto
+*.rbxl.lock
+*.rbxlx.lock
+# Mundos construidos con `rojo build` (se pueden volver a generar)
+build/
+.DS_Store

@@ -1,0 +1,18 @@
+{
+  "name": "MiMundoRoblox",
+  "tree": {
+    "$className": "DataModel",
+    "ServerScriptService": {
+      "Servidor": {
+        "$path": "src/server"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Cliente": {
+          "$path": "src/client"
+        }
+      }
+    }
+  }
+}
