@@ -8,7 +8,8 @@ echo " Descargando Rojo $VERSION... (espera un momento)"
 if curl -fsSL -o rojo.zip "https://github.com/rojo-rbx/rojo/releases/download/v$VERSION/rojo-$VERSION-macos-$ARQ.zip" \
   && unzip -o -q rojo.zip && rm -f rojo.zip && chmod +x rojo \
   && { xattr -d com.apple.quarantine rojo 2>/dev/null; true; } \
-  && ./rojo plugin install; then
+  && mkdir -p "$HOME/Documents/Roblox/Plugins" \
+  && curl -fsSL -o "$HOME/Documents/Roblox/Plugins/Rojo.rbxm" "https://github.com/rojo-rbx/rojo/releases/download/v$VERSION/Rojo.rbxm"; then
   echo ""
   echo " LISTO! Si Roblox Studio estaba abierto, cierralo y abrelo."
 else

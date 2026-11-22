@@ -10,8 +10,9 @@ echo  Descargando Rojo %VERSION%... (espera un momento)
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; Invoke-WebRequest -Uri 'https://github.com/rojo-rbx/rojo/releases/download/v%VERSION%/rojo-%VERSION%-windows-x86_64.zip' -OutFile 'rojo.zip'; Expand-Archive -Path 'rojo.zip' -DestinationPath '.' -Force; Remove-Item 'rojo.zip'"
 if not exist rojo.exe goto error
 echo  Instalando el plugin de Rojo en Roblox Studio...
-rojo.exe plugin install
-if errorlevel 1 goto error
+if not exist "%LOCALAPPDATA%\Roblox\Plugins" mkdir "%LOCALAPPDATA%\Roblox\Plugins"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; Invoke-WebRequest -Uri 'https://github.com/rojo-rbx/rojo/releases/download/v%VERSION%/Rojo.rbxm' -OutFile (Join-Path $env:LOCALAPPDATA 'Roblox\Plugins\Rojo.rbxm')"
+if not exist "%LOCALAPPDATA%\Roblox\Plugins\Rojo.rbxm" goto error
 echo.
 echo  ==========================================================
 echo   LISTO! Si Roblox Studio estaba abierto, cierralo y abrelo.
