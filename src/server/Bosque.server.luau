@@ -106,7 +106,18 @@ local function crearRoca(x, z)
 	crearParte("Roca", Vector3.new(tamano * 1.3, tamano, tamano), Vector3.new(x, tamano * 0.35, z), Color3.fromRGB(125, 125, 130), Enum.Material.Slate, Enum.PartType.Ball)
 end
 
+-- 🏠 Sitios donde NO se planta nada: el barrio de casas (con sus jardines y franjas de al lado)
+-- y el camino de madera que va a la playa. (Las casas están a x = ±72, de z = -95 a 95.)
+local function hayCasaOCamino(x, z)
+	local enLasCasas = math.abs(x) > 48 and math.abs(x) < 96 and z > -126 and z < 112
+	local enElCamino = math.abs(x) < 9 and z < -85
+	return enLasCasas or enElCamino
+end
+
 local function plantar(x, z)
+	if hayCasaOCamino(x, z) then
+		return
+	end
 	local tirada = azar:NextNumber()
 	if tirada < 0.4 then
 		crearRoble(x, z)
@@ -124,7 +135,7 @@ end
 local separacion = AJUSTES.separacion
 for lado = -1, 1, 2 do
 	for z = -96, 82, separacion do
-		plantar(lado * azar:NextNumber(90, 97), z + azar:NextNumber(-3, 3))
+		plantar(lado * azar:NextNumber(100, 110), z + azar:NextNumber(-3, 3))
 	end
 end
 for x = -80, 80, separacion do

@@ -197,16 +197,39 @@ parte(carpeta, "TorreCastillo", Vector3.new(1.4, 2.5, 1.4), CFrame.new(40, SUELO
 local modelosDe = {}
 
 modelosDe.tiburon = function(m)
-	local gris, blanco = Color3.fromRGB(105, 120, 140), Color3.fromRGB(235, 240, 245)
-	local cuerpo = parte(m, "Cuerpo", Vector3.new(2.4, 2.2, 7), ID, gris, nil, BOLA)
-	parte(m, "Barriga", Vector3.new(2, 1.2, 6), ID * CFrame.new(0, -0.6, 0), blanco, nil, BOLA)
-	parte(m, "Aleta", Vector3.new(0.25, 1.8, 1.4), ID * CFrame.new(0, 1.7, 0.4) * CFrame.Angles(math.rad(-25), 0, 0), gris)
-	parte(m, "Cola", Vector3.new(0.25, 2.4, 1.4), ID * CFrame.new(0, 0.5, 3.6) * CFrame.Angles(math.rad(25), 0, 0), gris)
-	parte(m, "AletaLado", Vector3.new(2.4, 0.2, 1.2), ID * CFrame.new(-1.6, -0.5, -0.6), gris)
-	parte(m, "AletaLado", Vector3.new(2.4, 0.2, 1.2), ID * CFrame.new(1.6, -0.5, -0.6), gris)
-	parte(m, "Ojo", Vector3.new(0.3, 0.3, 0.3), ID * CFrame.new(-0.8, 0.4, -2.7), Color3.fromRGB(10, 10, 10), nil, BOLA)
-	parte(m, "Ojo", Vector3.new(0.3, 0.3, 0.3), ID * CFrame.new(0.8, 0.4, -2.7), Color3.fromRGB(10, 10, 10), nil, BOLA)
-	parte(m, "Sonrisa", Vector3.new(1.2, 0.15, 0.2), ID * CFrame.new(0, -0.6, -3.2), Color3.fromRGB(60, 30, 40))
+	-- Un tiburón más REAL: cuerpo alargado que se estrecha, gris por arriba y blanco por abajo,
+	-- aleta grande, branquias, boca con dientes y una cola en forma de media luna que se mueve al nadar.
+	local gris = Color3.fromRGB(92, 108, 126)
+	local blanco = Color3.fromRGB(238, 242, 246)
+	local oscuro = Color3.fromRGB(20, 20, 26)
+	local cuerpo = parte(m, "Cuerpo", Vector3.new(2.8, 2.6, 5.2), ID, gris, nil, BOLA)
+	parte(m, "Hocico", Vector3.new(2.1, 1.8, 3.4), ID * CFrame.new(0, -0.15, -2.9), gris, nil, BOLA)
+	parte(m, "CuerpoTrasero", Vector3.new(1.9, 1.8, 3.8), ID * CFrame.new(0, 0, 3.1), gris, nil, BOLA)
+	parte(m, "BarrigaBlanca", Vector3.new(2.3, 1.3, 7.2), ID * CFrame.new(0, -0.75, -0.5), blanco, nil, BOLA)
+	parte(m, "TroncoCola", Vector3.new(1.0, 1.1, 2.8), ID * CFrame.new(0, 0, 5.2), gris, nil, BOLA)
+	-- aletas
+	parte(m, "AletaDorsal", Vector3.new(0.3, 2.6, 1.7), ID * CFrame.new(0, 2.1, 0.3) * CFrame.Angles(math.rad(-32), 0, 0), gris)
+	parte(m, "AletaDorsalPequena", Vector3.new(0.2, 0.9, 0.7), ID * CFrame.new(0, 1.2, 3.6) * CFrame.Angles(math.rad(-28), 0, 0), gris)
+	for _, lado in { -1, 1 } do
+		parte(m, "AletaLado", Vector3.new(3, 0.2, 1.4), ID * CFrame.new(lado * 2, -1, -0.8) * CFrame.Angles(0, lado * math.rad(28), lado * math.rad(18)), gris)
+		parte(m, "AletaLadoTrasera", Vector3.new(1.4, 0.15, 0.8), ID * CFrame.new(lado * 1.1, -0.9, 3.2) * CFrame.Angles(0, lado * math.rad(20), lado * math.rad(12)), gris)
+		-- cinco branquias a cada lado
+		for g = 0, 4 do
+			parte(m, "Branquia", Vector3.new(0.06, 0.95, 0.1), ID * CFrame.new(lado * 1.36, 0.1, -1.4 + g * 0.3), oscuro)
+		end
+		-- ojos negros a los lados de la cabeza
+		parte(m, "Ojo", Vector3.new(0.34, 0.34, 0.34), ID * CFrame.new(lado * 0.95, 0.35, -3.2), oscuro, nil, BOLA)
+		parte(m, "BrilloOjo", Vector3.new(0.1, 0.1, 0.1), ID * CFrame.new(lado * 1.05, 0.45, -3.3), blanco, Enum.Material.Neon, BOLA)
+	end
+	-- boca abierta con dientes
+	parte(m, "Boca", Vector3.new(1.5, 0.12, 1.5), ID * CFrame.new(0, -0.95, -3.2), Color3.fromRGB(110, 30, 45))
+	for d = 0, 6 do
+		local lado = if d % 2 == 0 then -1 else 1
+		parte(m, "Diente", Vector3.new(0.12, 0.34, 0.12), ID * CFrame.new(-0.6 + d * 0.2, -0.82, -3.85 + math.abs(d - 3) * 0.12) * CFrame.Angles(0, 0, lado * math.rad(8)), blanco)
+	end
+	-- la cola en media luna (la parte de arriba es más larga); estas piezas se mueven al nadar
+	parte(m, "ColaAlta", Vector3.new(0.3, 3.2, 1.2), ID * CFrame.new(0, 1.3, 7) * CFrame.Angles(math.rad(30), 0, 0), gris)
+	parte(m, "ColaBaja", Vector3.new(0.25, 2.1, 1), ID * CFrame.new(0, -0.9, 6.8) * CFrame.Angles(math.rad(-30), 0, 0), gris)
 	return cuerpo
 end
 
@@ -420,6 +443,14 @@ local function nuevo(clave, nombre, escala, mover, saludo, extra)
 		jugador:SetAttribute("PedirFotoAnimal", clave .. ":" .. contadorDeFotos) -- el script Album cuelga la foto
 	end)
 
+	-- las piezas de la cola (del tiburón) se guardan para moverlas al nadar
+	for _, p in modelo:GetChildren() do
+		if p:IsA("BasePart") and string.sub(p.Name, 1, 4) == "Cola" or p.Name == "TroncoCola" then
+			a.cola = a.cola or {}
+			table.insert(a.cola, { parte = p, relativo = cuerpo.CFrame:ToObjectSpace(p.CFrame) })
+		end
+	end
+
 	table.insert(animales, a)
 	return a
 end
@@ -444,13 +475,90 @@ local function altura(constante)
 	end
 end
 
--- 🦈 Tiburones
-for i = 1, 3 do
-	local radio = 16 + i * 9
-	nuevo("tiburon", "Tiburón", 1, circulo(C, radio, (if i % 2 == 0 then -1 else 1) * (0.02 + i * 0.002), function(a)
-		return 2.5 + math.sin(a.t * 0.8 + i) * 0.6
-	end, i * 2.1), "¡Es amistoso! 🦈💙")
+-- 🦈 Tiburones: viven AL FINAL DEL MAR (zona de peligro). Si te acercas nadando te persiguen y ¡te comen!
+-- (Desde un barco estás a salvo.) Se avisa con boyas rojas y blancas y un cartel.
+local ZONA_TIBURONES_Z = -298 -- desde aquí hacia el fondo del mar es zona de tiburones
+local tiburones = {}
+
+local function patrullaTiburon(centro, radio, vel, fase)
+	return function(a)
+		local ang = fase + a.t * vel * PI2
+		local ruta = Vector3.new(centro.X + math.cos(ang) * radio, SUELO + 2.5 + math.sin(a.t * 0.8) * 0.5, centro.Z + math.sin(ang) * radio)
+		a.pos = a.pos or ruta
+		a.dir = a.dir or Vector3.new(0, 0, -1)
+		local destino = a.objetivo or ruta
+		local falta = destino - a.pos
+		local distancia = falta.Magnitude
+		local velocidad = if a.pausa > 0 then 0 elseif a.objetivo then 15 else 9
+		if distancia > 0.4 and velocidad > 0 then
+			a.pos += falta.Unit * math.min(distancia, velocidad * (a.paso or 0.033))
+			a.dir = Vector3.new(falta.X, 0, falta.Z).Unit
+		end
+		-- nunca salen de su zona
+		a.pos = Vector3.new(a.pos.X, a.pos.Y, math.clamp(a.pos.Z, AJUSTES.zFinMar + 6, ZONA_TIBURONES_Z - 4))
+		return CFrame.lookAt(a.pos, a.pos + a.dir)
+	end
 end
+
+for i = 1, 3 do
+	local centro = Vector3.new(-70 + (i - 1) * 70, 0, -322)
+	local tiburon = nuevo("tiburon", "Tiburón", 1, patrullaTiburon(centro, 16 + i * 2, (if i % 2 == 0 then -1 else 1) * 0.03, i * 2.1), "¡Ñam ñam! 🦈😋")
+	table.insert(tiburones, tiburon)
+end
+
+-- Las boyas y el cartel de peligro
+for x = -140, 140, 14 do
+	parte(carpeta, "Boya", Vector3.new(1.4, 1.4, 1.4), CFrame.new(x, SUELO + AJUSTES.alturaDelAgua + 0.1, ZONA_TIBURONES_Z + 2), if (x // 14) % 2 == 0 then Color3.fromRGB(235, 60, 60) else Color3.fromRGB(250, 250, 250), Enum.Material.SmoothPlastic, BOLA)
+end
+local postePeligro = parte(carpeta, "PosteTiburones", Vector3.new(0.6, 9, 0.6), CFrame.new(0, SUELO + 4.5, ZONA_TIBURONES_Z + 2), Color3.fromRGB(235, 60, 60), Enum.Material.Wood)
+cartel(postePeligro, "⚠️ ¡ZONA DE TIBURONES! 🦈 No pases nadando", 420, 60, Vector3.new(0, 6, 0), 220)
+
+-- Vigilan cada poco: si un jugador está en el agua de la zona, lo persiguen; si lo alcanzan, ¡ñam!
+local avisadoDeZona = {}
+task.spawn(function()
+	while true do
+		task.wait(0.2)
+		if hayAlguien then
+			for _, a in tiburones do
+				local mejor, mejorDistancia = nil, 55
+				for _, jugador in Players:GetPlayers() do
+					local personaje = jugador.Character
+					local raiz = personaje and personaje:FindFirstChild("HumanoidRootPart")
+					local humanoide = personaje and personaje:FindFirstChildOfClass("Humanoid")
+					if raiz and humanoide and humanoide.Health > 0 and not humanoide.SeatPart
+						and raiz.Position.Z < ZONA_TIBURONES_Z and raiz.Position.Z > AJUSTES.zFinMar
+						and raiz.Position.Y < SUELO + AJUSTES.alturaDelAgua + 3 then
+						local distancia = (raiz.Position - a.modelo.PrimaryPart.Position).Magnitude
+						if distancia < mejorDistancia then
+							mejor, mejorDistancia = jugador, distancia
+						end
+						if distancia < 6.5 then
+							humanoide.Health = 0 -- ¡ñam!
+							jugador:SetAttribute("Estad_tiburones", (jugador:GetAttribute("Estad_tiburones") or 0) + 1)
+							avisar(jugador, "🦈 ¡Ñam! Te comió un tiburón. ¡Prueba otra vez en barco!", Color3.fromRGB(190, 70, 60))
+							a.pausa = 2
+							burbuja(a, "😋")
+						end
+					end
+				end
+				a.objetivo = if mejor then mejor.Character.HumanoidRootPart.Position + Vector3.new(0, 0, 0) else nil
+				if a.objetivo then
+					a.objetivo = Vector3.new(a.objetivo.X, SUELO + 2.5, a.objetivo.Z)
+				end
+			end
+		end
+		-- un aviso cuando alguien se acerca a la zona
+		for _, jugador in Players:GetPlayers() do
+			local raiz = jugador.Character and jugador.Character:FindFirstChild("HumanoidRootPart")
+			if raiz and raiz.Position.Z < ZONA_TIBURONES_Z + 8 and raiz.Position.Z > AJUSTES.zFinMar and raiz.Position.Y < SUELO + AJUSTES.alturaDelAgua + 3 then
+				if os.clock() - (avisadoDeZona[jugador] or -100) > 20 then
+					avisadoDeZona[jugador] = os.clock()
+					avisar(jugador, "⚠️ ¡Cuidado! Zona de tiburones 🦈", Color3.fromRGB(200, 120, 40))
+				end
+			end
+		end
+	end
+end)
 
 -- 🐬 Delfines (saltan fuera del agua)
 for i = 1, 2 do
@@ -595,6 +703,7 @@ RunService.Heartbeat:Connect(function(dt)
 		else
 			a.t += paso
 		end
+		a.paso = paso
 		local cf = a.mover(a)
 		if a.inflado ~= 1 or a.escalaActual then
 			-- el pez globo crece al tocarlo y luego vuelve a su tamaño (suave)
@@ -609,6 +718,13 @@ RunService.Heartbeat:Connect(function(dt)
 			a.modelo.PrimaryPart.Size = a.tamanoOriginal * actual
 		end
 		a.modelo:PivotTo(cf)
+		if a.cola and a.clave == "tiburon" then
+			-- la cola se menea de un lado a otro mientras nada
+			local meneo = math.sin(a.t * (if a.objetivo then 9 else 5)) * 0.32
+			for _, item in a.cola do
+				item.parte.CFrame = cf * CFrame.new(0, 0, 5) * CFrame.Angles(0, meneo, 0) * CFrame.new(0, 0, -5) * item.relativo
+			end
+		end
 	end
 end)
 

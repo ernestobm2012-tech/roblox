@@ -46,6 +46,7 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | `src/client/EstadoGuardado.client.luau` | Etiqueta abajo a la izquierda: dice si tus monedas se están guardando 💾 | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/server/Playa.server.luau` | La playa y el mar 🏖️ con tiburones, delfines, ballena, tortugas, medusas, pulpos, estrellas de mar, cangrejos, focas... (se tocan y se les hace foto) | `ServerScriptService` → **Script** |
 | `src/server/Pisos.server.luau` | Hasta 4 pisos para tu casa 🏢, con monedas, y el ascensor entre ellos | `ServerScriptService` → **Script** |
+| `src/server/Barcos.server.luau` | 3 barcos de vela para navegar por el mar ⛵ (W A S D) | `ServerScriptService` → **Script** |
 | `src/client/Jetpack.client.luau` | El jetpack: botón de comprar, botón de volar y barra de combustible | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Mejoras.client.luau` | Panelito con el nivel de tus mejoras y lo que cuesta la siguiente | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/GirarMonedas.client.luau` | Hace girar las monedas que tienes cerca | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
@@ -214,6 +215,10 @@ Cada semana hay un **reto nuevo** (por ejemplo *sube 80 niveles sin morir*). Al 
 - **Más animales en el bosque** (cada uno con su comida): 🦌 ciervo (manzana), 🐰 conejo (zanahoria), 🦊 zorro (uvas), 🐿️ ardilla (nuez), 🐻 oso (miel), 🐦 pájaros, 🦋 mariposas (de día) y 🦉 búhos (de noche). **E** = acariciar, **R** = dar de comer, **F** = hacerle una **foto 📸** con tu cámara (sale en tu álbum).
 - **Playa**: al fondo, detrás de la zona de salida, sigue el **camino de madera**. Hay palmeras, sombrillas y un mar (el agua llega al pecho, no pasa nada por entrar) con 🦈 tiburones, 🐬 delfines, 🐋 una ballena, 🐢 tortugas, 🐠 peces payaso, 🪼 medusas, 🐙 pulpos, 🐴 caballitos de mar, 🐡 peces globo, ⭐ estrellas de mar, 🦀 cangrejos y 🦭 focas. Se tocan (E) y se les hace foto (F).
 - **Pisos**: en "Mi casa → Pisos" compras hasta **4 pisos** (150, 300 y 600 🪙): dormitorio, sala de juegos y mirador de cristal. Te mueves con el **🛗 Ascensor**.
+
+## ⛵ Barcos y 🦈 tiburones
+
+En la orilla hay **3 barcos**: camina hasta el asiento y navega con **W A S D**. Los **tiburones** viven al **final del mar** (pasadas las boyas rojas y blancas): si te acercas nadando te persiguen y **te comen** (vuelves a empezar); desde un barco estás a salvo. Ahora tienen branquias, dientes y una cola que se mueve.
 
 ## 💾 Todo se guarda
 
