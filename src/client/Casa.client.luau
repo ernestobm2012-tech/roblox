@@ -3,6 +3,7 @@
 	Un botón a la izquierda de la pantalla. Al pulsarlo se abre una ventana donde puedes:
 	  - 🏠 Ir a tu casita (o 🚪 salir de ella y volver a tu nivel)
 	  - 👋 VISITAS: abrir tu casa a tus amigos de Roblox (🔓) o invitar a jugadores concretos
+	  - 🎉 Poner una FIESTA con luces de colores
 	  - 🎨 Pintar las paredes del color que quieras (con monedas)
 	  - 🛋️ Comprar camas y muebles con monedas. Se colocan solos dentro de tu casa.
 
@@ -165,6 +166,17 @@ local function dibujar()
 				evento:FireServer("abrir", if abierta then "no" else "si")
 			end
 		)
+
+		local fiesta = jugador:GetAttribute("FiestaManual") == 1
+		boton(
+			if fiesta then "🎉 Fiesta puesta (pulsa para pararla)" else "🎉 Poner una fiesta (luces de colores)",
+			if fiesta then Color3.fromRGB(150, 70, 220) else Color3.fromRGB(90, 70, 130),
+			40,
+			function()
+				evento:FireServer("fiesta", if fiesta then "no" else "si")
+			end
+		)
+		titular("(La fiesta también empieza sola cuando hay visitas)")
 
 		local hayOtros = false
 		for _, otro in Players:GetPlayers() do

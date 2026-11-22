@@ -10,6 +10,9 @@
 	  - Dentro se van poniendo CAMAS Y MUEBLES que se compran con monedas (en el botón "🏠 Mi casa").
 	    Los muebles se colocan solos y se guardan (con el script Guardado).
 	  - 🎨 Las PAREDES se pintan del color que quieras (se compran con monedas).
+	  - 🏡 Delante de cada casa hay un JARDÍN con césped, un camino, una valla blanca y flores.
+	  - 🎉 FIESTAS: cuando hay visitas dentro (o cuando el dueño pulsa "🎉 Fiesta") se encienden focos de
+	    colores en el techo y una bola de discoteca, sale confeti y, si has puesto una canción, suena música.
 	  - Al fondo hay una ESTANTERÍA DE TROFEOS: sale un trofeo por cada logro que consigues (script Logros).
 
 	📋 DÓNDE VA: en Roblox Studio, dentro de ServerScriptService, como "Script".
@@ -27,6 +30,9 @@ local AJUSTES = {
 	casasPorLado = 6, -- cuántas casas hay a cada lado (el total es el doble)
 	distanciaDelCentro = 72, -- lo lejos que están las casas del centro (en X)
 	separacion = 28, -- lo separadas que están unas de otras (en Z)
+	-- La canción de las fiestas: el número (ID) de un audio de Roblox. 0 = sin música.
+	-- (Busca una canción en la Toolbox o en el Creator Store, pestaña "Audio", y cópiale el número.)
+	musicaDeLaFiesta = 0,
 }
 
 local PISO = 0.6 -- la altura del suelo de dentro de las casas
@@ -414,6 +420,93 @@ local function construirCasa(indice, posicion)
 	casa.etiqueta.TextStrokeTransparency = 0
 	casa.etiqueta.Parent = cartel
 
+	-- 🏡 El jardín de delante: césped, camino, valla y flores
+	local azarJardin = Random.new(indice * 101 + 7)
+	local cesped = parte("Cesped", Vector3.new(22, 0.2, 13), Vector3.new(0, 0.1, -17.5), Color3.fromRGB(95, 175, 75), Enum.Material.Grass)
+	cesped.CanCollide = false
+	parte("Camino", Vector3.new(3, 0.3, 6.5), Vector3.new(0, 0.15, -21.25), Color3.fromRGB(200, 195, 185), Enum.Material.Concrete)
+
+	-- La valla blanca (con un hueco en el camino, que es la puerta del jardín)
+	local blancoValla = Color3.fromRGB(245, 240, 225)
+	local function poste(x, z)
+		parte("PosteValla", Vector3.new(0.5, 2.2, 0.5), Vector3.new(x, 1.1, z), blancoValla, Enum.Material.Wood)
+	end
+	for _, x in { -11, -9, -7, -5, -3, -1.5, 1.5, 3, 5, 7, 9, 11 } do
+		poste(x, -24)
+	end
+	for _, z in { -22, -20, -18, -16, -14, -12 } do
+		poste(-11, z)
+		poste(11, z)
+	end
+	for _, altura in { 0.8, 1.7 } do
+		parte("Travesano", Vector3.new(9.5, 0.3, 0.25), Vector3.new(-6.25, altura, -24), blancoValla, Enum.Material.Wood)
+		parte("Travesano", Vector3.new(9.5, 0.3, 0.25), Vector3.new(6.25, altura, -24), blancoValla, Enum.Material.Wood)
+		parte("Travesano", Vector3.new(0.25, 0.3, 13), Vector3.new(-11, altura, -17.5), blancoValla, Enum.Material.Wood)
+		parte("Travesano", Vector3.new(0.25, 0.3, 13), Vector3.new(11, altura, -17.5), blancoValla, Enum.Material.Wood)
+	end
+
+	-- Las flores (cada casa tiene las suyas, repartidas al azar por el césped, sin tapar el camino ni el porche)
+	local coloresFlor = {
+		Color3.fromRGB(235, 60, 60), Color3.fromRGB(255, 220, 60), Color3.fromRGB(255, 130, 200), Color3.fromRGB(170, 90, 240),
+		Color3.fromRGB(255, 150, 50), Color3.fromRGB(250, 250, 250), Color3.fromRGB(80, 150, 255),
+	}
+	local puestas = 0
+	local intentos = 0
+	while puestas < 12 and intentos < 80 do
+		intentos += 1
+		local x = azarJardin:NextNumber(-10, 10)
+		local z = azarJardin:NextNumber(-23, -12)
+		local enElPorche = math.abs(x) < 5.5 and z > -19
+		local enElCamino = math.abs(x) < 2.5
+		if not enElPorche and not enElCamino then
+			puestas += 1
+			local tallo = parte("Tallo", Vector3.new(0.15, 0.9, 0.15), Vector3.new(x, 0.65, z), Color3.fromRGB(60, 150, 60))
+			tallo.CanCollide = false
+			local flor = parte("Flor", Vector3.new(0.7, 0.7, 0.7), Vector3.new(x, 1.2, z), coloresFlor[azarJardin:NextInteger(1, #coloresFlor)])
+			flor.Shape = Enum.PartType.Ball
+			flor.CanCollide = false
+		end
+	end
+
+	-- 🎉 Lo de las fiestas: cuatro focos de colores en el techo, una bola de discoteca y confeti
+	casa.focos = {}
+	for _, esquina in { { -8, 8 }, { 8, 8 }, { -8, -8 }, { 8, -8 } } do
+		local foco = parte("Foco", Vector3.new(1.2, 0.3, 1.2), Vector3.new(esquina[1], PISO + 9.7, esquina[2]), Color3.fromRGB(70, 70, 80))
+		foco.CanCollide = false
+		local luzFoco = Instance.new("PointLight")
+		luzFoco.Range = 22
+		luzFoco.Brightness = 2
+		luzFoco.Shadows = false
+		luzFoco.Enabled = false -- se enciende cuando hay fiesta
+		luzFoco.Parent = foco
+		table.insert(casa.focos, { parte = foco, luz = luzFoco })
+	end
+	casa.bola = parte("BolaDisco", Vector3.new(2.2, 2.2, 2.2), Vector3.new(0, PISO + 8.3, 0), Color3.fromRGB(190, 195, 210), Enum.Material.Metal)
+	casa.bola.Shape = Enum.PartType.Ball
+	casa.bola.CanCollide = false
+	casa.confeti = Instance.new("ParticleEmitter")
+	casa.confeti.Rate = 0 -- solo suelta confeti cuando hay fiesta
+	casa.confeti.Lifetime = NumberRange.new(2.5, 3.5)
+	casa.confeti.Speed = NumberRange.new(4, 9)
+	casa.confeti.SpreadAngle = Vector2.new(180, 180)
+	casa.confeti.Acceleration = Vector3.new(0, -8, 0)
+	casa.confeti.Size = NumberSequence.new(0.4)
+	casa.confeti.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 80, 80)),
+		ColorSequenceKeypoint.new(0.33, Color3.fromRGB(255, 220, 60)),
+		ColorSequenceKeypoint.new(0.66, Color3.fromRGB(80, 220, 120)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 160, 255)),
+	})
+	casa.confeti.Parent = casa.bola
+	if AJUSTES.musicaDeLaFiesta ~= 0 then
+		casa.musica = Instance.new("Sound")
+		casa.musica.SoundId = "rbxassetid://" .. AJUSTES.musicaDeLaFiesta
+		casa.musica.Looped = true
+		casa.musica.Volume = 0.6
+		casa.musica.RollOffMaxDistance = 80
+		casa.musica.Parent = casa.bola
+	end
+
 	return casa
 end
 
@@ -676,7 +769,7 @@ end
 local function actualizarCartel(casa)
 	if casa.dueno then
 		local llave = if casa.dueno:GetAttribute("Casa_abierta") == 1 then "🔓" else "🔒"
-		casa.etiqueta.Text = "🏠 Casa de " .. casa.dueno.DisplayName .. " " .. llave
+		casa.etiqueta.Text = "🏠 Casa de " .. casa.dueno.DisplayName .. " " .. llave .. (if casa.fiesta then " 🎉" else "")
 		casa.entrar.ObjectText = "🏠 Casa de " .. casa.dueno.DisplayName
 	else
 		casa.etiqueta.Text = "🏠 Casa libre"
@@ -703,6 +796,8 @@ local function liberarCasa(jugador)
 	local casa = casaDe(jugador)
 	if casa and casa.dueno == jugador then
 		casa.dueno = nil
+		casa.fiestaManual = false
+		jugador:SetAttribute("FiestaManual", nil)
 		expulsarVisitas(casa, "La casa se ha quedado sin dueño 🏠")
 		-- Las invitaciones de este dueño se acaban
 		for _, otro in Players:GetPlayers() do
@@ -751,6 +846,72 @@ for _, jugador in Players:GetPlayers() do
 	prepararJugador(jugador)
 end
 Players.PlayerRemoving:Connect(liberarCasa)
+
+----------------------------------------------------------------------
+-- 🎉 FIESTAS: luces de colores (y música, si has puesto una canción)
+----------------------------------------------------------------------
+
+local COLORES_FIESTA = {
+	Color3.fromRGB(255, 70, 70), Color3.fromRGB(255, 160, 40), Color3.fromRGB(255, 230, 60), Color3.fromRGB(80, 230, 100),
+	Color3.fromRGB(70, 160, 255), Color3.fromRGB(170, 90, 255), Color3.fromRGB(255, 100, 200),
+}
+
+local function hayVisitas(casa)
+	for _, otro in Players:GetPlayers() do
+		if otro:GetAttribute("CasaVisitada") == casa.indice then
+			return true
+		end
+	end
+	return false
+end
+
+-- Hay fiesta en una casa si el dueño la ha puesto con el botón "🎉 Fiesta" o si hay visitas dentro
+local function actualizarFiesta(casa)
+	local activa = casa.dueno ~= nil and (casa.fiestaManual == true or hayVisitas(casa))
+	if activa == (casa.fiesta == true) then
+		return
+	end
+	casa.fiesta = activa
+	for _, foco in casa.focos do
+		foco.luz.Enabled = activa
+		foco.parte.Material = if activa then Enum.Material.Neon else Enum.Material.SmoothPlastic
+		if not activa then
+			foco.parte.Color = Color3.fromRGB(70, 70, 80)
+		end
+	end
+	casa.bola.Material = if activa then Enum.Material.Neon else Enum.Material.Metal
+	casa.confeti.Rate = if activa then 5 else 0
+	if activa then
+		casa.confeti:Emit(60)
+	end
+	if casa.musica then
+		if activa then
+			casa.musica:Play()
+		else
+			casa.musica:Stop()
+		end
+	end
+	actualizarCartel(casa)
+end
+
+-- Cada poquito miramos si hay fiesta y cambiamos el color de los focos
+task.spawn(function()
+	local paso = 0
+	while true do
+		task.wait(0.4)
+		paso += 1
+		for _, casa in casas do
+			actualizarFiesta(casa)
+			if casa.fiesta then
+				for i, foco in casa.focos do
+					local color = COLORES_FIESTA[(paso + i) % #COLORES_FIESTA + 1]
+					foco.parte.Color = color
+					foco.luz.Color = color
+				end
+			end
+		end
+	end
+end)
 
 ----------------------------------------------------------------------
 -- 📋 LAS LISTAS PARA LA PANTALLA Y LOS BOTONES
@@ -890,6 +1051,12 @@ evento.OnServerEvent:Connect(function(jugador, accion, id)
 		local abrir = id == "si"
 		jugador:SetAttribute("Casa_abierta", if abrir then 1 else 0)
 		avisar(jugador, if abrir then "🔓 Tu casa está abierta a tus amigos" else "🔒 Tu casa está cerrada", Color3.fromRGB(60, 100, 200))
+	elseif accion == "fiesta" and id and casa then
+		-- "si" = fiesta puesta por el dueño, "no" = sin fiesta (aunque haya visitas, la fiesta sigue mientras estén dentro)
+		casa.fiestaManual = id == "si"
+		jugador:SetAttribute("FiestaManual", if casa.fiestaManual then 1 else 0)
+		actualizarFiesta(casa)
+		avisar(jugador, if casa.fiestaManual then "🎉 ¡Fiesta en tu casa!" else "Se acabó la fiesta 🌙", Color3.fromRGB(150, 70, 220))
 	elseif accion == "invitar" and id and casa then
 		-- Invita (o quita la invitación) a un jugador que está ahora mismo en el juego
 		local invitado = Players:GetPlayerByUserId(tonumber(id) or 0)

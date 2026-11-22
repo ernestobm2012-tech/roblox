@@ -134,7 +134,7 @@ end
 -- Y unos arbolitos y arbustos sueltos por el prado (lejos de las casas, la tienda y el camino)
 for _ = 1, 14 do
 	local lado = if azar:NextNumber() < 0.5 then -1 else 1
-	plantar(lado * azar:NextNumber(40, 50), azar:NextNumber(-82, 70))
+	plantar(lado * azar:NextNumber(37, 45), azar:NextNumber(-82, 70))
 end
 
 print("🌲 Bosque plantado.")

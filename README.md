@@ -111,7 +111,7 @@ Pulsa el botón **🏁 Carrera** (a la izquierda) para apuntarte. Cuando hay **2
 
 ## 🐾 Mascotas (¡suben de nivel!)
 
-El botón **🐾 Mascotas** (a la izquierda) abre la lista. Cada mascota **te sigue a todas partes** y **te hace correr más rápido**. Se compran con monedas, una sola vez, y puedes tener todas pero solo una puesta a la vez (o ninguna: **Quitar**).
+El botón **🐾 Mascotas** (a la izquierda) abre la lista. Cada mascota **te sigue a todas partes** y **te hace correr más rápido**. Se compran con monedas, una sola vez. Puedes tener todas y llevar **DOS puestas a la vez** (una a cada lado, y **sus velocidades se suman**). Pulsa una que ya llevas para quitártela, o **Quitar las mascotas** para quedarte sin ninguna.
 
 | Mascota | Precio | Velocidad extra (nivel 1) |
 |---|---|---|
@@ -120,7 +120,7 @@ El botón **🐾 Mascotas** (a la izquierda) abre la lista. Cada mascota **te si
 | 🐲 Dragoncito | 60 🪙 | +5 |
 | 🤖 Robot | 80 🪙 | +6 |
 
-⭐ **La mascota que llevas puesta sube de nivel mientras juegas** (hasta el nivel 30). Gana experiencia (XP) por:
+⭐ **Las mascotas que llevas puestas suben de nivel mientras juegas** (hasta el nivel 30, las dos a la vez). Gana experiencia (XP) por:
 - cada rato que juegas con ella (1 XP cada 10 segundos),
 - cada moneda que recoges (1 XP),
 - cada nivel nuevo del parkour (5 XP).
@@ -161,6 +161,8 @@ Se guardan, y además salen como **trofeos dorados** en la estantería de tu cas
 A los dos lados de la zona de salida (en la hierba, **fuera del parkour**) hay un **barrio de 12 casitas**. Cada jugador que entra se queda con una y en el tejado pone **"🏠 Casa de <tu nombre>"** y un candado (🔒 cerrada · 🔓 abierta a los amigos).
 - Es **privada**: la puerta está cerrada para todos menos para ti. Pulsa **E** en la puerta, o usa el botón **🏠 Mi casa**, y apareces dentro. Para **salir**, pulsa **E** en la alfombrilla verde de la puerta (o el botón): vuelves a tu nivel.
 - **👋 Visitas:** en el botón **🏠 Mi casa** puedes **abrir tu casa a tus amigos de Roblox** (🔓). Sus amigos entran pulsando **E** en la puerta, ven la casa y salen por la alfombrilla. También puedes **invitar a jugadores concretos** que estén en el juego (aunque no sean amigos de Roblox) y **quitarles la invitación**. Si cierras la casa, quitas la invitación o te vas del juego, los visitantes salen. Por defecto la casa está **cerrada**.
+- **🏡 Jardín:** delante de cada casa hay un jardín con **césped, un camino, una valla blanca y flores** (cada casa tiene sus flores).
+- **🎉 Fiestas:** cuando hay **visitas dentro** (o cuando el dueño pulsa **🎉 Poner una fiesta** en "Mi casa") se encienden **4 focos de colores** en el techo y una **bola de discoteca**, sale **confeti** y el cartel del tejado se llena de 🎉. Si quieres **música**, busca una canción en la Toolbox/Creator Store (pestaña Audio) y dile a Claude su número (ID): se pone en `Casas.server.luau` (`musicaDeLaFiesta`). Sin número no suena nada.
 - **🎨 Paredes:** compra colores de pared (10–15 🪙): crema, rosa, azul cielo, verde menta, limón, lila, naranja, gris, blanco, rojo, azul y verde. Se pintan por fuera y por dentro.
 - **🛋️ Muebles** (se compran con monedas y se colocan **solos**, se guardan): 🛏️ cama (3), 🛋️ sofá (2), 🍽️ mesa (2), 🪑 silla (3), 💡 lámpara (3), 🪴 planta (4), 📚 librería (2), 📺 tele, 🧊 nevera, 🟥 alfombra (2), 🖼️ cuadros (3), y nuevos: 🛏️ mesitas de noche (2), 🧰 baúl de juguetes, 🐠 acuario, 🖥️ escritorio con ordenador, y **colgados en la pared**: ⏰ relojes (2), 🪞 espejos (2) y 🪟 ventanas (2). No caben más de cada tipo que huecos hay.
 - En la pared de la puerta hay una **estantería con 12 trofeos**, uno por cada logro: dorado si lo tienes, gris con candado si no.

@@ -1,7 +1,8 @@
 --[[
 	🐾 MASCOTAS (que SUBEN DE NIVEL)
 	Se compran con 🪙 monedas (unas 30), te SIGUEN a todas partes y te hacen CORRER MÁS RÁPIDO.
-	Puedes tener todas las que quieras, pero solo una puesta a la vez.
+	Puedes tener todas las que quieras y llevar DOS puestas a la vez, una a cada lado (¡y sus
+	velocidades se suman!).
 
 	⭐ ¡Suben de nivel mientras juegas! La mascota que llevas puesta gana experiencia (XP):
 	  - un poquito por cada rato que juegas con ella
@@ -141,7 +142,7 @@ local MASCOTAS = {
 	},
 }
 
-local mascotas = {} -- mascotas[jugador] = { modelo, cframe, fase, etiqueta }
+local mascotas = {} -- mascotas[jugador] = { [1] = { modelo, cframe, fase, etiqueta, evolucionada }, [2] = {...} }
 local entrada = {} -- entrada[jugador] = cuándo entró (para esperar a que se cargue lo guardado)
 
 workspace:SetAttribute("MascotaDivisor", AJUSTES.divisorNivel) -- la pantalla los usa para calcular el nivel
@@ -299,9 +300,20 @@ end
 -- 🐾 PONERSE LA MASCOTA Y SUBIR DE NIVEL
 ----------------------------------------------------------------------
 
+-- Se pueden llevar DOS mascotas a la vez: cada una va en su "hueco".
+-- El hueco 1 se va detrás a la derecha y el hueco 2 detrás a la izquierda.
+local HUECOS = {
+	{ atributo = "Equipo_mascota", lado = 1 },
+	{ atributo = "Equipo_mascota2", lado = -1 },
+}
+
 local ponerMascota -- (se define más abajo)
 
--- Pone al día todo lo que depende del nivel de la mascota: tu velocidad, su tamaño y su cartelito
+local function datosDelHueco(jugador, hueco)
+	return buscar(jugador:GetAttribute(HUECOS[hueco].atributo))
+end
+
+-- Pone al día todo lo que depende del nivel de las mascotas: tu velocidad, su tamaño y su cartelito
 local function actualizarMascota(jugador)
 	-- El nivel más alto de todas tus mascotas (lo usan los logros)
 	local maximo = 0
@@ -312,89 +324,116 @@ local function actualizarMascota(jugador)
 	end
 	jugador:SetAttribute("MascotaMaxNivel", maximo)
 
-	local datos = buscar(jugador:GetAttribute("Equipo_mascota"))
-	local actual = mascotas[jugador]
-	if not datos or not actual then
-		jugador:SetAttribute("BonusMascota", 0)
-		jugador:SetAttribute("MascotaNivel", 0)
-		return
+	-- La velocidad extra es la suma de las mascotas que llevas puestas
+	local bonusTotal = 0
+	local nivelMasAlto = 0
+	for hueco = 1, #HUECOS do
+		local datos = datosDelHueco(jugador, hueco)
+		local registros = mascotas[jugador]
+		local actual = registros and registros[hueco]
+		if datos and actual then
+			local nivel = nivelDeXP(jugador:GetAttribute(PREFIJO_XP .. datos.id) or 0)
+			local evoluciona = nivel >= AJUSTES.nivelMaximo
+			if actual.evolucionada ~= evoluciona then
+				ponerMascota(jugador, hueco, true) -- ¡ha evolucionado! Se hace de nuevo con su forma final
+				actual = mascotas[jugador] and mascotas[jugador][hueco]
+			end
+			if actual then
+				bonusTotal += datos.bonus + (nivel - 1) * AJUSTES.bonusPorNivel + (if evoluciona then AJUSTES.bonusEvolucion else 0)
+				nivelMasAlto = math.max(nivelMasAlto, nivel)
+				actual.modelo:ScaleTo(1 + (nivel - 1) * AJUSTES.escalaPorNivel)
+				actual.etiqueta.Text = (if evoluciona then datos.evolucion.nombre .. " ⭐" else datos.nombre) .. " · Nv " .. nivel
+			end
+		end
 	end
-
-	local nivel = nivelDeXP(jugador:GetAttribute(PREFIJO_XP .. datos.id) or 0)
-	local evoluciona = nivel >= AJUSTES.nivelMaximo
-	if actual.evolucionada ~= evoluciona then
-		ponerMascota(jugador) -- ¡ha evolucionado! Se hace de nuevo con su forma final
-		return
-	end
-
-	jugador:SetAttribute("MascotaNivel", nivel)
-	local bonus = datos.bonus + (nivel - 1) * AJUSTES.bonusPorNivel + (if evoluciona then AJUSTES.bonusEvolucion else 0)
-	jugador:SetAttribute("BonusMascota", bonus) -- el script Tienda lo suma a tu velocidad
-	actual.modelo:ScaleTo(1 + (nivel - 1) * AJUSTES.escalaPorNivel)
-	actual.etiqueta.Text = (if evoluciona then datos.evolucion.nombre .. " ⭐" else datos.nombre) .. " · Nv " .. nivel
+	jugador:SetAttribute("MascotaNivel", nivelMasAlto)
+	jugador:SetAttribute("BonusMascota", bonusTotal) -- el script Tienda lo suma a tu velocidad
 end
 
--- Le damos experiencia a la mascota que lleva puesta el jugador
+-- Le damos experiencia a las mascotas que lleva puestas el jugador (¡a las dos!)
 local function darXP(jugador, cantidad)
-	local datos = buscar(jugador:GetAttribute("Equipo_mascota"))
-	if not datos or not mascotas[jugador] or cantidad <= 0 then
+	if cantidad <= 0 or not mascotas[jugador] then
 		return
 	end
-	local atributo = PREFIJO_XP .. datos.id
-	local viejo = jugador:GetAttribute(atributo) or 0
-	jugador:SetAttribute(atributo, viejo + cantidad) -- el script Guardado se acuerda
-	local nivelViejo = nivelDeXP(viejo)
-	local nivelNuevo = nivelDeXP(viejo + cantidad)
+	local cambios = {}
+	for hueco = 1, #HUECOS do
+		local datos = datosDelHueco(jugador, hueco)
+		if datos and mascotas[jugador][hueco] then
+			local atributo = PREFIJO_XP .. datos.id
+			local viejo = jugador:GetAttribute(atributo) or 0
+			jugador:SetAttribute(atributo, viejo + cantidad) -- el script Guardado se acuerda
+			table.insert(cambios, { datos = datos, viejo = nivelDeXP(viejo), nuevo = nivelDeXP(viejo + cantidad) })
+		end
+	end
 	actualizarMascota(jugador)
-	if nivelNuevo >= AJUSTES.nivelMaximo and nivelViejo < AJUSTES.nivelMaximo then
-		avisar(jugador, "✨ ¡" .. datos.nombre .. " ha EVOLUCIONADO en " .. datos.evolucion.nombre .. "!", Color3.fromRGB(150, 70, 220))
-	elseif nivelNuevo > nivelViejo then
-		avisar(jugador, "🎉 ¡" .. datos.nombre .. " ha subido al nivel " .. nivelNuevo .. "!", Color3.fromRGB(190, 130, 0))
+	for _, cambio in cambios do
+		if cambio.nuevo >= AJUSTES.nivelMaximo and cambio.viejo < AJUSTES.nivelMaximo then
+			avisar(jugador, "✨ ¡" .. cambio.datos.nombre .. " ha EVOLUCIONADO en " .. cambio.datos.evolucion.nombre .. "!", Color3.fromRGB(150, 70, 220))
+		elseif cambio.nuevo > cambio.viejo then
+			avisar(jugador, "🎉 ¡" .. cambio.datos.nombre .. " ha subido al nivel " .. cambio.nuevo .. "!", Color3.fromRGB(190, 130, 0))
+		end
 	end
 end
 
-local function quitarMascota(jugador)
-	local actual = mascotas[jugador]
-	if actual then
-		actual.modelo:Destroy()
+local function quitarMascotas(jugador)
+	local registros = mascotas[jugador]
+	if registros then
+		for _, registro in registros do
+			registro.modelo:Destroy()
+		end
 		mascotas[jugador] = nil
 	end
 end
 
-function ponerMascota(jugador)
-	-- Guardamos dónde estaba la mascota (por si solo estamos cambiándole la forma)
-	local anterior = mascotas[jugador]
-	local cframeAnterior = anterior and anterior.cframe
-	quitarMascota(jugador)
-	local datos = buscar(jugador:GetAttribute("Equipo_mascota"))
-	if not datos then
-		actualizarMascota(jugador)
-		return
+-- Pone (o quita) la mascota de un hueco. Si "sinActualizar" es verdad, no recalcula la velocidad todavía.
+function ponerMascota(jugador, hueco, sinActualizar)
+	local registros = mascotas[jugador]
+	if not registros then
+		registros = {}
+		mascotas[jugador] = registros
 	end
 
-	local evolucionada = nivelDeXP(jugador:GetAttribute(PREFIJO_XP .. datos.id) or 0) >= AJUSTES.nivelMaximo
-	local modelo, etiqueta = crearModelo(datos, evolucionada)
-	local raiz = jugador.Character and jugador.Character:FindFirstChild("HumanoidRootPart")
-	local inicio = cframeAnterior or (if raiz then raiz.CFrame * CFrame.new(3.2, 0.2, 3.2) else CFrame.new(0, 5, 0))
-	modelo:PivotTo(inicio)
-	modelo.Parent = carpeta
-	mascotas[jugador] = { modelo = modelo, cframe = inicio, fase = math.random() * 6, etiqueta = etiqueta, evolucionada = evolucionada }
-	actualizarMascota(jugador)
+	-- Guardamos dónde estaba la mascota (por si solo estamos cambiándole la forma)
+	local anterior = registros[hueco]
+	local cframeAnterior = anterior and anterior.cframe
+	if anterior then
+		anterior.modelo:Destroy()
+		registros[hueco] = nil
+	end
+
+	local datos = datosDelHueco(jugador, hueco)
+	if datos then
+		local evolucionada = nivelDeXP(jugador:GetAttribute(PREFIJO_XP .. datos.id) or 0) >= AJUSTES.nivelMaximo
+		local modelo, etiqueta = crearModelo(datos, evolucionada)
+		local raiz = jugador.Character and jugador.Character:FindFirstChild("HumanoidRootPart")
+		local lado = HUECOS[hueco].lado
+		local inicio = cframeAnterior or (if raiz then raiz.CFrame * CFrame.new(3.2 * lado, 0.2, 3.2) else CFrame.new(0, 5, 0))
+		modelo:PivotTo(inicio)
+		modelo.Parent = carpeta
+		registros[hueco] = { modelo = modelo, cframe = inicio, fase = math.random() * 6, etiqueta = etiqueta, evolucionada = evolucionada }
+	end
+
+	if not sinActualizar then
+		actualizarMascota(jugador)
+	end
 end
 
--- Cada fotograma la mascota se acerca (suavemente) a un sitio detrás de su dueño, flotando un poquito
+-- Cada fotograma las mascotas se acercan (suavemente) a su sitio detrás de su dueño, flotando un poquito
 RunService.Heartbeat:Connect(function(dt)
 	local tiempo = os.clock()
-	for jugador, mascota in mascotas do
+	for jugador, registros in mascotas do
 		local raiz = jugador.Character and jugador.Character:FindFirstChild("HumanoidRootPart")
 		if raiz then
-			local objetivo = raiz.CFrame * CFrame.new(3.2, 0.2 + math.sin(tiempo * 3 + mascota.fase) * 0.4, 3.2)
-			if (mascota.cframe.Position - objetivo.Position).Magnitude > 60 then
-				mascota.cframe = objetivo -- si te has teletransportado lejos, viene de golpe
-			else
-				mascota.cframe = mascota.cframe:Lerp(objetivo, math.clamp(dt * 8, 0, 1))
+			for hueco, mascota in registros do
+				local lado = HUECOS[hueco].lado
+				local objetivo = raiz.CFrame * CFrame.new(3.2 * lado, 0.2 + math.sin(tiempo * 3 + mascota.fase) * 0.4, 3.2 + (hueco - 1) * 0.8)
+				if (mascota.cframe.Position - objetivo.Position).Magnitude > 60 then
+					mascota.cframe = objetivo -- si te has teletransportado lejos, viene de golpe
+				else
+					mascota.cframe = mascota.cframe:Lerp(objetivo, math.clamp(dt * 8, 0, 1))
+				end
+				mascota.modelo:PivotTo(mascota.cframe)
 			end
-			mascota.modelo:PivotTo(mascota.cframe)
 		end
 	end
 end)
@@ -402,10 +441,12 @@ end)
 local function prepararJugador(jugador)
 	entrada[jugador] = os.clock()
 
-	-- Cuando cambias de mascota (o se carga la guardada)
-	jugador:GetAttributeChangedSignal("Equipo_mascota"):Connect(function()
-		ponerMascota(jugador)
-	end)
+	-- Cuando cambias de mascota (o se carga la guardada), en cada hueco
+	for hueco, datosHueco in HUECOS do
+		jugador:GetAttributeChangedSignal(datosHueco.atributo):Connect(function()
+			ponerMascota(jugador, hueco)
+		end)
+	end
 
 	-- Qué cosas dan experiencia: las monedas que recoges y los niveles nuevos del parkour.
 	-- (Lo que se carga de la partida anterior no cuenta: solo lo que haces ahora.)
@@ -426,7 +467,10 @@ local function prepararJugador(jugador)
 		end
 	end)
 
-	ponerMascota(jugador)
+	for hueco = 1, #HUECOS do
+		ponerMascota(jugador, hueco, true)
+	end
+	actualizarMascota(jugador)
 end
 
 Players.PlayerAdded:Connect(prepararJugador)
@@ -434,11 +478,11 @@ for _, jugador in Players:GetPlayers() do
 	prepararJugador(jugador)
 end
 Players.PlayerRemoving:Connect(function(jugador)
-	quitarMascota(jugador)
+	quitarMascotas(jugador)
 	entrada[jugador] = nil
 end)
 
--- Y un poquito de XP por cada rato que juegas con la mascota puesta
+-- Y un poquito de XP por cada rato que juegas con las mascotas puestas
 task.spawn(function()
 	while true do
 		task.wait(AJUSTES.segundosPorXP)
@@ -479,6 +523,27 @@ Players.PlayerRemoving:Connect(function(jugador)
 	ultimoPedido[jugador] = nil
 end)
 
+-- Mete una mascota en un hueco libre (si los dos están llenos, sustituye a la segunda)
+local function ponerPuesta(jugador, id)
+	if jugador:GetAttribute("Equipo_mascota") == id or jugador:GetAttribute("Equipo_mascota2") == id then
+		return
+	end
+	if not buscar(jugador:GetAttribute("Equipo_mascota")) then
+		jugador:SetAttribute("Equipo_mascota", id)
+	else
+		jugador:SetAttribute("Equipo_mascota2", id) -- el hueco 2 (si estaba ocupado, cambia de mascota)
+	end
+end
+
+local function quitarPuesta(jugador, id)
+	if jugador:GetAttribute("Equipo_mascota") == id then
+		jugador:SetAttribute("Equipo_mascota", "")
+	end
+	if jugador:GetAttribute("Equipo_mascota2") == id then
+		jugador:SetAttribute("Equipo_mascota2", "")
+	end
+end
+
 evento.OnServerEvent:Connect(function(jugador, accion, id)
 	-- Comprobamos que lo que nos manda tiene sentido (¡nunca nos fiamos de la pantalla!)
 	if type(accion) ~= "string" or type(id) ~= "string" then
@@ -490,9 +555,10 @@ evento.OnServerEvent:Connect(function(jugador, accion, id)
 	end
 	ultimoPedido[jugador] = ahora
 
-	-- Quitarse la mascota
+	-- Quitarse las dos mascotas
 	if accion == "equipar" and id == "" then
 		jugador:SetAttribute("Equipo_mascota", "")
+		jugador:SetAttribute("Equipo_mascota2", "")
 		return
 	end
 
@@ -504,11 +570,16 @@ evento.OnServerEvent:Connect(function(jugador, accion, id)
 
 	if accion == "equipar" then
 		if jugador:GetAttribute(atributoCompra) then
-			jugador:SetAttribute("Equipo_mascota", id)
+			-- Si ya la llevas puesta, te la quita; si no, te la pone
+			if jugador:GetAttribute("Equipo_mascota") == id or jugador:GetAttribute("Equipo_mascota2") == id then
+				quitarPuesta(jugador, id)
+			else
+				ponerPuesta(jugador, id)
+			end
 		end
 	elseif accion == "comprar" then
 		if jugador:GetAttribute(atributoCompra) then
-			jugador:SetAttribute("Equipo_mascota", id) -- ya la tienes: te la pones
+			ponerPuesta(jugador, id) -- ya la tienes: te la pones
 			return
 		end
 		local marcador = jugador:FindFirstChild("leaderstats")
@@ -523,7 +594,7 @@ evento.OnServerEvent:Connect(function(jugador, accion, id)
 		end
 		monedas.Value -= datos.precio
 		jugador:SetAttribute(atributoCompra, true)
-		jugador:SetAttribute("Equipo_mascota", id)
+		ponerPuesta(jugador, id)
 		avisar(jugador, "¡" .. datos.nombre .. " es tu mascota! Corres +" .. datos.bonus .. " más rápido 🎉", Color3.fromRGB(40, 160, 80))
 	end
 end)

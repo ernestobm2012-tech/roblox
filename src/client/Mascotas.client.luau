@@ -2,7 +2,7 @@
 	🐾 BOTÓN "MASCOTAS"
 	Un botón a la izquierda de la pantalla. Al pulsarlo se abre una ventana con las mascotas.
 	Pulsa una para comprarla (si no la tienes) o para ponértela (si ya la tienes).
-	Pulsa "Quitar" para quedarte sin mascota. Cada mascota te hace correr más rápido, ¡y sube de
+	Puedes llevar DOS a la vez (pulsa una puesta para quitarla). Pulsa "Quitar" para quedarte sin ninguna. Cada mascota te hace correr más rápido, ¡y sube de
 	nivel mientras juegas! Aquí ves el nivel de cada una y lo que le falta para el siguiente.
 
 	La compra y los niveles los hace el script "Mascotas" del servidor.
@@ -124,7 +124,7 @@ local function dibujar()
 	etiqueta.Parent = lista
 
 	orden += 1
-	local quitar = crearBoton("Quitar mascota", UDim2.new(1, -10, 0, 34), UDim2.new(), Color3.fromRGB(90, 90, 130), lista)
+	local quitar = crearBoton("Quitar las mascotas", UDim2.new(1, -10, 0, 34), UDim2.new(), Color3.fromRGB(90, 90, 130), lista)
 	quitar.LayoutOrder = orden
 	quitar.Activated:Connect(function()
 		evento:FireServer("equipar", "")
@@ -135,7 +135,8 @@ local function dibujar()
 		return a:GetAttribute("Orden") < b:GetAttribute("Orden")
 	end)
 
-	local puesta = jugador:GetAttribute("Equipo_mascota")
+	local puesta1 = jugador:GetAttribute("Equipo_mascota")
+	local puesta2 = jugador:GetAttribute("Equipo_mascota2")
 	local maximo = workspace:GetAttribute("MascotaNivelMaximo") or 30
 	local divisor = workspace:GetAttribute("MascotaDivisor") or 8
 	for _, ficha in fichas do
@@ -146,12 +147,12 @@ local function dibujar()
 		local evolucionada = nivel >= maximo
 		local nombreMostrado = if laTiene and evolucionada then ficha:GetAttribute("NombreEvolucion") .. " ⭐" else ficha:GetAttribute("Nombre")
 		local texto
-		if puesta == id then
+		if puesta1 == id or puesta2 == id then
 			local progreso = "¡EVOLUCIONADA!"
 			if nivel < maximo then
 				progreso = "XP " .. math.floor(xp - divisor * (nivel - 1) ^ 2) .. "/" .. math.floor(divisor * nivel ^ 2 - divisor * (nivel - 1) ^ 2)
 			end
-			texto = nombreMostrado .. "  Nv " .. nivel .. "  ✅ puesta  (" .. progreso .. ")"
+			texto = nombreMostrado .. "  Nv " .. nivel .. "  ✅ " .. (if puesta1 == id then "puesta (derecha)" else "puesta (izquierda)") .. "  (" .. progreso .. ")"
 		elseif laTiene then
 			texto = nombreMostrado .. "  Nv " .. nivel .. "  (tuya: ponértela)"
 		else
@@ -173,9 +174,9 @@ local function dibujar()
 
 	orden += 1
 	local nota = Instance.new("TextLabel")
-	nota.Size = UDim2.new(1, -10, 0, 40)
+	nota.Size = UDim2.new(1, -10, 0, 52)
 	nota.BackgroundTransparency = 1
-	nota.Text = "⭐ Tu mascota sube de nivel mientras juegas. ¡Al llegar al nivel " .. maximo .. " EVOLUCIONA y cambia de aspecto!"
+	nota.Text = "👯 Puedes llevar 2 mascotas a la vez (pulsa una puesta para quitarla). ⭐ Suben de nivel jugando y, al llegar al nivel " .. maximo .. ", ¡EVOLUCIONAN!"
 	nota.TextColor3 = Color3.fromRGB(200, 210, 255)
 	nota.TextScaled = true
 	nota.TextWrapped = true

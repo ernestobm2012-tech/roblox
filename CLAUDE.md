@@ -62,6 +62,11 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
 - Logros (`Logros`): lista `LOGROS` (12, uno por trofeo de la casa); el estado es `Logro_<id>`; leen `Estad_*`, `Nivel`, `MascotaMaxNivel`
   y el marcador `Victorias`. Catálogo en `ReplicatedStorage.CatalogoLogros`. Para un logro nuevo: añádelo a `LOGROS` (y súbele
   el límite de huecos de trofeos en `Casas` si pasa de 12). `Guardado` pone `DatosCargados` al terminar de cargar.
+- Dos mascotas a la vez: hay dos HUECOS (`HUECOS` en `Mascotas`): `Equipo_mascota` (derecha) y `Equipo_mascota2` (izquierda). Las dos ganan XP,
+  `BonusMascota` es la SUMA de las dos, y `mascotas[jugador][hueco]` guarda cada modelo. Un `Estilo_mascota_<id>` solo se puede poner en un hueco.
+- Jardín y fiestas (`Casas`): el jardín (césped, camino, valla, flores) se construye en `construirCasa`. Fiesta = `casa.fiestaManual` (botón del dueño,
+  atributo `FiestaManual`, no se guarda) o `hayVisitas(casa)`; un bucle de 0.4 s llama a `actualizarFiesta` y cambia los colores de los focos. La música es
+  `AJUSTES.musicaDeLaFiesta` (0 = sin música; NUNCA inventes un ID de audio).
 - Evolución de mascotas: cada mascota de `MASCOTAS` tiene una `evolucion` (nombre, color, piezas extra, color de aura) que se
   usa al llegar a `nivelMaximo`; `actualizarMascota` reconstruye el modelo (`ponerMascota`) cuando cambia de forma y suma `bonusEvolucion`.
 - Bosque: `Bosque` (servidor) pinta el suelo y planta árboles en la zona de salida; `Bosque` (cliente) dibuja árboles gigantes solo en la pantalla
