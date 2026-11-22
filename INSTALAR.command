@@ -1,7 +1,7 @@
 #!/bin/bash
 # INSTALAR (Mac, solo UNA vez): descarga Rojo y pone su plugin en Roblox Studio.
 cd "$(dirname "$0")" || exit 1
-VERSION=7.4.4
+VERSION=7.7.1
 if [ "$(uname -m)" = "arm64" ]; then ARQ=aarch64; else ARQ=x86_64; fi
 echo ""
 echo " Descargando Rojo $VERSION... (espera un momento)"

@@ -4,7 +4,7 @@ REM  INSTALAR (solo se hace UNA vez)
 REM  Descarga Rojo y pone su plugin en Roblox Studio.
 REM ============================================================
 cd /d "%~dp0"
-set VERSION=7.4.4
+set VERSION=7.7.1
 echo.
 echo  Descargando Rojo %VERSION%... (espera un momento)
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; Invoke-WebRequest -Uri 'https://github.com/rojo-rbx/rojo/releases/download/v%VERSION%/rojo-%VERSION%-windows-x86_64.zip' -OutFile 'rojo.zip'; Expand-Archive -Path 'rojo.zip' -DestinationPath '.' -Force; Remove-Item 'rojo.zip'"
