@@ -11,6 +11,9 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | `src/server/MiMundo.server.luau` | Construye el mundo: parkour de colores, lava, meta con trofeo, monedas y marcador | `ServerScriptService` → **Script** |
 | `src/server/Catapulta.server.luau` | Catapulta junto a la salida: te lanza por los aires hasta la meta | `ServerScriptService` → **Script** |
 | `src/server/Tienda.server.luau` | Tienda con 3 puestos (botas veloces, súper salto, brillos) que se compran con las monedas | `ServerScriptService` → **Script** |
+| `src/server/Guardado.server.luau` | Guarda monedas, victorias, compras y récord para la próxima vez (⚠️ necesita publicar el mundo, ver abajo) | `ServerScriptService` → **Script** |
+| `src/server/Cronometro.server.luau` | Mide el tiempo hasta la meta y pone la columna "Mejor tiempo" en el marcador | `ServerScriptService` → **Script** |
+| `src/client/Cronometro.client.luau` | Dibuja el reloj en la pantalla | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Bienvenida.client.luau` | Enseña un mensaje de bienvenida en la pantalla | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 
 - Los archivos que terminan en `.server.luau` son **Scripts** (funcionan en el servidor, para todos).
@@ -44,11 +47,22 @@ Resumen:
 Antes hay que instalar Roblox Studio y Git, y bajar el proyecto una vez con
 `git clone https://github.com/ernestobm2012-tech/roblox.git` (todo explicado en la guía).
 
+## 💾 Para que se guarden las monedas (una sola vez, un adulto)
+
+Roblox solo guarda datos de un mundo que está **publicado**. En Roblox Studio:
+
+1. Menú **Archivo → Publicar en Roblox** (*File → Publish to Roblox*). Ponle nombre y pulsa **Crear**.
+2. Pestaña **Inicio → Configuración del juego** (*Game Settings*) → **Seguridad** (*Security*) →
+   activa **Habilitar acceso de Studio a servicios de API** (*Enable Studio Access to API Services*) → **Guardar**.
+3. Dale a Play. En **Vista → Salida** tiene que poner `💾 Guardado listo.`
+   (y, la segunda vez que juegues, `💾 ¡Datos de … cargados!`).
+
+Si no lo haces, el juego funciona igual pero **no guarda nada**, y en Salida verás un aviso amarillo `💾 ⚠️ NO SE GUARDARÁ NADA…`.
+
 ## 💡 Ideas para pedirle a Claude
 
 - "Haz que la lava se mueva de un lado a otro"
 - "Pon plataformas que desaparecen cuando las pisas"
-- "Quiero una tienda donde gastar las monedas en velocidad o salto"
 - "Construye un castillo con torres al lado del parkour"
 - "Añade checkpoints para no volver al principio"
 - "Haz que sea de noche y que haya farolas"

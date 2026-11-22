@@ -6,7 +6,8 @@
 	  - 👟 Botas veloces: corres más rápido
 	  - 🦘 Súper salto: saltas mucho más alto
 	  - ✨ Brillos: te rodean brillitos
-	Lo que compras se queda aunque caigas en la lava.
+	Lo que compras se queda aunque caigas en la lava (y, con el script Guardado,
+	también para la próxima vez que juegues).
 
 	📋 DÓNDE VA: en Roblox Studio, dentro de ServerScriptService, como "Script".
 	(Usa las Monedas del marcador que crea el script MiMundo.)
@@ -151,29 +152,30 @@ end
 -- 🎒 LO QUE HA COMPRADO CADA JUGADOR
 ----------------------------------------------------------------------
 
-local compras = {} -- compras[jugador] = { botas = true, ... }
-
+-- Cada compra se apunta como un "atributo" del jugador: Compra_botas, Compra_salto...
+-- (así el script de Guardado sabe qué ha comprado, sin necesitar nada más)
 local function aplicarCompras(jugador, personaje)
-	local lista = compras[jugador]
-	if not lista then
-		return
-	end
 	local humanoide = personaje:WaitForChild("Humanoid", 10)
 	local raiz = personaje:WaitForChild("HumanoidRootPart", 10)
 	if not humanoide or not raiz then
 		return
 	end
 	for _, objeto in OBJETOS do
-		if lista[objeto.id] then
+		if jugador:GetAttribute("Compra_" .. objeto.id) then
 			objeto.aplicar(humanoide, raiz)
 		end
 	end
 end
 
 local function prepararJugador(jugador)
-	compras[jugador] = compras[jugador] or {}
 	jugador.CharacterAdded:Connect(function(personaje)
 		aplicarCompras(jugador, personaje)
+	end)
+	-- Cuando aparece una compra nueva (la has hecho ahora o se ha cargado de un guardado)
+	jugador.AttributeChanged:Connect(function(nombre)
+		if string.sub(nombre, 1, 7) == "Compra_" and jugador.Character then
+			task.spawn(aplicarCompras, jugador, jugador.Character)
+		end
 	end)
 	if jugador.Character then
 		task.spawn(aplicarCompras, jugador, jugador.Character)
@@ -184,21 +186,13 @@ Players.PlayerAdded:Connect(prepararJugador)
 for _, jugador in Players:GetPlayers() do
 	prepararJugador(jugador)
 end
-Players.PlayerRemoving:Connect(function(jugador)
-	compras[jugador] = nil
-end)
 
 ----------------------------------------------------------------------
 -- 🛒 COMPRAR
 ----------------------------------------------------------------------
 
 local function comprar(jugador, objeto)
-	local lista = compras[jugador]
-	if not lista then
-		return
-	end
-
-	if lista[objeto.id] then
+	if jugador:GetAttribute("Compra_" .. objeto.id) then
 		avisar(jugador, "Ya tienes " .. objeto.nombre, Color3.fromRGB(90, 90, 120))
 		return
 	end
@@ -218,10 +212,7 @@ local function comprar(jugador, objeto)
 
 	-- ¡Compra hecha!
 	monedas.Value -= objeto.precio
-	lista[objeto.id] = true
-	if jugador.Character then
-		aplicarCompras(jugador, jugador.Character)
-	end
+	jugador:SetAttribute("Compra_" .. objeto.id, true) -- esto también activa el efecto
 	avisar(jugador, "¡Has comprado " .. objeto.nombre .. "! 🎉", Color3.fromRGB(40, 160, 80))
 end
 

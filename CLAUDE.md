@@ -25,6 +25,13 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
   `Players:GetPlayerFromCharacter`, `+=`, iteración `for _, x in tabla do`.
 - **No inventes IDs de assets** (sonidos, mallas, imágenes `rbxassetid://`). Si hacen falta, pide al
   usuario que busque uno en la Toolbox/Creator Store y lo pegue.
+- Los scripts se hablan entre sí **solo con atributos del jugador** (`jugador:SetAttribute`), nunca con
+  `require`: `Compra_<id>` (tienda), `MejorTiempo`, `CronoEstado`/`CronoInicio`/`CronoFinal`/`CronoRecord`
+  (cronómetro). `Guardado` guarda todo `Compra_*` y `MejorTiempo`, y el marcador `leaderstats`
+  (Monedas, Victorias) que crea `MiMundo`. Si añades algo que deba guardarse, usa un atributo
+  `Compra_<id>` o añádelo en `recogerDatos`/`cargarJugador` de `Guardado`.
+- `DataStore` solo funciona con el mundo publicado y con "acceso de Studio a servicios de API" activado.
+  Nunca guardes si la lectura falló (se borrarían los datos). Si cambias `nombreDelGuardado`, todos empiezan de cero.
 - Nada de `HttpService` a webs externas ni de `require` de módulos de terceros por ID.
 
 ## Cómo le llega el código al niño
