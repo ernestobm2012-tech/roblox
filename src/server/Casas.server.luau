@@ -4,13 +4,18 @@
 	  - Cada jugador que entra se queda con una casa libre, y en el tejado pone "🏠 Casa de <su nombre>".
 	  - La casa es PRIVADA: la puerta está cerrada para todos menos para su dueño. El dueño pulsa
 	    la tecla E en la puerta (o el botón "🏠 Mi casa" de la pantalla) y aparece dentro.
+	  - 👋 VISITAS: el dueño puede ABRIR su casa a sus amigos de Roblox (🔓) o INVITAR a jugadores
+	    concretos que estén en el juego. Los visitantes entran con la tecla E en la puerta, ven la casa
+	    y salen con la alfombrilla verde. Si el dueño la cierra o se va, los visitantes salen.
 	  - Dentro se van poniendo CAMAS Y MUEBLES que se compran con monedas (en el botón "🏠 Mi casa").
 	    Los muebles se colocan solos y se guardan (con el script Guardado).
+	  - 🎨 Las PAREDES se pintan del color que quieras (se compran con monedas).
 	  - Al fondo hay una ESTANTERÍA DE TROFEOS: sale un trofeo por cada logro que consigues (script Logros).
 
 	📋 DÓNDE VA: en Roblox Studio, dentro de ServerScriptService, como "Script".
 	(Usa las Monedas del marcador que crea el script MiMundo. Habla con la pantalla con un RemoteEvent
-	y con una carpeta en ReplicatedStorage. Los muebles se cuentan en atributos "Casa_cama", etc.)
+	y con carpetas en ReplicatedStorage. Los muebles se cuentan en atributos "Casa_cama", etc.;
+	"Casa_abierta" = 1 si está abierta a los amigos; "Casa_pared" = el color de pared que llevas.)
 ]]
 
 local Players = game:GetService("Players")
@@ -145,6 +150,87 @@ local MUEBLES = {
 			{ tam = Vector3.new(2.6, 2, 0.25), pos = Vector3.new(0, 6.5, -0.03), color = Color3.fromRGB(100, 200, 255), material = Enum.Material.Neon, sinColision = true },
 		},
 	},
+	{
+		id = "mesita", nombre = "🛏️ Mesita de noche", precio = 8,
+		huecos = { { -2.75, 8.6 }, { 2.75, 8.6 } },
+		partes = {
+			{ tam = Vector3.new(1.2, 1.4, 1.2), pos = Vector3.new(0, 0.7, 0), color = MADERA },
+			{ tam = Vector3.new(0.5, 0.5, 0.5), pos = Vector3.new(0, 1.65, 0), color = Color3.fromRGB(255, 225, 150), material = Enum.Material.Neon, luz = true },
+		},
+	},
+	{
+		id = "baul", nombre = "🧰 Baúl de juguetes", precio = 14,
+		huecos = { { 0, 2.9 } },
+		partes = {
+			{ tam = Vector3.new(1.6, 0.9, 1), pos = Vector3.new(0, 0.45, 0), color = Color3.fromRGB(120, 70, 40) },
+			{ tam = Vector3.new(1.7, 0.3, 1.1), pos = Vector3.new(0, 1.05, 0), color = Color3.fromRGB(255, 200, 40), material = Enum.Material.Neon },
+		},
+	},
+	{
+		id = "acuario", nombre = "🐠 Acuario", precio = 45,
+		huecos = { { 4.5, -8.3 } },
+		partes = {
+			{ tam = Vector3.new(2.6, 1.4, 1.2), pos = Vector3.new(0, 0.7, 0), color = Color3.fromRGB(70, 60, 55) },
+			{ tam = Vector3.new(2.4, 1.4, 1), pos = Vector3.new(0, 2.1, 0), color = Color3.fromRGB(120, 210, 255), material = Enum.Material.Neon },
+			{ tam = Vector3.new(0.4, 0.3, 0.2), pos = Vector3.new(-0.5, 2.1, 0), color = Color3.fromRGB(255, 140, 40), material = Enum.Material.Neon },
+			{ tam = Vector3.new(0.4, 0.3, 0.2), pos = Vector3.new(0.6, 2.4, 0), color = Color3.fromRGB(255, 220, 60), material = Enum.Material.Neon },
+		},
+	},
+	{
+		id = "escritorio", nombre = "🖥️ Escritorio con ordenador", precio = 35,
+		huecos = { { -4.6, -8.3 } },
+		partes = {
+			{ tam = Vector3.new(3.4, 0.25, 1.6), pos = Vector3.new(0, 2.2, 0), color = MADERA },
+			{ tam = Vector3.new(0.3, 2.1, 1.4), pos = Vector3.new(-1.5, 1.05, 0), color = MADERA },
+			{ tam = Vector3.new(0.3, 2.1, 1.4), pos = Vector3.new(1.5, 1.05, 0), color = MADERA },
+			{ tam = Vector3.new(0.2, 0.6, 0.2), pos = Vector3.new(0, 2.65, 0.3), color = Color3.fromRGB(60, 60, 70) },
+			{ tam = Vector3.new(1.6, 1, 0.12), pos = Vector3.new(0, 3.3, 0.3), color = Color3.fromRGB(80, 180, 255), material = Enum.Material.Neon },
+			{ tam = Vector3.new(1, 0.06, 0.4), pos = Vector3.new(0, 2.35, -0.35), color = Color3.fromRGB(40, 40, 45) },
+		},
+	},
+	-- Estos tres van COLGADOS en las paredes de los lados (no ocupan sitio en el suelo)
+	{
+		id = "reloj", nombre = "⏰ Reloj de pared", precio = 12,
+		huecos = { { -9.3, -2.5 }, { 9.3, -2.5 } },
+		partes = {
+			{ tam = Vector3.new(0.3, 2, 2), pos = Vector3.new(0, 7.2, 0), color = Color3.fromRGB(50, 50, 55), sinColision = true },
+			{ tam = Vector3.new(0.35, 1.6, 1.6), pos = Vector3.new(0, 7.2, 0), color = Color3.fromRGB(245, 245, 250), material = Enum.Material.Neon, sinColision = true },
+		},
+	},
+	{
+		id = "espejo", nombre = "🪞 Espejo", precio = 18,
+		huecos = { { -9.3, 4.5 }, { 9.3, 4.5 } },
+		partes = {
+			{ tam = Vector3.new(0.3, 3, 2), pos = Vector3.new(0, 6.4, 0), color = MADERA, sinColision = true },
+			{ tam = Vector3.new(0.35, 2.6, 1.6), pos = Vector3.new(0, 6.4, 0), color = Color3.fromRGB(200, 230, 255), material = Enum.Material.Neon, sinColision = true },
+		},
+	},
+	{
+		id = "ventana", nombre = "🪟 Ventana", precio = 20,
+		huecos = { { -9.3, 8 }, { 9.3, 8 } },
+		partes = {
+			{ tam = Vector3.new(0.3, 3.4, 3), pos = Vector3.new(0, 6.8, 0), color = MADERA, sinColision = true },
+			{ tam = Vector3.new(0.35, 3, 2.6), pos = Vector3.new(0, 6.8, 0), color = Color3.fromRGB(120, 190, 255), material = Enum.Material.Neon, sinColision = true },
+			{ tam = Vector3.new(0.4, 3, 0.2), pos = Vector3.new(0, 6.8, 0), color = Color3.fromRGB(245, 245, 250), sinColision = true },
+			{ tam = Vector3.new(0.4, 0.2, 2.6), pos = Vector3.new(0, 6.8, 0), color = Color3.fromRGB(245, 245, 250), sinColision = true },
+		},
+	},
+}
+
+-- 🎨 LOS COLORES DE PARED (la casa viene con un color pastel gratis; estos se compran)
+local PAREDES = {
+	{ id = "crema", nombre = "Crema", precio = 10, color = Color3.fromRGB(255, 240, 210) },
+	{ id = "rosa", nombre = "Rosa", precio = 10, color = Color3.fromRGB(255, 200, 220) },
+	{ id = "cielo", nombre = "Azul cielo", precio = 10, color = Color3.fromRGB(190, 225, 255) },
+	{ id = "menta", nombre = "Verde menta", precio = 10, color = Color3.fromRGB(200, 245, 215) },
+	{ id = "limon", nombre = "Limón", precio = 10, color = Color3.fromRGB(255, 245, 170) },
+	{ id = "lila", nombre = "Lila", precio = 10, color = Color3.fromRGB(225, 205, 255) },
+	{ id = "naranja", nombre = "Naranja", precio = 10, color = Color3.fromRGB(255, 190, 130) },
+	{ id = "gris", nombre = "Gris", precio = 10, color = Color3.fromRGB(200, 205, 215) },
+	{ id = "blanco", nombre = "Blanco", precio = 10, color = Color3.fromRGB(250, 250, 250) },
+	{ id = "rojo", nombre = "Rojo", precio = 15, color = Color3.fromRGB(230, 110, 110) },
+	{ id = "azul", nombre = "Azul", precio = 15, color = Color3.fromRGB(110, 150, 230) },
+	{ id = "verde", nombre = "Verde", precio = 15, color = Color3.fromRGB(110, 190, 120) },
 }
 
 local PASTELES = {
@@ -167,6 +253,15 @@ local function buscarMueble(id)
 	for _, mueble in MUEBLES do
 		if mueble.id == id then
 			return mueble
+		end
+	end
+	return nil
+end
+
+local function buscarPared(id)
+	for _, pared in PAREDES do
+		if pared.id == id then
+			return pared
 		end
 	end
 	return nil
@@ -224,7 +319,7 @@ end
 -- "indice" es el número de la casa y "posicion" dónde está (en el suelo). Mira hacia el centro.
 local function construirCasa(indice, posicion)
 	local cf = CFrame.lookAt(posicion, Vector3.new(0, posicion.Y, posicion.Z)) -- su "delante" (-Z) mira a la calle
-	local casa = { indice = indice, cf = cf, dueno = nil }
+	local casa = { indice = indice, cf = cf, dueno = nil, paredes = {} }
 
 	local carpetaCasa = Instance.new("Folder")
 	carpetaCasa.Name = "Casa_" .. indice
@@ -237,6 +332,7 @@ local function construirCasa(indice, posicion)
 	casa.trofeos.Parent = carpetaCasa
 
 	local pared = PASTELES[(indice - 1) % #PASTELES + 1]
+	casa.colorBase = pared
 
 	local function parte(nombre, tamano, desplazamiento, color, material)
 		local pieza = Instance.new("Part")
@@ -255,12 +351,12 @@ local function construirCasa(indice, posicion)
 
 	-- El suelo, las paredes (el delante tiene un hueco para la puerta) y el tejado
 	parte("Suelo", Vector3.new(20, PISO, 20), Vector3.new(0, PISO / 2, 0), Color3.fromRGB(200, 170, 130), Enum.Material.WoodPlanks)
-	parte("ParedFondo", Vector3.new(21, 10, 1), Vector3.new(0, PISO + 5, 10), pared)
-	parte("ParedIzquierda", Vector3.new(1, 10, 20), Vector3.new(-10, PISO + 5, 0), pared)
-	parte("ParedDerecha", Vector3.new(1, 10, 20), Vector3.new(10, PISO + 5, 0), pared)
-	parte("FrenteIzquierda", Vector3.new(8, 10, 1), Vector3.new(-6, PISO + 5, -10), pared)
-	parte("FrenteDerecha", Vector3.new(8, 10, 1), Vector3.new(6, PISO + 5, -10), pared)
-	parte("Dintel", Vector3.new(4, 3, 1), Vector3.new(0, PISO + 8.5, -10), pared)
+	table.insert(casa.paredes, parte("ParedFondo", Vector3.new(21, 10, 1), Vector3.new(0, PISO + 5, 10), pared))
+	table.insert(casa.paredes, parte("ParedIzquierda", Vector3.new(1, 10, 20), Vector3.new(-10, PISO + 5, 0), pared))
+	table.insert(casa.paredes, parte("ParedDerecha", Vector3.new(1, 10, 20), Vector3.new(10, PISO + 5, 0), pared))
+	table.insert(casa.paredes, parte("FrenteIzquierda", Vector3.new(8, 10, 1), Vector3.new(-6, PISO + 5, -10), pared))
+	table.insert(casa.paredes, parte("FrenteDerecha", Vector3.new(8, 10, 1), Vector3.new(6, PISO + 5, -10), pared))
+	table.insert(casa.paredes, parte("Dintel", Vector3.new(4, 3, 1), Vector3.new(0, PISO + 8.5, -10), pared))
 	local tejado = parte("Tejado", Vector3.new(22, 1, 22), Vector3.new(0, PISO + 10.5, 0), Color3.fromRGB(170, 70, 60))
 	parte("Porche", Vector3.new(8, PISO, 8), Vector3.new(0, PISO / 2, -14), Color3.fromRGB(180, 140, 100), Enum.Material.WoodPlanks)
 
@@ -366,6 +462,15 @@ local function amueblar(casa, jugador)
 	end
 end
 
+-- Pinta las paredes con el color que ha elegido el dueño (o el de siempre)
+local function pintarParedes(casa, jugador)
+	local elegido = buscarPared(if jugador then jugador:GetAttribute("Casa_pared") else nil)
+	local color = if elegido then elegido.color else casa.colorBase
+	for _, pared in casa.paredes do
+		pared.Color = color
+	end
+end
+
 -- Un trofeo por cada logro: dorado si lo tienes, gris con un candado si todavía no
 local function ponerTrofeos(casa, jugador)
 	casa.trofeos:ClearAllChildren()
@@ -446,7 +551,7 @@ task.spawn(function()
 end)
 
 ----------------------------------------------------------------------
--- 🚪 ENTRAR Y SALIR
+-- 🚪 ENTRAR Y SALIR (el dueño y las visitas)
 ----------------------------------------------------------------------
 
 local function casaDe(jugador)
@@ -454,12 +559,39 @@ local function casaDe(jugador)
 	return numero and casas[numero]
 end
 
-local function irACasa(jugador)
-	local casa = casaDe(jugador)
-	if not casa then
-		avisar(jugador, "Todavía no tienes casa 🏠", Color3.fromRGB(200, 60, 60))
-		return
+-- ¿Es amigo (de Roblox) del dueño? Se lo preguntamos a Roblox y nos acordamos de la respuesta un rato.
+local memoriaAmigos = {}
+local function esAmigo(dueno, visitante)
+	local clave = dueno.UserId .. "-" .. visitante.UserId
+	local recuerdo = memoriaAmigos[clave]
+	if recuerdo and os.clock() - recuerdo.cuando < 60 then
+		return recuerdo.valor
 	end
+	local funciono, resultado = pcall(function()
+		return visitante:IsFriendsWith(dueno.UserId)
+	end)
+	local valor = funciono and resultado == true
+	memoriaAmigos[clave] = { valor = valor, cuando = os.clock() }
+	return valor
+end
+
+-- ¿Puede entrar este jugador en esta casa? El dueño sí; los invitados sí;
+-- y los amigos del dueño, si el dueño ha abierto la casa.
+local function puedeEntrar(casa, jugador)
+	local dueno = casa.dueno
+	if not dueno then
+		return false
+	end
+	if dueno == jugador then
+		return true
+	end
+	if jugador:GetAttribute("Invitado_" .. dueno.UserId) == true then
+		return true
+	end
+	return dueno:GetAttribute("Casa_abierta") == 1 and esAmigo(dueno, jugador)
+end
+
+local function entrarEnCasa(jugador, casa, esVisita)
 	if jugador:GetAttribute("EnCarrera") then
 		avisar(jugador, "No puedes ir a casa durante la carrera 🏁", Color3.fromRGB(200, 60, 60))
 		return
@@ -469,7 +601,10 @@ local function irACasa(jugador)
 	end
 
 	jugador:SetAttribute("EnCasa", true) -- el script Niveles no te "tira" por estar lejos de tu nivel
-	local destino = casa.cf * CFrame.new(0, 3.5, -6) * CFrame.Angles(0, math.pi, 0) -- mirando hacia dentro
+	if esVisita then
+		jugador:SetAttribute("CasaVisitada", casa.indice)
+	end
+	local destino = casa.cf * CFrame.new(0, 3.5, -7.2) * CFrame.Angles(0, math.pi, 0) -- junto a la puerta, mirando hacia dentro
 	pcall(function()
 		jugador:RequestStreamAroundAsync(destino.Position, 5)
 	end)
@@ -481,16 +616,21 @@ local function irACasa(jugador)
 			raiz.AssemblyLinearVelocity = Vector3.zero
 		end
 	end
-	avisar(jugador, "🏠 ¡Bienvenido a tu casa!", Color3.fromRGB(40, 160, 80))
+	if esVisita and casa.dueno then
+		avisar(jugador, "👋 Estás de visita en la casa de " .. casa.dueno.DisplayName, Color3.fromRGB(60, 100, 200))
+	else
+		avisar(jugador, "🏠 ¡Bienvenido a tu casa!", Color3.fromRGB(40, 160, 80))
+	end
 end
 
 local function salirDeCasa(jugador)
 	if not jugador:GetAttribute("EnCasa") then
 		return
 	end
-	local casa = casaDe(jugador)
+	local casa = casas[jugador:GetAttribute("CasaVisitada") or 0] or casaDe(jugador)
 	local nivel = jugador:GetAttribute("Nivel") or 1
 	jugador:SetAttribute("EnCasa", nil)
+	jugador:SetAttribute("CasaVisitada", nil)
 	if nivel > 1 or not casa then
 		jugador:SetAttribute("SaltarANivel", nivel) -- el script Niveles te lleva de vuelta a tu nivel
 	elseif jugador.Character then
@@ -498,18 +638,31 @@ local function salirDeCasa(jugador)
 	end
 end
 
+-- Los visitantes que ya no pueden estar (porque se ha cerrado la casa, se ha quitado una invitación
+-- o el dueño se ha ido) salen
+local function expulsarVisitas(casa, motivo)
+	for _, otro in Players:GetPlayers() do
+		if otro:GetAttribute("CasaVisitada") == casa.indice and not puedeEntrar(casa, otro) then
+			salirDeCasa(otro)
+			avisar(otro, motivo, Color3.fromRGB(200, 60, 60))
+		end
+	end
+end
+
 for _, casa in casas do
 	casa.entrar.Triggered:Connect(function(jugador)
 		if casa.dueno == jugador then
-			irACasa(jugador)
-		elseif casa.dueno then
-			avisar(jugador, "🔒 Esta casa es de " .. casa.dueno.DisplayName, Color3.fromRGB(200, 60, 60))
-		else
+			entrarEnCasa(jugador, casa, false)
+		elseif not casa.dueno then
 			avisar(jugador, "Esta casa está libre. ¡Todavía no es de nadie!", Color3.fromRGB(90, 90, 120))
+		elseif puedeEntrar(casa, jugador) then
+			entrarEnCasa(jugador, casa, true)
+		else
+			avisar(jugador, "🔒 Esta casa es de " .. casa.dueno.DisplayName .. ". ¡Pídele que te deje entrar!", Color3.fromRGB(200, 60, 60))
 		end
 	end)
 	casa.salir.Triggered:Connect(function(jugador)
-		if casa.dueno == jugador then
+		if casa.dueno == jugador or jugador:GetAttribute("CasaVisitada") == casa.indice then
 			salirDeCasa(jugador)
 		end
 	end)
@@ -519,13 +672,25 @@ end
 -- 👤 CADA JUGADOR SE QUEDA CON UNA CASA
 ----------------------------------------------------------------------
 
+-- El cartel del tejado: "Casa de ..." y un candado (🔒 cerrada, 🔓 abierta a los amigos)
+local function actualizarCartel(casa)
+	if casa.dueno then
+		local llave = if casa.dueno:GetAttribute("Casa_abierta") == 1 then "🔓" else "🔒"
+		casa.etiqueta.Text = "🏠 Casa de " .. casa.dueno.DisplayName .. " " .. llave
+		casa.entrar.ObjectText = "🏠 Casa de " .. casa.dueno.DisplayName
+	else
+		casa.etiqueta.Text = "🏠 Casa libre"
+		casa.entrar.ObjectText = "🏠 Casa libre"
+	end
+end
+
 local function adjudicarCasa(jugador)
 	for _, casa in casas do
 		if not casa.dueno then
 			casa.dueno = jugador
 			jugador:SetAttribute("CasaNumero", casa.indice)
-			casa.etiqueta.Text = "🏠 Casa de " .. jugador.DisplayName
-			casa.entrar.ObjectText = "🏠 Casa de " .. jugador.DisplayName
+			actualizarCartel(casa)
+			pintarParedes(casa, jugador)
 			amueblar(casa, jugador)
 			ponerTrofeos(casa, jugador)
 			return
@@ -538,8 +703,13 @@ local function liberarCasa(jugador)
 	local casa = casaDe(jugador)
 	if casa and casa.dueno == jugador then
 		casa.dueno = nil
-		casa.etiqueta.Text = "🏠 Casa libre"
-		casa.entrar.ObjectText = "🏠 Casa libre"
+		expulsarVisitas(casa, "La casa se ha quedado sin dueño 🏠")
+		-- Las invitaciones de este dueño se acaban
+		for _, otro in Players:GetPlayers() do
+			otro:SetAttribute("Invitado_" .. jugador.UserId, nil)
+		end
+		actualizarCartel(casa)
+		pintarParedes(casa, nil)
 		casa.muebles:ClearAllChildren()
 		casa.trofeos:ClearAllChildren()
 	end
@@ -548,15 +718,25 @@ end
 local function prepararJugador(jugador)
 	jugador.CharacterAdded:Connect(function()
 		jugador:SetAttribute("EnCasa", nil) -- si reapareces, ya no estás en casa
+		jugador:SetAttribute("CasaVisitada", nil)
 	end)
 
-	-- Cuando cambia un mueble o un logro (o se carga lo guardado), la casa se pone al día
+	-- Cuando cambia algo de la casa (o se carga lo guardado), la casa se pone al día
 	jugador.AttributeChanged:Connect(function(nombre)
 		local casa = casaDe(jugador)
 		if not casa then
 			return
 		end
-		if string.sub(nombre, 1, 5) == "Casa_" then
+		if nombre == "Casa_abierta" then
+			actualizarCartel(casa)
+			if jugador:GetAttribute("Casa_abierta") ~= 1 then
+				expulsarVisitas(casa, "🔒 " .. jugador.DisplayName .. " ha cerrado su casa")
+			end
+		elseif nombre == "Casa_pared" then
+			pintarParedes(casa, jugador)
+		elseif string.sub(nombre, 1, #"Casa_pared_") == "Casa_pared_" then
+			return -- es solo el apunte de que has comprado ese color
+		elseif string.sub(nombre, 1, 5) == "Casa_" then
 			amueblar(casa, jugador)
 		elseif string.sub(nombre, 1, 6) == "Logro_" then
 			ponerTrofeos(casa, jugador)
@@ -573,7 +753,7 @@ end
 Players.PlayerRemoving:Connect(liberarCasa)
 
 ----------------------------------------------------------------------
--- 📋 LA LISTA PARA LA PANTALLA Y EL BOTÓN DE COMPRAR
+-- 📋 LAS LISTAS PARA LA PANTALLA Y LOS BOTONES
 ----------------------------------------------------------------------
 
 local catalogoMuebles = Instance.new("Folder")
@@ -589,15 +769,34 @@ for orden, mueble in MUEBLES do
 	ficha.Parent = catalogoMuebles
 end
 
+local catalogoParedes = Instance.new("Folder")
+catalogoParedes.Name = "CatalogoParedes"
+for orden, pared in PAREDES do
+	local ficha = Instance.new("Folder")
+	ficha.Name = pared.id
+	ficha:SetAttribute("Id", pared.id)
+	ficha:SetAttribute("Nombre", pared.nombre)
+	ficha:SetAttribute("Precio", pared.precio)
+	ficha:SetAttribute("Color", pared.color)
+	ficha:SetAttribute("Orden", orden)
+	ficha.Parent = catalogoParedes
+end
+
 local evento = Instance.new("RemoteEvent")
 evento.Name = "CasaAccion"
 evento.Parent = ReplicatedStorage
+catalogoParedes.Parent = ReplicatedStorage
 catalogoMuebles.Parent = ReplicatedStorage -- al final, cuando ya está todo listo
 
 local ultimoPedido = {}
 Players.PlayerRemoving:Connect(function(jugador)
 	ultimoPedido[jugador] = nil
 end)
+
+local function monedasDe(jugador)
+	local marcador = jugador:FindFirstChild("leaderstats")
+	return marcador and marcador:FindFirstChild("Monedas")
+end
 
 local function comprarMueble(jugador, id)
 	local mueble = buscarMueble(id)
@@ -614,8 +813,7 @@ local function comprarMueble(jugador, id)
 		avisar(jugador, "¡Ya no caben más! (" .. mueble.nombre .. " " .. cantidad .. "/" .. #mueble.huecos .. ")", Color3.fromRGB(90, 90, 120))
 		return
 	end
-	local marcador = jugador:FindFirstChild("leaderstats")
-	local monedas = marcador and marcador:FindFirstChild("Monedas")
+	local monedas = monedasDe(jugador)
 	if not monedas then
 		avisar(jugador, "Todavía no tienes monedas 🪙", Color3.fromRGB(200, 60, 60))
 		return
@@ -629,6 +827,40 @@ local function comprarMueble(jugador, id)
 	avisar(jugador, "¡" .. mueble.nombre .. " para tu casa! 🎉", Color3.fromRGB(40, 160, 80))
 end
 
+-- Comprar un color de pared (o ponértelo si ya lo tienes). "" = el color de siempre.
+local function elegirPared(jugador, id)
+	if not casaDe(jugador) then
+		avisar(jugador, "Todavía no tienes casa 🏠", Color3.fromRGB(200, 60, 60))
+		return
+	end
+	if id == "" then
+		jugador:SetAttribute("Casa_pared", "")
+		return
+	end
+	local pared = buscarPared(id)
+	if not pared then
+		return
+	end
+	local atributoCompra = "Casa_pared_" .. id
+	if jugador:GetAttribute(atributoCompra) then
+		jugador:SetAttribute("Casa_pared", id)
+		return
+	end
+	local monedas = monedasDe(jugador)
+	if not monedas then
+		avisar(jugador, "Todavía no tienes monedas 🪙", Color3.fromRGB(200, 60, 60))
+		return
+	end
+	if monedas.Value < pared.precio then
+		avisar(jugador, "Te faltan " .. (pared.precio - monedas.Value) .. " 🪙 para la pared " .. pared.nombre, Color3.fromRGB(200, 60, 60))
+		return
+	end
+	monedas.Value -= pared.precio
+	jugador:SetAttribute(atributoCompra, true)
+	jugador:SetAttribute("Casa_pared", id)
+	avisar(jugador, "🎨 ¡Paredes " .. pared.nombre .. "!", Color3.fromRGB(40, 160, 80))
+end
+
 evento.OnServerEvent:Connect(function(jugador, accion, id)
 	-- Comprobamos que lo que nos manda tiene sentido (¡nunca nos fiamos de la pantalla!)
 	if type(accion) ~= "string" or (id ~= nil and type(id) ~= "string") then
@@ -640,12 +872,40 @@ evento.OnServerEvent:Connect(function(jugador, accion, id)
 	end
 	ultimoPedido[jugador] = ahora
 
+	local casa = casaDe(jugador)
 	if accion == "ir" then
-		irACasa(jugador)
+		if casa then
+			entrarEnCasa(jugador, casa, false)
+		else
+			avisar(jugador, "Todavía no tienes casa 🏠", Color3.fromRGB(200, 60, 60))
+		end
 	elseif accion == "salir" then
 		salirDeCasa(jugador)
 	elseif accion == "comprar" and id then
 		comprarMueble(jugador, id)
+	elseif accion == "pared" and id then
+		elegirPared(jugador, id)
+	elseif accion == "abrir" and id and casa then
+		-- "si" = abierta a los amigos de Roblox, "no" = cerrada
+		local abrir = id == "si"
+		jugador:SetAttribute("Casa_abierta", if abrir then 1 else 0)
+		avisar(jugador, if abrir then "🔓 Tu casa está abierta a tus amigos" else "🔒 Tu casa está cerrada", Color3.fromRGB(60, 100, 200))
+	elseif accion == "invitar" and id and casa then
+		-- Invita (o quita la invitación) a un jugador que está ahora mismo en el juego
+		local invitado = Players:GetPlayerByUserId(tonumber(id) or 0)
+		if not invitado or invitado == jugador then
+			return
+		end
+		local atributo = "Invitado_" .. jugador.UserId
+		local yaEstabaInvitado = invitado:GetAttribute(atributo) == true
+		invitado:SetAttribute(atributo, if yaEstabaInvitado then nil else true)
+		if yaEstabaInvitado then
+			expulsarVisitas(casa, "Ya no estás invitado a la casa de " .. jugador.DisplayName)
+			avisar(jugador, "Has quitado la invitación a " .. invitado.DisplayName, Color3.fromRGB(90, 90, 120))
+		else
+			avisar(invitado, "👋 " .. jugador.DisplayName .. " te ha invitado a su casa. ¡Pulsa E en su puerta!", Color3.fromRGB(60, 100, 200))
+			avisar(jugador, "👋 Has invitado a " .. invitado.DisplayName, Color3.fromRGB(40, 160, 80))
+		end
 	end
 end)
 

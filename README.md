@@ -28,9 +28,11 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | `src/server/Mascotas.server.luau` | Mascotas que te siguen, se compran con ~30 monedas, te hacen correr más rápido y **suben de nivel** mientras juegas 🐾 | `ServerScriptService` → **Script** |
 | `src/client/Mascotas.client.luau` | Botón "🐾 Mascotas" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/server/Logros.server.luau` | Insignias por logros (primer cofre, nivel 100, 10 carreras ganadas...) con premio de monedas 🏅 | `ServerScriptService` → **Script** |
-| `src/server/Casas.server.luau` | El barrio de casitas privadas con muebles y estantería de trofeos 🏠 | `ServerScriptService` → **Script** |
+| `src/server/Casas.server.luau` | El barrio de casitas: privadas, con visitas, muebles, colores de pared y estantería de trofeos 🏠 | `ServerScriptService` → **Script** |
 | `src/client/Logros.client.luau` | Botón "🏅 Logros" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Casa.client.luau` | Botón "🏠 Mi casa": ir a casa, salir y comprar muebles | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/server/Bosque.server.luau` | Prado de hierba y un bosque de árboles alrededor de la zona de salida 🌲 | `ServerScriptService` → **Script** |
+| `src/client/Bosque.client.luau` | El bosque gigante de fondo del parkour, la neblina verde, luciérnagas y hojas | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Jetpack.client.luau` | El jetpack: botón de comprar, botón de volar y barra de combustible | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Mejoras.client.luau` | Panelito con el nivel de tus mejoras y lo que cuesta la siguiente | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/GirarMonedas.client.luau` | Hace girar las monedas que tienes cerca | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
@@ -125,6 +127,17 @@ El botón **🐾 Mascotas** (a la izquierda) abre la lista. Cada mascota **te si
 
 Cada nivel que sube: **corres un poquito más** (+0,15), la mascota se hace **un poco más grande** y sale un aviso. Cada mascota guarda **su propio nivel** (se guarda). En la ventana ves su nivel y lo que le falta para el siguiente. Se cambia lo rápido que sube, el máximo, etc. en `Mascotas.server.luau` (tabla `AJUSTES`). La velocidad de la mascota se **suma** a la de "Correr" de la tienda.
 
+✨ **¡Evolución!** Cuando una mascota llega al **nivel 30 cambia de aspecto**: se convierte en su forma final, con otro color, piezas nuevas, un **aura de chispas** y **+2 de velocidad extra**. Sale un aviso morado cuando pasa.
+
+| Mascota | Evoluciona en | Cómo se ve |
+|---|---|---|
+| 🐶 Perrito | 🐺 Lobo | gris, con capa roja de superhéroe y collar que brilla |
+| 🐱 Gatito | 🦁 León | dorado, con melena y corona |
+| 🐥 Pollito | 🦅 Águila | marrón, con alas y cabeza blanca |
+| 🐰 Conejito | 🦄 Unicornio | con cuerno que brilla y crin de colores |
+| 🐲 Dragoncito | 🐉 Dragón | rojo, con alas de fuego |
+| 🤖 Robot | 🛸 Mega Robot | azul, con un aro brillante y hombreras |
+
 ## 🏅 Logros (insignias)
 
 El botón **🏅 Logros** enseña las 12 insignias: las que ya tienes y las que te faltan. Al conseguir una ganas **monedas de premio**:
@@ -145,11 +158,20 @@ Se guardan, y además salen como **trofeos dorados** en la estantería de tu cas
 
 ## 🏠 Tu casita (en el barrio, fuera del parkour)
 
-A los dos lados de la zona de salida (en la hierba, **fuera del parkour**) hay un **barrio de 12 casitas**. Cada jugador que entra se queda con una y en el tejado pone **"🏠 Casa de <tu nombre>"**.
-- Es **privada**: la puerta está cerrada para todos menos para ti. Pulsa **E** en la puerta, o usa el botón **🏠 Mi casa**, y apareces dentro. (Desde dentro, pulsa **E** en la alfombrilla verde de la puerta, o el botón, para **salir**: vuelves a tu nivel.)
-- Dentro puedes comprar con monedas **camas y muebles** (cama, sofá, mesa, silla, lámpara, planta, librería, tele, nevera, alfombra, cuadros). Se colocan **solos** en su sitio y se guardan. No caben más muebles de cada tipo que huecos hay (por ejemplo, 3 camas).
+A los dos lados de la zona de salida (en la hierba, **fuera del parkour**) hay un **barrio de 12 casitas**. Cada jugador que entra se queda con una y en el tejado pone **"🏠 Casa de <tu nombre>"** y un candado (🔒 cerrada · 🔓 abierta a los amigos).
+- Es **privada**: la puerta está cerrada para todos menos para ti. Pulsa **E** en la puerta, o usa el botón **🏠 Mi casa**, y apareces dentro. Para **salir**, pulsa **E** en la alfombrilla verde de la puerta (o el botón): vuelves a tu nivel.
+- **👋 Visitas:** en el botón **🏠 Mi casa** puedes **abrir tu casa a tus amigos de Roblox** (🔓). Sus amigos entran pulsando **E** en la puerta, ven la casa y salen por la alfombrilla. También puedes **invitar a jugadores concretos** que estén en el juego (aunque no sean amigos de Roblox) y **quitarles la invitación**. Si cierras la casa, quitas la invitación o te vas del juego, los visitantes salen. Por defecto la casa está **cerrada**.
+- **🎨 Paredes:** compra colores de pared (10–15 🪙): crema, rosa, azul cielo, verde menta, limón, lila, naranja, gris, blanco, rojo, azul y verde. Se pintan por fuera y por dentro.
+- **🛋️ Muebles** (se compran con monedas y se colocan **solos**, se guardan): 🛏️ cama (3), 🛋️ sofá (2), 🍽️ mesa (2), 🪑 silla (3), 💡 lámpara (3), 🪴 planta (4), 📚 librería (2), 📺 tele, 🧊 nevera, 🟥 alfombra (2), 🖼️ cuadros (3), y nuevos: 🛏️ mesitas de noche (2), 🧰 baúl de juguetes, 🐠 acuario, 🖥️ escritorio con ordenador, y **colgados en la pared**: ⏰ relojes (2), 🪞 espejos (2) y 🪟 ventanas (2). No caben más de cada tipo que huecos hay.
 - En la pared de la puerta hay una **estantería con 12 trofeos**, uno por cada logro: dorado si lo tienes, gris con candado si no.
 - Si hay más de 12 jugadores a la vez, los últimos se quedan sin casa. Se puede cambiar el número de casas en `Casas.server.luau`.
+
+## 🌲 El bosque
+
+El parkour está **en medio de un bosque**:
+- En la **zona de salida**, el suelo es un **prado de hierba** y alrededor hay **robles, pinos, arbustos y rocas**.
+- A los dos lados de la **pista** salen **árboles altísimos** (troncos y copas verdes) a medida que avanzas, como si estuvieras saltando entre las copas. Hay una **neblina verde** suave, **luciérnagas** que flotan alrededor (se ven mejor de noche) y **hojas que caen**.
+- El bosque de la pista **se dibuja solo en tu pantalla** (no pesa nada). Si quieres menos neblina o árboles más lejos, se cambia en `Bosque.client.luau` (tabla `AJUSTES`).
 
 ## 🎨 Estilo: colores y estelas
 

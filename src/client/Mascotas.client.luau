@@ -143,15 +143,17 @@ local function dibujar()
 		local laTiene = jugador:GetAttribute("Estilo_mascota_" .. id) == true
 		local xp = jugador:GetAttribute("Mascota_xp_" .. id) or 0
 		local nivel = nivelDeXP(xp)
+		local evolucionada = nivel >= maximo
+		local nombreMostrado = if laTiene and evolucionada then ficha:GetAttribute("NombreEvolucion") .. " ⭐" else ficha:GetAttribute("Nombre")
 		local texto
 		if puesta == id then
-			local progreso = "¡nivel máximo!"
+			local progreso = "¡EVOLUCIONADA!"
 			if nivel < maximo then
 				progreso = "XP " .. math.floor(xp - divisor * (nivel - 1) ^ 2) .. "/" .. math.floor(divisor * nivel ^ 2 - divisor * (nivel - 1) ^ 2)
 			end
-			texto = ficha:GetAttribute("Nombre") .. "  Nv " .. nivel .. "  ✅ puesta  (" .. progreso .. ")"
+			texto = nombreMostrado .. "  Nv " .. nivel .. "  ✅ puesta  (" .. progreso .. ")"
 		elseif laTiene then
-			texto = ficha:GetAttribute("Nombre") .. "  Nv " .. nivel .. "  (tuya: ponértela)"
+			texto = nombreMostrado .. "  Nv " .. nivel .. "  (tuya: ponértela)"
 		else
 			texto = ficha:GetAttribute("Nombre") .. "  —  " .. ficha:GetAttribute("Precio") .. " 🪙  (+" .. ficha:GetAttribute("Bonus") .. " velocidad)"
 		end
@@ -173,7 +175,7 @@ local function dibujar()
 	local nota = Instance.new("TextLabel")
 	nota.Size = UDim2.new(1, -10, 0, 40)
 	nota.BackgroundTransparency = 1
-	nota.Text = "⭐ Tu mascota sube de nivel mientras juegas, recoges monedas y subes de nivel. ¡Cada nivel corres más!"
+	nota.Text = "⭐ Tu mascota sube de nivel mientras juegas. ¡Al llegar al nivel " .. maximo .. " EVOLUCIONA y cambia de aspecto!"
 	nota.TextColor3 = Color3.fromRGB(200, 210, 255)
 	nota.TextScaled = true
 	nota.TextWrapped = true

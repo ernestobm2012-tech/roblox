@@ -10,6 +10,10 @@
 	Cada vez que sube de nivel, CORRES MÁS, la mascota se hace un poquito MÁS GRANDE y sale un aviso.
 	Cada mascota guarda su propio nivel (con el script Guardado).
 
+	✨ ¡EVOLUCIÓN! Cuando una mascota llega al NIVEL 30 CAMBIA DE ASPECTO: se convierte en su forma
+	final (el Perrito en Lobo, el Gatito en León, el Dragoncito en Dragón...), con otro color, piezas
+	nuevas, un aura de chispas y +2 de velocidad extra.
+
 	Se eligen en el botón "🐾 Mascotas" de la pantalla (script Mascotas del cliente).
 
 	📋 DÓNDE VA: en Roblox Studio, dentro de ServerScriptService, como "Script".
@@ -32,13 +36,16 @@ local AJUSTES = {
 	xpPorMoneda = 1, -- XP por cada moneda recogida
 	xpPorNivelDelMundo = 5, -- XP por cada nivel nuevo del parkour
 	segundosPorXP = 10, -- 1 XP cada tantos segundos jugando
+	bonusEvolucion = 2, -- velocidad extra cuando la mascota ya ha evolucionado (nivel máximo)
 }
 
 local PREFIJO_XP = "Mascota_xp_" -- el XP de cada mascota se guarda como Mascota_xp_perrito, etc.
 
 -- 🧺 LAS MASCOTAS
 -- "bonus" = velocidad extra al correr con la mascota en el nivel 1 (sin mascota corres a 16).
--- "extras" son las piezas que les dan forma: { tamaño, posición, color } (la posición es respecto al cuerpo).
+-- "extras" son las piezas que les dan forma: { tamaño, posición, color, ¿brilla? } (la posición es respecto al cuerpo).
+-- "evolucion" es su forma final, que sale al llegar al nivel máximo: otro nombre, otro color, piezas
+-- nuevas (que se suman a las de antes) y el color de las chispas de su aura.
 local ORELLAS = Color3.fromRGB(130, 85, 45)
 local MASCOTAS = {
 	{
@@ -48,6 +55,13 @@ local MASCOTAS = {
 			{ Vector3.new(0.5, 1.1, 0.5), Vector3.new(1.05, 0.7, 0), ORELLAS },
 			{ Vector3.new(0.5, 0.4, 0.5), Vector3.new(0, -0.1, -1.25), Color3.fromRGB(40, 30, 30) }, -- la nariz
 		},
+		evolucion = {
+			nombre = "🐺 Lobo", color = Color3.fromRGB(140, 145, 165), particulas = Color3.fromRGB(180, 210, 255),
+			extras = {
+				{ Vector3.new(2, 2.2, 0.2), Vector3.new(0, -0.2, 1.3), Color3.fromRGB(220, 50, 50) }, -- una capa de superhéroe
+				{ Vector3.new(1.4, 0.3, 0.3), Vector3.new(0, 0.1, -1.0), Color3.fromRGB(80, 200, 255), true }, -- un collar que brilla
+			},
+		},
 	},
 	{
 		id = "gatito", nombre = "🐱 Gatito", precio = 30, bonus = 2, color = Color3.fromRGB(150, 150, 165),
@@ -56,11 +70,26 @@ local MASCOTAS = {
 			{ Vector3.new(0.6, 0.9, 0.4), Vector3.new(0.75, 1.15, 0), Color3.fromRGB(120, 120, 135) },
 			{ Vector3.new(0.25, 0.25, 1.6), Vector3.new(0, -0.4, 1.6), Color3.fromRGB(120, 120, 135) }, -- la cola
 		},
+		evolucion = {
+			nombre = "🦁 León", color = Color3.fromRGB(225, 175, 65), particulas = Color3.fromRGB(255, 200, 80),
+			extras = {
+				{ Vector3.new(3.4, 3.4, 0.5), Vector3.new(0, 0.1, 0.9), Color3.fromRGB(170, 105, 30) }, -- la melena
+				{ Vector3.new(0.8, 0.5, 0.3), Vector3.new(0, 1.5, -0.2), Color3.fromRGB(255, 215, 50), true }, -- una corona
+			},
+		},
 	},
 	{
 		id = "pollito", nombre = "🐥 Pollito", precio = 30, bonus = 2, color = Color3.fromRGB(255, 225, 70),
 		extras = {
 			{ Vector3.new(0.6, 0.4, 0.7), Vector3.new(0, -0.15, -1.3), Color3.fromRGB(255, 140, 30) }, -- el pico
+		},
+		evolucion = {
+			nombre = "🦅 Águila", color = Color3.fromRGB(165, 115, 60), particulas = Color3.fromRGB(255, 240, 150),
+			extras = {
+				{ Vector3.new(2.6, 0.25, 1.5), Vector3.new(-2.2, 0.2, 0.3), Color3.fromRGB(120, 80, 40) }, -- ala izquierda
+				{ Vector3.new(2.6, 0.25, 1.5), Vector3.new(2.2, 0.2, 0.3), Color3.fromRGB(120, 80, 40) }, -- ala derecha
+				{ Vector3.new(1.2, 0.7, 0.6), Vector3.new(0, 1.2, -0.2), Color3.fromRGB(245, 245, 250) }, -- cabeza blanca
+			},
 		},
 	},
 	{
@@ -68,6 +97,15 @@ local MASCOTAS = {
 		extras = {
 			{ Vector3.new(0.4, 1.8, 0.3), Vector3.new(-0.5, 1.9, 0), Color3.fromRGB(255, 200, 215) },
 			{ Vector3.new(0.4, 1.8, 0.3), Vector3.new(0.5, 1.9, 0), Color3.fromRGB(255, 200, 215) },
+		},
+		evolucion = {
+			nombre = "🦄 Unicornio", color = Color3.fromRGB(255, 235, 250), particulas = Color3.fromRGB(255, 150, 230),
+			extras = {
+				{ Vector3.new(0.3, 1.5, 0.3), Vector3.new(0, 2.0, -0.6), Color3.fromRGB(255, 120, 220), true }, -- el cuerno
+				{ Vector3.new(0.5, 0.7, 0.5), Vector3.new(0, 1.0, 0.95), Color3.fromRGB(255, 90, 90) }, -- la crin de colores
+				{ Vector3.new(0.5, 0.7, 0.5), Vector3.new(0, 0.3, 1.25), Color3.fromRGB(255, 220, 70) },
+				{ Vector3.new(0.5, 0.7, 0.5), Vector3.new(0, -0.4, 1.35), Color3.fromRGB(90, 150, 255) },
+			},
 		},
 	},
 	{
@@ -77,12 +115,28 @@ local MASCOTAS = {
 			{ Vector3.new(0.3, 0.8, 0.3), Vector3.new(0.5, 1.4, -0.2), Color3.fromRGB(255, 150, 40) },
 			{ Vector3.new(0.6, 0.6, 1.8), Vector3.new(0, -0.4, 1.7), Color3.fromRGB(50, 150, 70) }, -- la cola
 		},
+		evolucion = {
+			nombre = "🐉 Dragón", color = Color3.fromRGB(205, 60, 55), particulas = Color3.fromRGB(255, 130, 30),
+			extras = {
+				{ Vector3.new(3, 0.25, 2), Vector3.new(-2.7, 0.7, 0.5), Color3.fromRGB(255, 130, 30), true }, -- ala izquierda
+				{ Vector3.new(3, 0.25, 2), Vector3.new(2.7, 0.7, 0.5), Color3.fromRGB(255, 130, 30), true }, -- ala derecha
+				{ Vector3.new(0.5, 0.5, 0.5), Vector3.new(0, 0.3, 0.9), Color3.fromRGB(255, 200, 60), true }, -- una escama brillante
+			},
+		},
 	},
 	{
 		id = "robot", nombre = "🤖 Robot", precio = 80, bonus = 6, color = Color3.fromRGB(170, 175, 190), cuadrado = true,
 		extras = {
 			{ Vector3.new(0.15, 1, 0.15), Vector3.new(0, 1.7, 0), Color3.fromRGB(90, 90, 100) }, -- la antena
 			{ Vector3.new(0.4, 0.4, 0.4), Vector3.new(0, 2.3, 0), Color3.fromRGB(255, 80, 80) },
+		},
+		evolucion = {
+			nombre = "🛸 Mega Robot", color = Color3.fromRGB(110, 195, 255), particulas = Color3.fromRGB(120, 255, 255),
+			extras = {
+				{ Vector3.new(2.8, 0.2, 2.8), Vector3.new(0, 3.1, 0), Color3.fromRGB(255, 230, 80), true }, -- un aro brillante
+				{ Vector3.new(0.9, 0.9, 0.9), Vector3.new(-1.8, 0, 0), Color3.fromRGB(110, 110, 125) }, -- hombreras
+				{ Vector3.new(0.9, 0.9, 0.9), Vector3.new(1.8, 0, 0), Color3.fromRGB(110, 110, 125) },
+			},
 		},
 	},
 }
@@ -165,19 +219,20 @@ local function avisar(jugador, texto, color)
 	end)
 end
 
--- Construye el muñequito de una mascota (cuerpo + ojos + sus piezas + cartelito con el nivel)
-local function crearModelo(datos)
+-- Construye el muñequito de una mascota (cuerpo + ojos + sus piezas + cartelito con el nivel).
+-- Si "evolucionada" es verdad, le pone su forma final.
+local function crearModelo(datos, evolucionada)
 	local modelo = Instance.new("Model")
 	modelo.Name = "Mascota"
 
-	local function crearParte(nombre, tamano, posicion, color, forma)
+	local function crearParte(nombre, tamano, posicion, color, forma, brilla)
 		local parte = Instance.new("Part")
 		parte.Name = nombre
 		parte.Size = tamano
 		parte.Position = posicion
 		parte.Color = color
 		parte.Shape = forma
-		parte.Material = Enum.Material.SmoothPlastic
+		parte.Material = if brilla then Enum.Material.Neon else Enum.Material.SmoothPlastic
 		parte.Anchored = true
 		parte.CanCollide = false
 		parte.CanTouch = false
@@ -189,7 +244,8 @@ local function crearModelo(datos)
 		return parte
 	end
 
-	local cuerpo = crearParte("Cuerpo", Vector3.new(2.4, 2.4, 2.4), Vector3.zero, datos.color, if datos.cuadrado then Enum.PartType.Block else Enum.PartType.Ball)
+	local colorCuerpo = if evolucionada then datos.evolucion.color else datos.color
+	local cuerpo = crearParte("Cuerpo", Vector3.new(2.4, 2.4, 2.4), Vector3.zero, colorCuerpo, if datos.cuadrado then Enum.PartType.Block else Enum.PartType.Ball)
 	modelo.PrimaryPart = cuerpo
 
 	-- Los ojos miran hacia delante (que es hacia -Z)
@@ -198,7 +254,24 @@ local function crearModelo(datos)
 	crearParte("OjoDerecho", Vector3.new(0.45, 0.45, 0.45), Vector3.new(0.5, 0.3, -1.05), negro, Enum.PartType.Ball)
 
 	for _, extra in datos.extras do
-		crearParte("Pieza", extra[1], extra[2], extra[3], Enum.PartType.Block)
+		crearParte("Pieza", extra[1], extra[2], extra[3], Enum.PartType.Block, extra[4])
+	end
+
+	-- Su forma final: piezas nuevas y un aura de chispas
+	if evolucionada then
+		for _, extra in datos.evolucion.extras do
+			crearParte("PiezaEvolucion", extra[1], extra[2], extra[3], Enum.PartType.Block, extra[4])
+		end
+		local aura = Instance.new("ParticleEmitter")
+		aura.Rate = 12
+		aura.Lifetime = NumberRange.new(1, 1.6)
+		aura.Speed = NumberRange.new(1, 3)
+		aura.SpreadAngle = Vector2.new(180, 180)
+		aura.Size = NumberSequence.new(0.6, 0)
+		aura.LightEmission = 1
+		aura.Transparency = NumberSequence.new(0.2, 1)
+		aura.Color = ColorSequence.new(datos.evolucion.particulas)
+		aura.Parent = cuerpo
 	end
 
 	-- El cartelito flotante con su nombre y su nivel
@@ -216,7 +289,7 @@ local function crearModelo(datos)
 	etiqueta.Font = Enum.Font.FredokaOne
 	etiqueta.TextColor3 = Color3.fromRGB(255, 255, 255)
 	etiqueta.TextStrokeTransparency = 0
-	etiqueta.Text = datos.nombre
+	etiqueta.Text = if evolucionada then datos.evolucion.nombre else datos.nombre
 	etiqueta.Parent = cartel
 
 	return modelo, etiqueta
@@ -225,6 +298,8 @@ end
 ----------------------------------------------------------------------
 -- 🐾 PONERSE LA MASCOTA Y SUBIR DE NIVEL
 ----------------------------------------------------------------------
+
+local ponerMascota -- (se define más abajo)
 
 -- Pone al día todo lo que depende del nivel de la mascota: tu velocidad, su tamaño y su cartelito
 local function actualizarMascota(jugador)
@@ -246,10 +321,17 @@ local function actualizarMascota(jugador)
 	end
 
 	local nivel = nivelDeXP(jugador:GetAttribute(PREFIJO_XP .. datos.id) or 0)
+	local evoluciona = nivel >= AJUSTES.nivelMaximo
+	if actual.evolucionada ~= evoluciona then
+		ponerMascota(jugador) -- ¡ha evolucionado! Se hace de nuevo con su forma final
+		return
+	end
+
 	jugador:SetAttribute("MascotaNivel", nivel)
-	jugador:SetAttribute("BonusMascota", datos.bonus + (nivel - 1) * AJUSTES.bonusPorNivel) -- el script Tienda lo suma a tu velocidad
+	local bonus = datos.bonus + (nivel - 1) * AJUSTES.bonusPorNivel + (if evoluciona then AJUSTES.bonusEvolucion else 0)
+	jugador:SetAttribute("BonusMascota", bonus) -- el script Tienda lo suma a tu velocidad
 	actual.modelo:ScaleTo(1 + (nivel - 1) * AJUSTES.escalaPorNivel)
-	actual.etiqueta.Text = datos.nombre .. " · Nv " .. nivel
+	actual.etiqueta.Text = (if evoluciona then datos.evolucion.nombre .. " ⭐" else datos.nombre) .. " · Nv " .. nivel
 end
 
 -- Le damos experiencia a la mascota que lleva puesta el jugador
@@ -264,7 +346,9 @@ local function darXP(jugador, cantidad)
 	local nivelViejo = nivelDeXP(viejo)
 	local nivelNuevo = nivelDeXP(viejo + cantidad)
 	actualizarMascota(jugador)
-	if nivelNuevo > nivelViejo then
+	if nivelNuevo >= AJUSTES.nivelMaximo and nivelViejo < AJUSTES.nivelMaximo then
+		avisar(jugador, "✨ ¡" .. datos.nombre .. " ha EVOLUCIONADO en " .. datos.evolucion.nombre .. "!", Color3.fromRGB(150, 70, 220))
+	elseif nivelNuevo > nivelViejo then
 		avisar(jugador, "🎉 ¡" .. datos.nombre .. " ha subido al nivel " .. nivelNuevo .. "!", Color3.fromRGB(190, 130, 0))
 	end
 end
@@ -277,7 +361,10 @@ local function quitarMascota(jugador)
 	end
 end
 
-local function ponerMascota(jugador)
+function ponerMascota(jugador)
+	-- Guardamos dónde estaba la mascota (por si solo estamos cambiándole la forma)
+	local anterior = mascotas[jugador]
+	local cframeAnterior = anterior and anterior.cframe
 	quitarMascota(jugador)
 	local datos = buscar(jugador:GetAttribute("Equipo_mascota"))
 	if not datos then
@@ -285,12 +372,13 @@ local function ponerMascota(jugador)
 		return
 	end
 
-	local modelo, etiqueta = crearModelo(datos)
+	local evolucionada = nivelDeXP(jugador:GetAttribute(PREFIJO_XP .. datos.id) or 0) >= AJUSTES.nivelMaximo
+	local modelo, etiqueta = crearModelo(datos, evolucionada)
 	local raiz = jugador.Character and jugador.Character:FindFirstChild("HumanoidRootPart")
-	local inicio = if raiz then raiz.CFrame * CFrame.new(3.2, 0.2, 3.2) else CFrame.new(0, 5, 0)
+	local inicio = cframeAnterior or (if raiz then raiz.CFrame * CFrame.new(3.2, 0.2, 3.2) else CFrame.new(0, 5, 0))
 	modelo:PivotTo(inicio)
 	modelo.Parent = carpeta
-	mascotas[jugador] = { modelo = modelo, cframe = inicio, fase = math.random() * 6, etiqueta = etiqueta }
+	mascotas[jugador] = { modelo = modelo, cframe = inicio, fase = math.random() * 6, etiqueta = etiqueta, evolucionada = evolucionada }
 	actualizarMascota(jugador)
 end
 
@@ -375,6 +463,7 @@ for orden, mascota in MASCOTAS do
 	ficha:SetAttribute("Nombre", mascota.nombre)
 	ficha:SetAttribute("Precio", mascota.precio)
 	ficha:SetAttribute("Bonus", mascota.bonus)
+	ficha:SetAttribute("NombreEvolucion", mascota.evolucion.nombre)
 	ficha:SetAttribute("Color", mascota.color)
 	ficha:SetAttribute("Orden", orden)
 	ficha.Parent = catalogo

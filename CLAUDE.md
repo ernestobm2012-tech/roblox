@@ -62,11 +62,18 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
 - Logros (`Logros`): lista `LOGROS` (12, uno por trofeo de la casa); el estado es `Logro_<id>`; leen `Estad_*`, `Nivel`, `MascotaMaxNivel`
   y el marcador `Victorias`. Catálogo en `ReplicatedStorage.CatalogoLogros`. Para un logro nuevo: añádelo a `LOGROS` (y súbele
   el límite de huecos de trofeos en `Casas` si pasa de 12). `Guardado` pone `DatosCargados` al terminar de cargar.
+- Evolución de mascotas: cada mascota de `MASCOTAS` tiene una `evolucion` (nombre, color, piezas extra, color de aura) que se
+  usa al llegar a `nivelMaximo`; `actualizarMascota` reconstruye el modelo (`ponerMascota`) cuando cambia de forma y suma `bonusEvolucion`.
+- Bosque: `Bosque` (servidor) pinta el suelo y planta árboles en la zona de salida; `Bosque` (cliente) dibuja árboles gigantes solo en la pantalla
+  del jugador a los lados de la pista (trozos de 50 studs alrededor del jugador, alturas sacadas de los `Checkpoint_*`), más
+  `Atmosphere`, luciérnagas y hojas. Nada de miles de piezas en el servidor para esto.
 - Casas (`Casas`): barrio de casas FUERA del parkour (a los lados de la zona de salida, `casasPorLado`), cada jugador se queda con
   una (`CasaNumero`). Privadas: la puerta es sólida y solo el dueño entra con `ProximityPrompt`/botón (se teletransporta dentro; mientras
   tanto `EnCasa` = true para que `Niveles` no lo "tire" por estar lejos de su checkpoint). Muebles = `Casa_<id>` (cantidad, en huecos
   fijos de `MUEBLES`; los huecos están comprobados para que no se pisen: si cambias uno, comprueba que no choque). Trofeos
-  desde `Logro_*`. RemoteEvent `CasaAccion`, catálogo `ReplicatedStorage.CatalogoMuebles`.
+  desde `Logro_*`. Visitas: `Casa_abierta` (1 = amigos de Roblox pueden entrar, vía `IsFriendsWith`) e `Invitado_<idDelDueño>` (atributo en
+  el INVITADO, no se guarda); el visitante lleva `CasaVisitada` y `EnCasa`. Paredes: `Casa_pared` (color puesto) y `Casa_pared_<id>` (comprado).
+  RemoteEvent `CasaAccion` (ir, salir, comprar, pared, abrir, invitar), catálogos `ReplicatedStorage.CatalogoMuebles` y `CatalogoParedes`.
 - Botones de la pantalla: columna a la izquierda desde `UDim2.new(0, 12, 0.3, 0)`, cada uno 54 px más abajo (checkpoint 0,
   estilo 54, carrera 108, jetpack 162, mascotas 216, logros 270, casa 324). El panel de mejoras va a la derecha.
 - **Dinero (Robux):** hoy hay DOS cosas de pago: el salto a checkpoint (producto de desarrollador, `SaltoCheckpoint`) y el
