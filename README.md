@@ -43,6 +43,7 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | `src/server/RetoEquipo.server.luau` | Reto en equipo 🤝: tú y un amigo llegáis los dos al nivel 100 | `ServerScriptService` → **Script** |
 | `src/server/CarreraMascotas.server.luau` | Carrera de tus dos mascotas en una pista junto al jardín 🐾🏁 | `ServerScriptService` → **Script** |
 | `src/client/Pintar.client.luau` | Ventana para pintar un cuadro de 10 x 10 y colgarlo en tu casa 🎨 | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/client/EstadoGuardado.client.luau` | Etiqueta abajo a la izquierda: dice si tus monedas se están guardando 💾 | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Jetpack.client.luau` | El jetpack: botón de comprar, botón de volar y barra de combustible | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Mejoras.client.luau` | Panelito con el nivel de tus mejoras y lo que cuesta la siguiente | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/GirarMonedas.client.luau` | Hace girar las monedas que tienes cerca | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |

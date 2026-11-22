@@ -92,9 +92,17 @@ local function cargarJugador(jugador)
 		return
 	end
 
+	-- Si Roblox no contesta, lo seguimos intentando cada 15 segundos (sin datos leídos NO guardamos,
+	-- para no borrar lo que ya tenías). Lo que ganes mientras tanto se SUMA cuando lleguen los datos.
+	jugador:SetAttribute("GuardadoEstado", "cargando")
 	local funciono, datos = leerDatos(jugador)
-	if not funciono or not jugador.Parent then
-		return -- sin datos leídos NO guardamos, para no borrar lo que ya tenía
+	while not funciono and jugador.Parent do
+		jugador:SetAttribute("GuardadoEstado", "error")
+		task.wait(15)
+		funciono, datos = leerDatos(jugador)
+	end
+	if not jugador.Parent then
+		return
 	end
 
 	if datos then
@@ -126,6 +134,7 @@ local function cargarJugador(jugador)
 	end
 
 	cargado[jugador] = true
+	jugador:SetAttribute("GuardadoEstado", "ok")
 	jugador:SetAttribute("DatosCargados", true) -- otros scripts (como Misiones) esperan a esto
 end
 
@@ -168,15 +177,23 @@ local function guardar(jugador)
 
 	ocupado[jugador] = true
 	local datos = recogerDatos(jugador)
+	local salioBien = false
 	for intento = 1, AJUSTES.intentos do
 		local funciono, error = pcall(function()
 			almacen:SetAsync(clave(jugador), datos)
 		end)
 		if funciono then
+			salioBien = true
 			break
 		end
 		warn("💾 No pude guardar a " .. jugador.Name .. " (intento " .. intento .. "): " .. tostring(error))
 		task.wait(2)
+	end
+	if jugador.Parent then
+		jugador:SetAttribute("GuardadoEstado", if salioBien then "ok" else "error")
+		if salioBien then
+			jugador:SetAttribute("GuardadoMonedas", datos.monedas)
+		end
 	end
 	ocupado[jugador] = nil
 end
