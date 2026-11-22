@@ -26,7 +26,7 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
 - **No inventes IDs de assets** (sonidos, mallas, imágenes `rbxassetid://`). Si hacen falta, pide al
   usuario que busque uno en la Toolbox/Creator Store y lo pegue.
 - Los scripts se hablan entre sí **solo con atributos del jugador** (`jugador:SetAttribute`), nunca con
-  `require`: `Compra_<id>` (tienda), `Nivel`, `MejorTiempo`, `CronoEstado`/`CronoInicio`/`CronoFinal`/`CronoRecord`
+  `require`: `Compra_<id>` (tienda), `Nivel` (el más alto alcanzado), `SaltarANivel`, `CreditosSalto`, `MejorTiempo`, `CronoEstado`/`CronoInicio`/`CronoFinal`/`CronoRecord`
   (cronómetro). `Guardado` guarda todo `Compra_*`, `Nivel` y `MejorTiempo`, y el marcador `leaderstats`
   (Monedas, Victorias) que crea `MiMundo`. Si añades algo que deba guardarse, usa un atributo
   `Compra_<id>` o añádelo en `recogerDatos`/`cargarJugador` de `Guardado`.
@@ -37,6 +37,15 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
   Las luces de las farolas llevan la etiqueta `FarolaLuz` (CollectionService); `Noche` las enciende/apaga.
   Con miles de piezas: nada de bucles por frame sobre todas ellas (las plataformas móviles solo se
   actualizan si hay un jugador cerca) y `CastShadow = false`.
+- Obstáculos (`Niveles`): los peligrosos son `CanCollide = false` + `hacerMortal` (Touched → `Health = 0`);
+  las cosas animadas van a la lista `animados` y solo se mueven si hay un jugador a menos de 250 studs.
+- Salto a checkpoint: `SaltoCheckpoint` (servidor) recibe el `RemoteEvent` `SaltarCheckpoint` (ReplicatedStorage),
+  valida SIEMPRE todo lo que manda el cliente, cobra con un Producto de desarrollador y pide el salto con el
+  atributo `SaltarANivel` (que `Niveles` ejecuta y borra). Los saltos pagados son el atributo `CreditosSalto`
+  y se guardan en su propio DataStore. Solo ese script puede usar `MarketplaceService.ProcessReceipt`.
+- **Dinero (Robux):** el usuario es un niño. Nunca inventes IDs de productos ni precios (el precio se pone en la web
+  de Roblox y la pantalla lo lee del producto). No añadas compras con Robux ni cambies cuánto o cuándo se cobra sin que
+  el adulto lo pida claramente. Mientras `idDelProducto` sea 0 no se cobra nada.
 - `DataStore` solo funciona con el mundo publicado y con "acceso de Studio a servicios de API" activado.
   Nunca guardes si la lectura falló (se borrarían los datos). Si cambias `nombreDelGuardado`, todos empiezan de cero.
 - Nada de `HttpService` a webs externas ni de `require` de módulos de terceros por ID.

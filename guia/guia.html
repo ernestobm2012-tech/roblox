@@ -578,6 +578,9 @@ Cloning into 'roblox'...
     <div class="ejemplo" style="background:#f4f6fb;display:flex;gap:3mm;align-items:center"><span style="flex:0 0 12mm;height:6mm;border-radius:1.5mm;background:#ffd700"></span><span><b>La meta</b> <span class="e">🏆</span> al final del nivel 500. ¡Ganas y vuelves a empezar!</span></div>
   </div>
 
+  <h3>Tramos de obstáculos <span class="e">🚧</span></h3>
+  <p style="margin-bottom:3mm">Algunos niveles tienen una plataforma larga con cosas que <b>saltar</b>: <b>cubos</b> fijos (desde el nivel 10, no hacen daño), <b>charcos de lava</b> (20), <b>rodillos</b> que ruedan (30), <b>cuadrados</b> que se deslizan (80) y <b>barras de lava que giran</b> como una hélice (250). Los rojos y naranjas queman: ¡salta en el momento justo! Además, <b>cada nivel es más largo y más alto</b> que el anterior. Y cada 100 niveles, ¡todos los jugadores ven en pantalla quién ha llegado! <span class="e">🎉</span></p>
+
   <div class="aviso info">Al darle a <b>Play</b>, el juego tarda unos segundos en construir los 500 niveles. Mira en <b>Vista → Salida</b>: cuando termine pondrá <code>🗼 ¡500 niveles construidos!</code></div>
 
   <h2 style="margin-top:6mm">La noche <span class="e">🌙</span></h2>
@@ -585,6 +588,51 @@ Cloning into 'roblox'...
 
   <h2 style="margin-top:6mm">El cronómetro <span class="e">⏱️</span></h2>
   <p>Arriba en el centro de la pantalla hay un reloj. <b>Empieza cuando sales de la zona de salida</b> y <b>se para al tocar la meta</b> <span class="e">🏆</span>. Si te caes, el reloj sigue corriendo; solo se reinicia si vuelves a la salida. Si entras a jugar y sigues en un nivel guardado, no hay reloj hasta que vuelvas a la salida. En el marcador de arriba a la derecha sale la columna <b>Mejor tiempo</b> de cada jugador, y también el <b>Nivel</b> en el que va cada uno.</p>
+</section>
+
+<!-- ============ SALTO CHECKPOINT ============ -->
+<section class="pagina">
+  <span class="etiqueta et-papa">Papá · Solo una vez</span>
+  <h2>El botón de saltar a un checkpoint <span class="e">🚀</span></h2>
+  <p>A la izquierda de la pantalla hay un botón <b>"🚀 Saltar a checkpoint"</b>. Deja volver a un checkpoint que ya has alcanzado. <b>Cada salto cuesta 5 Robux</b> y Roblox pide confirmar la compra antes de cobrar.</p>
+  <div class="aviso bien"><b>Mientras no lo actives no se cobra nada.</b> En Roblox Studio el salto es <b>gratis</b> (modo prueba). En el juego publicado, el botón avisa de que la compra aún no está activada.</div>
+
+  <div class="paso">
+    <div class="num papa">1</div>
+    <div class="cuerpo">
+      <h3>Crear el producto de 5 Robux</h3>
+      <p>En <b>create.roblox.com</b>: <b>Creaciones</b> → tu mundo → <b>Monetización</b> → <b>Productos de desarrollador</b> (<i>Developer Products</i>) → <b>Crear</b>. Nombre: <b>Saltar checkpoint</b>. Precio: <b>5 Robux</b>. Guarda.</p>
+      <div class="ventana">
+        <div class="barra"><span class="punto" style="background:#ff5f57"></span><span class="punto" style="background:#febc2e"></span><span class="punto" style="background:#28c840"></span><span class="url">create.roblox.com</span></div>
+        <div class="dentro">
+          <div style="font-weight:900;margin-bottom:2mm">Productos de desarrollador &nbsp;›&nbsp; Crear</div>
+          <div style="display:flex;gap:4mm;align-items:center;margin-bottom:2mm"><span style="width:25mm;color:var(--gris)">Nombre</span><span style="flex:1;border:0.3mm solid #b9bfcc;border-radius:1.5mm;padding:1mm 3mm">Saltar checkpoint</span></div>
+          <div style="display:flex;gap:4mm;align-items:center;margin-bottom:3mm"><span style="width:25mm;color:var(--gris)">Precio</span><span style="width:30mm;border:0.3mm solid #b9bfcc;border-radius:1.5mm;padding:1mm 3mm" class="resalta">5</span><span>Robux</span></div>
+          <span class="boton azul">Guardar</span>
+        </div>
+      </div>
+      <div class="nota-dibujo">Dibujo orientativo: los menús de Roblox cambian de vez en cuando.</div>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="num papa">2</div>
+    <div class="cuerpo">
+      <h3>Copiar el número (ID) y dárselo a Claude</h3>
+      <p>Al guardar, el producto tiene un <b>número largo (ID)</b>. Cópialo y escríbele a Claude: <i>"El ID del producto es 123456789"</i>. Claude lo pone en el código. <b>No lo cambies tú en Studio</b>: Rojo lo borraría.</p>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="num papa">3</div>
+    <div class="cuerpo">
+      <h3>Actualizar, publicar y probar</h3>
+      <p>Doble clic en <b>ACTUALIZAR</b>, publica el mundo y prueba el botón. Verás la ventana de compra de Roblox con el precio de 5 Robux.</p>
+    </div>
+  </div>
+
+  <div class="aviso ojo"><b>Ojo con el dinero:</b> la compra gasta los Robux de la <b>cuenta que está jugando</b>. Como el creador tiene 11 años, revisa los <b>controles parentales</b> de su cuenta de Roblox (límite de gasto mensual y PIN). Roblox se queda con una parte de cada venta.</div>
+  <div class="aviso info">Si alguien paga y algo falla, el salto pagado <b>queda guardado</b> y se puede usar después: no se pierde.</div>
 </section>
 
 <!-- ============ CHULETA ============ -->
