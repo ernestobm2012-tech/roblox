@@ -9,7 +9,7 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | Archivo | Qué hace | Dónde va en Roblox Studio |
 |---|---|---|
 | `src/server/MiMundo.server.luau` | La base: suelo, punto de salida, monedas y marcador (Monedas, Victorias) | `ServerScriptService` → **Script** |
-| `src/server/Niveles.server.luau` | Los **500 niveles**: cada uno más difícil, más largo y más alto, con checkpoint, lava, paredes, obstáculos, monedas y cofres. Al final, la meta 🏆 | `ServerScriptService` → **Script** |
+| `src/server/Niveles.server.luau` | Los **500 niveles**: no todos iguales (círculos, cuadrados entre lava, vigas, torres...), cada uno más difícil, largo y alto, con checkpoint, lava, paredes, obstáculos, monedas y cofres. Al final, la meta 🏆 | `ServerScriptService` → **Script** |
 | `src/server/SaltoCheckpoint.server.luau` | El pago (5 Robux) y el salto a un checkpoint ya alcanzado. ⚠️ Falta poner el ID del producto (ver abajo) | `ServerScriptService` → **Script** |
 | `src/server/Noche.server.luau` | Se hace de noche poco a poco y se encienden las farolas 🌙 | `ServerScriptService` → **Script** |
 | `src/server/Catapulta.server.luau` | Catapulta junto a la salida: te lanza por los aires hasta el checkpoint del nivel 5 | `ServerScriptService` → **Script** |
@@ -20,6 +20,11 @@ Claude escribe el código, y tú lo metes en **Roblox Studio** para jugarlo.
 | `src/server/Cronometro.server.luau` | Mide el tiempo hasta la meta y pone la columna "Mejor tiempo" en el marcador | `ServerScriptService` → **Script** |
 | `src/client/Cronometro.client.luau` | Dibuja el reloj en la pantalla | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/SaltoCheckpoint.client.luau` | El botón "🚀 Saltar a checkpoint" y su ventanita | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/server/Estilo.server.luau` | Colores y estelas para el personaje, se compran con monedas 🎨 | `ServerScriptService` → **Script** |
+| `src/server/Carrera.server.luau` | Modo carrera 🏁: todos salen a la vez y gana el primero en llegar a un nivel | `ServerScriptService` → **Script** |
+| `src/client/Estilo.client.luau` | Botón "🎨 Estilo" y su ventana | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/client/Carrera.client.luau` | Botón "🏁 Carrera" y el cartel de arriba | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
+| `src/client/Progreso.client.luau` | Barra de progreso "Nivel X de 500" | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Jetpack.client.luau` | El jetpack: botón de comprar, botón de volar y barra de combustible | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/Mejoras.client.luau` | Panelito con el nivel de tus mejoras y lo que cuesta la siguiente | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
 | `src/client/GirarMonedas.client.luau` | Hace girar las monedas que tienes cerca | `StarterPlayer` → `StarterPlayerScripts` → **LocalScript** |
@@ -61,7 +66,13 @@ Antes hay que instalar Roblox Studio y Git, y bajar el proyecto una vez con
 - Cada nivel empieza en un **checkpoint**: plataforma blanca con el número, una **moneda**, una farola y un **sol blanco** encima. Si te caes o tocas la lava, vuelves al último que alcanzaste.
 - **Cada nivel sube un poquito más que el anterior**: el nivel 1 sube 6 studs, el 2 sube 6,1, el 3 sube 6,2... y el 500 sube 60. Como también tiene más plataformas, cada nivel es **más largo y más alto**.
   Además las plataformas son más pequeñas, y hay más zigzag.
-- **Plataformas especiales:** desde el nivel 60, **naranjas que se caen** al pisarlas; desde el 150, **azules que se mueven**; desde el 300, de **hielo** que resbalan (si no resbalan, díselo a Claude).
+- **No todos los niveles son iguales.** El cartel del checkpoint dice cómo es el nivel:
+  - ⭕ **Círculos**: plataformas redondas que van en zigzag (por ejemplo el **nivel 7**)
+  - 🔥 **Cuadrados en la lava**: cuadraditos pequeños en medio de un mar de lava (por ejemplo el nivel 12)
+  - 🪵 **Vigas**: tablones finos y largos (por ejemplo el nivel 15)
+  - 🗼 **Torre**: una escalera altísima con pilares, mucho más alta que sus vecinos (por ejemplo el nivel 20)
+  - En el resto, unos 4 de cada 10 niveles tienen una de estas formas al azar. Los niveles 1 y 2 son siempre normales.
+- **Plataformas especiales:** desde el nivel 60, **naranjas que se caen** al pisarlas; desde el 150, **azules que se mueven**; desde el 300, de **hielo** que resbalan (si no resbalan, díselo a Claude); desde el 40, **verdes** que son trampolines y te lanzan hacia arriba.
 - **Tramos de obstáculos** (una plataforma larga donde hay que saltar):
   - **rodillos** que ruedan: en **todos los niveles del 1 al 200** (y después, a veces)
   - desde el nivel 10: **cubos** fijos (muros bajos, no hacen daño)
@@ -72,12 +83,34 @@ Antes hay que instalar Roblox Studio y Git, y bajar el proyecto una vez con
 - **Monedas por todas partes** 🪙: encima de las plataformas, flotando sobre los obstáculos (¡se cogen al saltarlos!) y una de 5 en cada checkpoint. Giran. Vuelven a aparecer al minuto.
 - **Cofre sorpresa** 🎁 en los checkpoints 50, 100, 150... Cada jugador lo abre una vez (mantén **E**) y da monedas.
 - **El checkpoint del nivel 250 es enorme**: un bloque de unos 5 metros (18 studs).
-- Llegar a un nivel nuevo da 🪙 monedas. Tu nivel sale en el marcador (columna **Nivel**) y se guarda.
+- Llegar a un nivel nuevo da 🪙 monedas y sale **confeti** 🎉. Tu nivel sale en el marcador (columna **Nivel**), en una **barra de progreso** arriba y se guarda.
 - **Cada 100 niveles** (100, 200, 300…), ¡todos los jugadores ven en pantalla quién ha llegado!
 - Al llegar a la meta 🏆 (nivel 500) ganas y vuelves a empezar.
 - **Tablero de los 10 mejores jugadores** 🏆 detrás de la salida (se actualiza cada minuto; necesita el guardado activado).
 - Al darle a Play, el juego tarda unos segundos en construir los 500 niveles (en **Salida** pondrá `🗼 ¡500 niveles construidos!`).
 - El mundo es **enorme** (~18.000 piezas, ~80 km). ¿Va lento? En `Niveles.server.luau` (tabla `AJUSTES`) puedes bajar `numeroDeNiveles`, subir `farolaCadaNiveles`, o activar `StreamingEnabled` en Workspace.
+
+## 🏁 Modo carrera
+
+Pulsa el botón **🏁 Carrera** (a la izquierda) para apuntarte. Cuando hay **2 jugadores o más**, empieza una cuenta atrás de 20 segundos; después todos aparecen en la salida del nivel 1, ven un **3, 2, 1** quietos y **salen a la vez**. **Gana el primero en llegar al checkpoint del nivel 10**: se lleva 100 🪙 (los demás, 10) y su nombre sale en la pantalla de todos. Luego cada uno **vuelve a su nivel de siempre**: la carrera no cambia tu nivel guardado.
+- Se puede cambiar a qué nivel hay que llegar, cuántos jugadores hacen falta y los premios en `Carrera.server.luau` (tabla `AJUSTES`).
+- El récord de carrera se guarda: si alguien lo bate, sale un mensaje a todos. (Necesita el guardado activado.)
+
+## ⏱️ Mensajes de récord
+
+- Cuando alguien llega a la meta con **su mejor tiempo**, sale un mensaje a todos: *"¡Fulano ha batido su récord de tiempo!"*
+- Si además es el mejor tiempo de **todos los jugadores de todos los tiempos**, sale un mensaje extra: *"🌟 ¡RÉCORD DEL MUNDO!"*. (Para esto hace falta el guardado activado.)
+
+## 🎨 Estilo: colores y estelas
+
+El botón **🎨 Estilo** (a la izquierda) abre una ventana con **colores** (tu personaje se pone de ese color) y **estelas** (te sale una cola detrás al correr: fuego, hielo, veneno, estrellas, corazón, fantasma y arcoíris). Se compran con monedas, una sola vez; después puedes cambiar de uno a otro gratis o pulsar **Quitar**. Se guardan.
+
+## ✨ Más cosas
+
+- 🌠 De noche pasan **estrellas fugaces** por el cielo.
+- 🎉 **Confeti** al llegar a un checkpoint nuevo.
+- 📈 **Barra de progreso** arriba con tu nivel.
+- 🟢 **Trampolines** desde el nivel 40.
 
 ## 🛒 La tienda de mejoras
 

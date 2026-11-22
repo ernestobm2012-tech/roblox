@@ -64,7 +64,7 @@ end
 -- 🖼️ LA PANTALLA
 ----------------------------------------------------------------------
 
-local abrir = crearBoton("🚀 Saltar a checkpoint", UDim2.fromOffset(200, 48), UDim2.new(0, 12, 0.5, -24), Color3.fromRGB(60, 100, 200), pantalla)
+local abrir = crearBoton("🚀 Saltar a checkpoint", UDim2.fromOffset(200, 48), UDim2.new(0, 12, 0.3, 0), Color3.fromRGB(60, 100, 200), pantalla)
 
 local panel = Instance.new("Frame")
 panel.Size = UDim2.fromOffset(330, 340)

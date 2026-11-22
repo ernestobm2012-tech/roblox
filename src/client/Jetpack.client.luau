@@ -44,7 +44,7 @@ end
 -- Botón para comprar (solo si no lo tienes)
 local comprar = Instance.new("TextButton")
 comprar.Size = UDim2.fromOffset(200, 46)
-comprar.Position = UDim2.new(0, 12, 0.5, 32)
+comprar.Position = UDim2.new(0, 12, 0.3, 162)
 comprar.BackgroundColor3 = Color3.fromRGB(200, 90, 40)
 comprar.TextColor3 = Color3.fromRGB(255, 255, 255)
 comprar.TextScaled = true

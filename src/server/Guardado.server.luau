@@ -5,6 +5,7 @@
 	  - 🪙 Monedas
 	  - 🏆 Victorias
 	  - 🛒 Las mejoras de la tienda (salto, correr, brillo) y los 🎁 cofres que has abierto
+	  - 🎨 Los colores y estelas que has comprado (y el que llevas puesto)
 	  - 🗼 El nivel en el que vas
 	  - ⏱️ Tu mejor tiempo (récord)
 
@@ -33,7 +34,12 @@ local AJUSTES = {
 }
 
 -- Los atributos del jugador que empiezan así se guardan (los ponen la tienda y los cofres)
-local PREFIJOS = { "Compra_", "Cofre_", "Mejora_" }
+local PREFIJOS = { "Compra_", "Cofre_", "Mejora_", "Estilo_", "Equipo_" }
+
+-- Qué valores se pueden guardar: sí/no, números y textos cortitos (el color o la estela que llevas)
+local function valorValido(valor)
+	return valor == true or type(valor) == "number" or (type(valor) == "string" and #valor <= 40)
+end
 
 local function esParaGuardar(nombre)
 	for _, prefijo in PREFIJOS do
@@ -100,8 +106,8 @@ local function cargarJugador(jugador)
 			jugador:SetAttribute("Compra_" .. id, true) -- (guardados antiguos)
 		end
 		for nombre, valor in datos.extras or {} do
-			if esParaGuardar(nombre) and (valor == true or type(valor) == "number") then
-				jugador:SetAttribute(nombre, valor) -- la tienda y los cofres lo ven y se lo ponen
+			if esParaGuardar(nombre) and valorValido(valor) then
+				jugador:SetAttribute(nombre, valor) -- la tienda, los cofres y el estilo lo ven y se lo ponen
 			end
 		end
 		if type(datos.nivel) == "number" and datos.nivel > (jugador:GetAttribute("Nivel") or 1) then
@@ -129,7 +135,7 @@ local function recogerDatos(jugador)
 
 	local extras = {}
 	for nombre, valor in jugador:GetAttributes() do
-		if esParaGuardar(nombre) and (valor == true or type(valor) == "number") then
+		if esParaGuardar(nombre) and valorValido(valor) then
 			extras[nombre] = valor
 		end
 	end

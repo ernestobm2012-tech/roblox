@@ -26,8 +26,8 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
 - **No inventes IDs de assets** (sonidos, mallas, imágenes `rbxassetid://`). Si hacen falta, pide al
   usuario que busque uno en la Toolbox/Creator Store y lo pegue.
 - Los scripts se hablan entre sí **solo con atributos del jugador** (`jugador:SetAttribute`), nunca con
-  `require`: `Mejora_<id>` y `Precio_<id>` (tienda de mejoras por niveles), `Cofre_<nivel>` (cofres abiertos), `Pase_<clave>` (pases de Robux), `Nivel` (el más alto alcanzado), `SaltarANivel`, `CreditosSalto`, `MejorTiempo`, `CronoEstado`/`CronoInicio`/`CronoFinal`/`CronoRecord`
-  (cronómetro). `Guardado` guarda todo lo que empiece por `Compra_`, `Cofre_` o `Mejora_` (lista `PREFIJOS`), `Nivel` y `MejorTiempo`, y el marcador `leaderstats`
+  `require`: `Mejora_<id>` y `Precio_<id>` (tienda de mejoras por niveles), `Cofre_<nivel>` (cofres abiertos), `Estilo_*` y `Equipo_*` (estilo), `Pase_<clave>` (pases de Robux), `Nivel` (el más alto alcanzado), `SaltarANivel`, `CreditosSalto`, `MejorTiempo`, `CronoEstado`/`CronoInicio`/`CronoFinal`/`CronoRecord`
+  (cronómetro). `Guardado` guarda todo lo que empiece por `Compra_`, `Cofre_` o `Mejora_` (lista `PREFIJOS`, valores sí/no, números o textos de hasta 40 letras), `Nivel` y `MejorTiempo`, y el marcador `leaderstats`
   (Monedas, Victorias) que crea `MiMundo`. Si añades algo que deba guardarse, usa un atributo
   `Compra_<id>` o añádelo en `recogerDatos`/`cargarJugador` de `Guardado`.
 - Mundo: `workspace.MiMundo` (lo crea `MiMundo`) contiene `Checkpoint_<n>` y `Meta` directamente (otros scripts
@@ -47,6 +47,14 @@ Un **niño** crea sus mundos de Roblox con ayuda de Claude, con la supervisión 
   Nunca muevas miles de piezas desde el servidor cada frame.
 - Clasificación: `OrderedDataStore` con el nivel más alto de cada jugador (`Clasificacion`). Pases de Robux: `PasesRobux`
   (`MarketplaceService:PromptGamePassPurchase`, `RemoteEvent` `ComprarPase`).
+- Formas de nivel (`temaDelNivel` en `Niveles`): "normal", "circulos", "lava", "vigas", "torre" (los niveles 7, 12, 15 y 20
+  están fijados en `temasFijos`). El tema solo cambia cómo se ponen las plataformas; la altura, el checkpoint y los tramos
+  funcionan igual. Si añades una forma nueva, compruébala con los límites HUECO_MAXIMO / SUBIDA_MAXIMA.
+- Carrera (`Carrera`): lleva a todos al nivel 1 con el atributo `SaltarANivel`, congela con `Anchored` durante la cuenta atrás y
+  los devuelve a su `Nivel`. El cartel de la pantalla sale de `workspace:GetAttribute("CarreraTexto")`. RemoteEvent `Carrera`.
+- Estilo (`Estilo`): atributos `Estilo_<tipo>_<id>` (comprado) y `Equipo_color` / `Equipo_estela` (puesto, texto); el catálogo
+  se publica en `ReplicatedStorage.CatalogoEstilo` y el cliente pide cosas con el RemoteEvent `EstiloAccion`.
+- Récords: `Cronometro` y `Carrera` usan el DataStore `MiMundoRecords_v1` (claves `recordMeta` y `recordCarrera`).
 - **Dinero (Robux):** hoy hay DOS cosas de pago: el salto a checkpoint (producto de desarrollador, `SaltoCheckpoint`) y el
   Jetpack (pase de juego, `PasesRobux`). Los ids se dejan en 0 hasta que el adulto los pase. el usuario es un niño. Nunca inventes IDs de productos ni precios (el precio se pone en la web
   de Roblox y la pantalla lo lee del producto). No añadas compras con Robux ni cambies cuánto o cuándo se cobra sin que

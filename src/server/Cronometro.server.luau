@@ -17,6 +17,8 @@
 ]]
 
 local Players = game:GetService("Players")
+local DataStoreService = game:GetService("DataStoreService")
+local TweenService = game:GetService("TweenService")
 
 -- ⚙️ AJUSTES
 local AJUSTES = {
@@ -34,6 +36,70 @@ local function formatearTiempo(segundos)
 		return string.format("%d:%02d:%02d", horas, minutos, resto)
 	end
 	return string.format("%d:%02d", minutos, resto)
+end
+
+-- Un mensaje grande para TODOS los jugadores
+local function anunciarATodos(texto, nombreGui, alturaEnPantalla)
+	print("📣 " .. texto)
+	for _, jugador in Players:GetPlayers() do
+		local pantallaJugador = jugador:FindFirstChild("PlayerGui")
+		if pantallaJugador then
+			local viejo = pantallaJugador:FindFirstChild(nombreGui)
+			if viejo then
+				viejo:Destroy()
+			end
+			local pantalla = Instance.new("ScreenGui")
+			pantalla.Name = nombreGui
+			pantalla.ResetOnSpawn = false
+			pantalla.Parent = pantallaJugador
+
+			local mensaje = Instance.new("TextLabel")
+			mensaje.Size = UDim2.fromScale(0.6, 0.1)
+			mensaje.Position = UDim2.fromScale(0.5, alturaEnPantalla)
+			mensaje.AnchorPoint = Vector2.new(0.5, 0.5)
+			mensaje.BackgroundColor3 = Color3.fromRGB(60, 90, 190)
+			mensaje.BackgroundTransparency = 0.1
+			mensaje.TextColor3 = Color3.fromRGB(255, 255, 255)
+			mensaje.TextScaled = true
+			mensaje.Font = Enum.Font.FredokaOne
+			mensaje.Text = texto
+			mensaje.Parent = pantalla
+
+			local esquinas = Instance.new("UICorner")
+			esquinas.CornerRadius = UDim.new(0, 14)
+			esquinas.Parent = mensaje
+
+			task.delay(8, function()
+				if pantalla.Parent then
+					local desaparecer = TweenService:Create(mensaje, TweenInfo.new(0.6), {
+						TextTransparency = 1,
+						BackgroundTransparency = 1,
+					})
+					desaparecer:Play()
+					desaparecer.Completed:Wait()
+					pantalla:Destroy()
+				end
+			end)
+		end
+	end
+end
+
+-- ¿Es el mejor tiempo de TODOS los jugadores de todos los tiempos? (se guarda en los servidores de Roblox;
+-- si el guardado no está activado, simplemente no se mira)
+local almacenRecords = DataStoreService:GetDataStore("MiMundoRecords_v1")
+
+local function comprobarRecordDelMundo(jugador, tiempo)
+	local funciono, resultado = pcall(function()
+		return almacenRecords:UpdateAsync("recordMeta", function(viejo)
+			if viejo and viejo.tiempo and viejo.tiempo <= tiempo then
+				return nil -- el de antes era mejor
+			end
+			return { tiempo = tiempo, nombre = jugador.DisplayName, userId = jugador.UserId }
+		end)
+	end)
+	if funciono and resultado and resultado.userId == jugador.UserId and math.abs(resultado.tiempo - tiempo) < 0.001 then
+		anunciarATodos("🌟 ¡RÉCORD DEL MUNDO! " .. jugador.DisplayName .. ": " .. formatearTiempo(tiempo), "AnuncioRecordMundo", 0.36)
+	end
 end
 
 -- Esperamos a que MiMundo haya construido la meta
@@ -109,6 +175,8 @@ meta.Touched:Connect(function(otro)
 
 	if esRecord then
 		jugador:SetAttribute("MejorTiempo", tiempo)
+		anunciarATodos("⏱️ ¡" .. jugador.DisplayName .. " ha batido su récord de tiempo! " .. formatearTiempo(tiempo), "AnuncioRecord", 0.24)
+		task.spawn(comprobarRecordDelMundo, jugador, tiempo)
 	end
 	jugador:SetAttribute("CronoFinal", tiempo)
 	jugador:SetAttribute("CronoRecord", esRecord)

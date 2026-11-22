@@ -4,12 +4,16 @@
 	  - Cada nivel empieza en un CHECKPOINT (plataforma blanca con su número, una moneda,
 	    una farola y un SOL BLANCO encima). Si tocas la lava, te caes o te mueres, vuelves a
 	    tu último checkpoint.
+	  - NO todos los niveles son iguales. Algunos tienen una forma especial (se ve en el cartel
+	    del checkpoint): ⭕ CÍRCULOS en zigzag (por ejemplo el nivel 7), 🔥 CUADRADOS entre LAVA,
+	    🪵 VIGAS finitas y 🗼 TORRES altísimas.
 	  - Cada nivel es más difícil, más LARGO y más ALTO que el anterior:
 	      · el nivel 1 es bajito y el 500 sube muchísimo (cada nivel sube un poquito más)
 	      · plataformas más pequeñas y más separadas · más zigzag
 	      · desde el nivel 60: plataformas NARANJAS que se caen al pisarlas
 	      · desde el nivel 150: plataformas AZULES que se mueven de lado a lado
 	      · desde el nivel 300: plataformas de HIELO que resbalan
+	      · desde el nivel 40: plataformas VERDES trampolín que te lanzan hacia arriba
 	  - Hay un TRAMO DE OBSTÁCULOS (una plataforma larga) en muchos niveles:
 	      · rodillos que ruedan: en TODOS los niveles del 1 al 200 ........ ¡te matan!
 	      · cubos fijos (muros bajos) desde el 10 ......................... no hacen daño
@@ -20,7 +24,7 @@
 	  - Monedas 🪙 por todas partes (más grandes en los checkpoints) y un COFRE SORPRESA 🎁
 	    en los niveles 50, 100, 150...
 	  - El checkpoint del nivel 250 es ENORME (un bloque de unos 5 metros).
-	  - Al llegar a un nivel nuevo ganas monedas. Cada 100 niveles, ¡todos lo ven en pantalla!
+	  - Al llegar a un nivel nuevo ganas monedas y sale confeti 🎉. Cada 100 niveles, ¡todos lo ven en pantalla!
 	  - Al final del nivel 500 está la META 🏆. Al ganar, vuelves a empezar desde el nivel 1.
 	  - Tu nivel se ve en el marcador y (con el script Guardado) se guarda para la próxima vez.
 	  - Puedes volver a un checkpoint que ya hayas alcanzado (lo hace el script SaltoCheckpoint).
@@ -59,6 +63,14 @@ local AJUSTES = {
 	nivelPlataformasQueCaen = 60,
 	nivelPlataformasQueSeMueven = 150,
 	nivelPlataformasDeHielo = 300,
+	nivelTrampolines = 40, -- desde aquí hay plataformas trampolín
+	fuerzaTrampolin = 85, -- lo fuerte que te lanzan hacia arriba
+
+	-- Niveles con forma especial, para que no todos sean iguales:
+	-- "circulos" = plataformas redondas en zigzag · "lava" = cuadrados pequeños entre lava ·
+	-- "vigas" = tablones finos y largos · "torre" = escalera altísima con pilares
+	temasFijos = { [7] = "circulos", [12] = "lava", [15] = "vigas", [20] = "torre" },
+	probabilidadTema = 0.4, -- en el resto de niveles (desde el 3): de cada 10, unos 4 tienen forma especial
 
 	-- Tramos de obstáculos: una plataforma larga con cosas que saltar
 	nivelDeLosTramos = 10, -- desde qué nivel hay tramos "al azar" (antes solo hay los de rodillos)
@@ -93,6 +105,7 @@ local ZONA = 14 -- el espacio que ocupa cada obstáculo dentro de un tramo
 local LAVA_GRUPO = 4 -- cada cuántas plataformas hay un trozo de lava cerca
 
 local N = math.max(AJUSTES.numeroDeNiveles, 1)
+workspace:SetAttribute("TotalNiveles", N) -- para la barra de progreso de la pantalla
 
 -- Reaparecer más rápido tras caerse
 pcall(function()
@@ -389,6 +402,34 @@ local function actualizarMarcador(jugador)
 	end
 end
 
+-- Una explosión de confeti de colores en un checkpoint
+local function lanzarConfeti(punto)
+	if not punto then
+		return
+	end
+	local confeti = punto:FindFirstChild("Confeti")
+	if not confeti then
+		confeti = Instance.new("ParticleEmitter")
+		confeti.Name = "Confeti"
+		confeti.Enabled = false
+		confeti.Rate = 0
+		confeti.Lifetime = NumberRange.new(1.5, 2.5)
+		confeti.Speed = NumberRange.new(20, 40)
+		confeti.SpreadAngle = Vector2.new(60, 60)
+		confeti.EmissionDirection = Enum.NormalId.Top
+		confeti.Acceleration = Vector3.new(0, -25, 0)
+		confeti.Size = NumberSequence.new(0.7)
+		confeti.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 80, 80)),
+			ColorSequenceKeypoint.new(0.33, Color3.fromRGB(255, 220, 60)),
+			ColorSequenceKeypoint.new(0.66, Color3.fromRGB(80, 220, 120)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 160, 255)),
+		})
+		confeti.Parent = punto
+	end
+	confeti:Emit(40)
+end
+
 -- Se llama al tocar el checkpoint de un nivel
 local function llegarANivel(jugador, nivel)
 	local actual = nivelDe[jugador]
@@ -403,6 +444,7 @@ local function llegarANivel(jugador, nivel)
 		actualizarMarcador(jugador)
 		sumarMonedas(jugador, AJUSTES.recompensaPorNivel)
 		avisar(jugador, "✅ ¡Checkpoint! Nivel " .. nivel .. " de " .. N, Color3.fromRGB(40, 160, 80))
+		lanzarConfeti(checkpoints[nivel])
 		if nivel % AJUSTES.anunciarCadaNiveles == 0 then
 			anunciarATodos("🎉 ¡" .. jugador.DisplayName .. " ha llegado al nivel " .. nivel .. "!")
 		end
@@ -438,8 +480,32 @@ local function tamanoDeCheckpoint(nivel)
 	return Vector3.new(14, 1, 14)
 end
 
+-- Cómo es cada nivel: "normal" o una forma especial
+local NOMBRES_TEMA = {
+	circulos = "⭕ Círculos",
+	lava = "🔥 Cuadrados en la lava",
+	vigas = "🪵 Vigas",
+	torre = "🗼 Torre",
+}
+local TEMAS = { "circulos", "lava", "vigas", "torre" }
+
+local function temaDelNivel(nivel)
+	local fijo = AJUSTES.temasFijos[nivel]
+	if fijo then
+		return fijo
+	end
+	if nivel < 3 then
+		return "normal" -- los primeros niveles son para aprender
+	end
+	local azarTema = Random.new(AJUSTES.semilla + nivel * 313)
+	if azarTema:NextNumber() < AJUSTES.probabilidadTema then
+		return TEMAS[azarTema:NextInteger(1, #TEMAS)]
+	end
+	return "normal"
+end
+
 -- "y" es la altura de ARRIBA de la plataforma
-local function ponerCheckpoint(nivel, x, y, z, tamano)
+local function ponerCheckpoint(nivel, x, y, z, tamano, tema)
 	local punto = crearBloque(
 		"Checkpoint_" .. nivel,
 		tamano,
@@ -448,7 +514,12 @@ local function ponerCheckpoint(nivel, x, y, z, tamano)
 		Enum.Material.SmoothPlastic,
 		carpetaMundo
 	)
-	crearCartel(punto, "NIVEL " .. nivel, 150, 50, Vector3.new(0, tamano.Y / 2 + 4, 0))
+	local nombreTema = NOMBRES_TEMA[tema]
+	if nombreTema then
+		crearCartel(punto, "NIVEL " .. nivel .. "\n" .. nombreTema, 220, 90, Vector3.new(0, tamano.Y / 2 + 5, 0))
+	else
+		crearCartel(punto, "NIVEL " .. nivel, 150, 50, Vector3.new(0, tamano.Y / 2 + 4, 0))
+	end
 
 	punto.Touched:Connect(function(otro)
 		local jugador = buscarJugador(otro)
@@ -489,39 +560,86 @@ local function hacerQueCaiga(parte, colorNormal)
 	end)
 end
 
-local function ponerPlataforma(nivel, numero, x, y, z, tamano)
+local ultimoRebote = {}
+
+-- Trampolín: te lanza hacia arriba
+local function rebotar(jugador, personaje)
+	local raiz = personaje:FindFirstChild("HumanoidRootPart")
+	if not raiz or (ultimoRebote[jugador] or 0) + 0.6 > os.clock() then
+		return
+	end
+	ultimoRebote[jugador] = os.clock()
+	local agarre = Instance.new("Attachment")
+	agarre.Parent = raiz
+	local empujon = Instance.new("LinearVelocity")
+	empujon.Attachment0 = agarre
+	empujon.MaxForce = math.huge
+	local velocidad = raiz.AssemblyLinearVelocity
+	empujon.VectorVelocity = Vector3.new(velocidad.X, AJUSTES.fuerzaTrampolin, velocidad.Z)
+	empujon.Parent = raiz
+	task.delay(0.15, function()
+		empujon:Destroy()
+		agarre:Destroy()
+	end)
+end
+
+-- "ancho" es de lado a lado y "largo" hacia delante. "tema" es la forma del nivel.
+local function ponerPlataforma(nivel, numero, x, y, z, ancho, largo, tema)
 	-- ¿Qué tipo de plataforma es? Cuanto más alto el nivel, más especiales hay.
+	-- (Los niveles con forma especial usan plataformas normales.)
 	local tirada = Random.new(AJUSTES.semilla + nivel * 100 + numero):NextNumber()
 	local function probabilidad(desde, maximo)
 		return maximo * math.clamp((nivel - desde) / math.max(N - desde, 1), 0, 1)
 	end
-	local probCae = probabilidad(AJUSTES.nivelPlataformasQueCaen, 0.3)
-	local probMueve = probabilidad(AJUSTES.nivelPlataformasQueSeMueven, 0.25)
-	local probHielo = probabilidad(AJUSTES.nivelPlataformasDeHielo, 0.2)
 
 	local color = Color3.fromHSV((nivel * 0.025) % 1, 0.75, 1)
 	local material = Enum.Material.Neon
 	local tipo = "normal"
-	if nivel >= AJUSTES.nivelPlataformasQueCaen and tirada < probCae then
-		tipo = "cae"
-		color = Color3.fromRGB(255, 140, 40)
-	elseif nivel >= AJUSTES.nivelPlataformasQueSeMueven and tirada < probCae + probMueve then
-		tipo = "mueve"
-		color = Color3.fromRGB(80, 220, 255)
-	elseif nivel >= AJUSTES.nivelPlataformasDeHielo and tirada < probCae + probMueve + probHielo then
-		tipo = "hielo"
-		color = Color3.fromRGB(190, 235, 255)
-		material = Enum.Material.Ice
+	if tema == "normal" then
+		local probCae = probabilidad(AJUSTES.nivelPlataformasQueCaen, 0.3)
+		local probMueve = probabilidad(AJUSTES.nivelPlataformasQueSeMueven, 0.25)
+		local probHielo = probabilidad(AJUSTES.nivelPlataformasDeHielo, 0.2)
+		local probTrampolin = if nivel >= AJUSTES.nivelTrampolines then 0.1 else 0
+		if nivel >= AJUSTES.nivelPlataformasQueCaen and tirada < probCae then
+			tipo = "cae"
+			color = Color3.fromRGB(255, 140, 40)
+		elseif nivel >= AJUSTES.nivelPlataformasQueSeMueven and tirada < probCae + probMueve then
+			tipo = "mueve"
+			color = Color3.fromRGB(80, 220, 255)
+		elseif nivel >= AJUSTES.nivelPlataformasDeHielo and tirada < probCae + probMueve + probHielo then
+			tipo = "hielo"
+			color = Color3.fromRGB(190, 235, 255)
+			material = Enum.Material.Ice
+		elseif tirada < probCae + probMueve + probHielo + probTrampolin then
+			tipo = "trampolin"
+			color = Color3.fromRGB(60, 255, 100)
+		end
 	end
 
+	local nombre = "Plataforma_" .. nivel .. "_" .. numero
 	local posicion = Vector3.new(x, y - 0.5, z)
-	local parte = crearBloque("Plataforma_" .. nivel .. "_" .. numero, Vector3.new(tamano, 1, tamano), posicion, color, material, carpeta)
+	local parte
+	if tema == "circulos" then
+		-- Un disco plano: el cilindro está "de pie" y lo tumbamos
+		parte = crearBloque(nombre, Vector3.new(1, ancho, ancho), posicion, color, material, carpeta)
+		parte.Shape = Enum.PartType.Cylinder
+		parte.CFrame = CFrame.new(posicion) * CFrame.Angles(0, 0, math.rad(90))
+	else
+		parte = crearBloque(nombre, Vector3.new(ancho, 1, largo), posicion, color, material, carpeta)
+	end
 
 	if tipo == "cae" then
 		hacerQueCaiga(parte, color)
 	elseif tipo == "hielo" then
 		-- Casi sin rozamiento: ¡resbala! (densidad, rozamiento, rebote, peso del rozamiento, peso del rebote)
 		parte.CustomPhysicalProperties = PhysicalProperties.new(0.5, 0, 0, 100, 1)
+	elseif tipo == "trampolin" then
+		parte.Touched:Connect(function(otro)
+			local jugador = buscarJugador(otro)
+			if jugador and jugador.Character then
+				rebotar(jugador, jugador.Character)
+			end
+		end)
 	elseif tipo == "mueve" then
 		local azarLocal = Random.new(AJUSTES.semilla + nivel * 1000 + numero)
 		local amplitud = azarLocal:NextNumber(4, 7)
@@ -533,6 +651,23 @@ local function ponerPlataforma(nivel, numero, x, y, z, tamano)
 				parte.CFrame = CFrame.new(posicion + Vector3.new(math.sin(tiempo * velocidad + fase) * amplitud, 0, 0))
 			end,
 		})
+	end
+
+	if tema == "lava" then
+		-- Un charco de lava casi a ras de la plataforma: ¡es un cuadrado en medio de la lava!
+		-- (De largo solo sobresale un poquito, para no tapar el siguiente salto.)
+		local lava = crearBloque(
+			"LavaPlana_" .. nivel .. "_" .. numero,
+			Vector3.new(ancho + 16, 0.5, largo + 1),
+			Vector3.new(x, y - 0.8, z),
+			Color3.fromRGB(255, 90, 0),
+			Enum.Material.Neon,
+			carpeta
+		)
+		hacerMortal(lava)
+	elseif tema == "torre" then
+		-- Un pilar altísimo debajo
+		crearBloque("Pilar_" .. nivel .. "_" .. numero, Vector3.new(3, 40, 3), Vector3.new(x, y - 21, z), Color3.fromRGB(110, 110, 120), Enum.Material.Concrete, carpeta)
 	end
 
 	-- Una moneda encima de una de cada dos plataformas
@@ -773,11 +908,11 @@ end
 local azar = Random.new(AJUSTES.semilla)
 
 -- Reparte la altura de un nivel entre sus saltos (unos suben más y otros menos)
-local function repartirSubida(altura, pasos, azarLocal)
+local function repartirSubida(altura, pasos, azarLocal, variacion)
 	local pesos = {}
 	local total = 0
 	for i = 1, pasos do
-		pesos[i] = azarLocal:NextNumber(0.6, 1.4)
+		pesos[i] = azarLocal:NextNumber(1 - variacion, 1 + variacion)
 		total += pesos[i]
 	end
 	for i = 1, pasos do
@@ -789,8 +924,9 @@ end
 -- Calcula dónde va la siguiente plataforma. "d" va de 0 (fácil) a 1 (difícil).
 -- "zActual/zSiguiente" son lo largas que son las plataformas (hacia delante) y
 -- "xActual/xSiguiente" lo anchas que son (de lado). "subida" es cuánto sube este salto.
+-- "desvioForzado" (opcional) obliga a moverse de lado justo esa cantidad (para el zigzag de los círculos).
 -- Devuelve la nueva x, la nueva altura (y) y la nueva z.
-local function paso(x, y, z, zActual, zSiguiente, xActual, xSiguiente, d, subida)
+local function paso(x, y, z, zActual, zSiguiente, xActual, xSiguiente, d, subida, desvioForzado)
 	local mediaZ = (zActual + zSiguiente) / 2
 	local mediaX = (xActual + xSiguiente) / 2
 
@@ -799,7 +935,7 @@ local function paso(x, y, z, zActual, zSiguiente, xActual, xSiguiente, d, subida
 	hueco = math.min(hueco, HUECO_MAXIMO)
 
 	-- Zigzag de lado a lado
-	local desvio = azar:NextNumber(-1, 1) * lerp(AJUSTES.desvioFacil, AJUSTES.desvioDificil, d)
+	local desvio = desvioForzado or (azar:NextNumber(-1, 1) * lerp(AJUSTES.desvioFacil, AJUSTES.desvioDificil, d))
 	local nuevaX = math.clamp(x + desvio, -LIMITE_LADO, LIMITE_LADO)
 	desvio = nuevaX - x
 
@@ -835,9 +971,29 @@ local function construirMundo()
 
 	for nivel = 1, N do
 		local d = (nivel - 1) / math.max(N - 1, 1) -- 0 = nivel fácil, 1 = nivel difícil
-		local altura = lerp(AJUSTES.alturaPrimerNivel, AJUSTES.alturaUltimoNivel, d) -- cuánto sube este nivel
-		local cantidad = math.max(AJUSTES.plataformasMinimas, math.ceil(altura / AJUSTES.subidaMediaPorPaso))
-		local tamano = lerp(AJUSTES.tamanoFacil, AJUSTES.tamanoDificil, d)
+		local tema = temaDelNivel(nivel)
+
+		-- Cuánto sube este nivel (las torres suben mucho más) y cuántas plataformas tiene
+		local altura = lerp(AJUSTES.alturaPrimerNivel, AJUSTES.alturaUltimoNivel, d)
+		if tema == "torre" then
+			altura *= 1.8
+		end
+		local subidaMedia = if tema == "torre" then 3.9 else AJUSTES.subidaMediaPorPaso
+		local cantidad = math.max(AJUSTES.plataformasMinimas, math.ceil(altura / subidaMedia))
+
+		-- La forma de las plataformas: ancho (de lado a lado) y largo (hacia delante)
+		local ancho = lerp(AJUSTES.tamanoFacil, AJUSTES.tamanoDificil, d)
+		local largo = ancho
+		if tema == "circulos" then
+			ancho = lerp(9, 5, d)
+			largo = ancho
+		elseif tema == "lava" then
+			ancho = lerp(6, 3.5, d)
+			largo = ancho
+		elseif tema == "vigas" then
+			ancho = lerp(4, 2.2, d)
+			largo = 11
+		end
 
 		-- ¿Este nivel tiene un tramo de obstáculos? ¿Cuántos obstáculos? ¿Lleva rodillo?
 		local obstaculos = 0
@@ -854,7 +1010,8 @@ local function construirMundo()
 
 		-- Cuánto sube cada salto de este nivel (suman justo la altura del nivel)
 		local pasosTotales = cantidad + (if obstaculos > 0 then 1 else 0) + 1
-		local subidas = repartirSubida(altura, pasosTotales, Random.new(AJUSTES.semilla + nivel * 4001))
+		local variacion = if tema == "torre" then 0.1 else 0.4
+		local subidas = repartirSubida(altura, pasosTotales, Random.new(AJUSTES.semilla + nivel * 4001), variacion)
 		local indice = 0
 		local function siguienteSubida()
 			indice += 1
@@ -862,30 +1019,37 @@ local function construirMundo()
 		end
 
 		local tamanoCheckpoint = tamanoDeCheckpoint(nivel)
-		checkpoints[nivel] = ponerCheckpoint(nivel, x, y, z, tamanoCheckpoint)
+		checkpoints[nivel] = ponerCheckpoint(nivel, x, y, z, tamanoCheckpoint, tema)
 		local zInicio = z - tamanoCheckpoint.Z / 2
 		local alturaMinima = y
 		local alturaMaxima = y
 		local anchoActual, largoActual = tamanoCheckpoint.X, tamanoCheckpoint.Z
 		local piezas = { { z = z, mz = tamanoCheckpoint.Z / 2, y = y } } -- para poner lava cerquita
 
+		local signoZigzag = 1
 		for numero = 1, cantidad do
-			x, y, z = paso(x, y, z, largoActual, tamano, anchoActual, tamano, d, siguienteSubida())
-			ponerPlataforma(nivel, numero, x, y, z, tamano)
-			anchoActual, largoActual = tamano, tamano
-			alturaMinima = math.min(alturaMinima, y)
-			alturaMaxima = math.max(alturaMaxima, y)
-			table.insert(piezas, { z = z, mz = tamano / 2, y = y })
-		end
-
-		if obstaculos > 0 then
-			local largo = ZONA * obstaculos + 12
-			x, y, z = paso(x, y, z, largoActual, largo, anchoActual, ANCHO_TRAMO, d * 0.7, siguienteSubida())
-			ponerTramo(nivel, x, y, z, largo, obstaculos, d, conRodillo)
-			anchoActual, largoActual = ANCHO_TRAMO, largo
+			local desvioForzado = nil
+			if tema == "circulos" then
+				-- Zigzag: un salto a la derecha, otro a la izquierda...
+				desvioForzado = signoZigzag * lerp(4, 8, d)
+				signoZigzag = -signoZigzag
+			end
+			x, y, z = paso(x, y, z, largoActual, largo, anchoActual, ancho, d, siguienteSubida(), desvioForzado)
+			ponerPlataforma(nivel, numero, x, y, z, ancho, largo, tema)
+			anchoActual, largoActual = ancho, largo
 			alturaMinima = math.min(alturaMinima, y)
 			alturaMaxima = math.max(alturaMaxima, y)
 			table.insert(piezas, { z = z, mz = largo / 2, y = y })
+		end
+
+		if obstaculos > 0 then
+			local largoTramo = ZONA * obstaculos + 12
+			x, y, z = paso(x, y, z, largoActual, largoTramo, anchoActual, ANCHO_TRAMO, d * 0.7, siguienteSubida())
+			ponerTramo(nivel, x, y, z, largoTramo, obstaculos, d, conRodillo)
+			anchoActual, largoActual = ANCHO_TRAMO, largoTramo
+			alturaMinima = math.min(alturaMinima, y)
+			alturaMaxima = math.max(alturaMaxima, y)
+			table.insert(piezas, { z = z, mz = largoTramo / 2, y = y })
 		end
 
 		-- Último salto: hacia el checkpoint del siguiente nivel (o la meta)
